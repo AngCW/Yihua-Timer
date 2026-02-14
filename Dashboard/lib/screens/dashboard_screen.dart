@@ -6,6 +6,7 @@ import '../widgets/shortcuts_section.dart';
 import '../widgets/event_schedule_sidebar.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/create_event/create_event_form.dart';
+import '../../../Setting/lib/settings_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -36,7 +37,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: const Color(0xFFFAFAFA),
               child: Column(
                 children: [
-                  const SearchBarWidget(),
+                  if (_selectedNavIndex == 0 || _selectedNavIndex == 2)
+                    const SearchBarWidget(),
                   Expanded(
                     child: _buildMainContent(),
                   ),
@@ -68,10 +70,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       case 1:
-
         return const CreateEventPage();
+      case 4:
+        return SettingsPage(
+          onBack: () {
+            setState(() {
+              _selectedNavIndex = 0;
+            });
+          },
+        );
       default:
-
         return const Center(
           child: Text(
             '该功能正在开发中...',
