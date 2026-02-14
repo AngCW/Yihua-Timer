@@ -1,3 +1,4 @@
+import 'package:debate_timer/EventManager/event_manager_page.dart';
 import 'package:flutter/material.dart';
 import '../widgets/navigation_sidebar.dart';
 import '../widgets/recent_events_section.dart';
@@ -7,6 +8,7 @@ import '../widgets/event_schedule_sidebar.dart';
 import '../widgets/search_bar.dart';
 import '../../CreateEvent/create_event_form.dart';
 import '../../../Setting/settings_page.dart';
+import '../../Timer/timer_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -37,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: const Color(0xFFFAFAFA),
               child: Column(
                 children: [
-                  if (_selectedNavIndex == 0 || _selectedNavIndex == 2)
+                  if (_selectedNavIndex != 1 && _selectedNavIndex != 4 )
                     const SearchBarWidget(),
                   Expanded(
                     child: _buildMainContent(),
@@ -56,11 +58,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildMainContent() {
     switch (_selectedNavIndex) {
       case 0:
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
+        return  const SingleChildScrollView(
+          padding: EdgeInsets.all(32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               RecentEventsSection(),
               SizedBox(height: 40),
               CreateEventSection(),
@@ -71,6 +73,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       case 1:
         return const CreateEventPage();
+
+      case 2:
+        return const EventManagerPage();
+      case 3:
+        return const TimerPage();
       case 4:
         return SettingsPage(
           onBack: () {
