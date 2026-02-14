@@ -5,8 +5,8 @@ import '../widgets/create_event_section.dart';
 import '../widgets/shortcuts_section.dart';
 import '../widgets/event_schedule_sidebar.dart';
 import '../widgets/search_bar.dart';
-import '../widgets/create_event/create_event_form.dart';
-import '../../../Setting/lib/settings_page.dart';
+import '../../CreateEvent/create_event_form.dart';
+import '../../../Setting/settings_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

@@ -9,21 +9,21 @@
             "name": "Yihua-Timer",
             "request": "launch",
             "type": "dart",
-            "program" : "Dashboard/lib/main.dart"
+            "program" : "lib/main.dart"
         },
         {
             "name": "Yihua-Timer (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
-            "program" : "Dashboard/lib/main.dart"
+            "program" : "lib/main.dart"
         },
         {
             "name": "Yihua-Timer (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",
-            "program" : "Dashboard/lib/main.dart"
+            "program" : "lib/main.dart"
         }
     ]
 }

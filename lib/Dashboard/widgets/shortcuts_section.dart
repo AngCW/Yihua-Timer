@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../Setting/lib/hotkey_binding_model.dart';
+import '../../Setting/hotkey_binding_model.dart';
 
 class ShortcutsSection extends StatelessWidget {
   const ShortcutsSection({super.key});
