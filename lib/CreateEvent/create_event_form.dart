@@ -2,18 +2,53 @@ import 'package:debate_timer/models/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'timer_configuration_page.dart';
 
-class CreateEventPage extends StatelessWidget {
+class CreateEventPage extends StatefulWidget {
   const CreateEventPage({super.key});
 
   @override
+  State<CreateEventPage> createState() => _CreateEventPageState();
+}
+
+class _CreateEventPageState extends State<CreateEventPage> {
+  int _currentStep = 0; // 0: form, 1: timer config
+  String? _ringtoneFileName;
+  bool _isDefaultTemplate = false;
+
+  void _navigateToTimerConfig(String? ringtoneFileName, bool isDefaultTemplate) {
+    setState(() {
+      _currentStep = 1;
+      _ringtoneFileName = ringtoneFileName;
+      _isDefaultTemplate = isDefaultTemplate;
+    });
+  }
+
+  void _goBackToForm() {
+    setState(() {
+      _currentStep = 0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.all(32.0),
+    if (_currentStep == 1) {
+      return TimerConfigurationPage(
+        ringtoneFileName: _ringtoneFileName,
+        isDefaultTemplate: _isDefaultTemplate,
+        onBack: _goBackToForm,
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CreateEventForm(),
+          CreateEventForm(
+            onNext: (ringtoneFileName) => _navigateToTimerConfig(ringtoneFileName, false),
+            onDefaultTemplate: () => _navigateToTimerConfig(null, true),
+          ),
         ],
       ),
     );
@@ -21,7 +56,14 @@ class CreateEventPage extends StatelessWidget {
 }
 
 class CreateEventForm extends StatefulWidget {
-  const CreateEventForm({super.key});
+  final Function(String?) onNext;
+  final VoidCallback onDefaultTemplate;
+
+  const CreateEventForm({
+    super.key,
+    required this.onNext,
+    required this.onDefaultTemplate,
+  });
 
   @override
   State<CreateEventForm> createState() => _CreateEventFormState();
@@ -32,7 +74,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
 
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTimeRange? _selectedDateRange;
   final _dateController = TextEditingController();
   final _teamNumController = TextEditingController();
   final _bgImgNameController = TextEditingController();
@@ -52,7 +94,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
       EventModel newEvent = EventModel(
           name: _nameController.text,
           desc: _descController.text,
-          date: DateTime.parse(_dateController.text),
+          date: _selectedDateRange?.start ?? DateTime.now(),
           teamNum: int.parse(_teamNumController.text),
           bgImgName: _bgImgNameController.text);
       print("saved form value to model");
@@ -93,11 +135,11 @@ class _CreateEventFormState extends State<CreateEventForm> {
       );
     }
 
-    Widget _uploadButton(String label) {
+    Widget _uploadButton(String label, {VoidCallback? onUpload}) {
       return SizedBox(
         width: 260,
         child: OutlinedButton.icon(
-          onPressed: () {},
+          onPressed: onUpload ?? () {},
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             side: BorderSide(color: Colors.grey.shade300),
@@ -111,12 +153,36 @@ class _CreateEventFormState extends State<CreateEventForm> {
           label: Text(
             label,
             style: const TextStyle(fontSize: 13),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       );
     }
 
+    bool _validateMandatoryFields() {
+      if (_nameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请输入赛事名称')),
+        );
+        return false;
+      }
+      if (_descController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请输入赛制简介')),
+        );
+        return false;
+      }
+      if (_dateController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请选择日期')),
+        );
+        return false;
+      }
+      return true;
+    }
+
     return Form(
+      key: _formKey,
       child: Card(
         margin: EdgeInsets.zero,
         child: Padding(
@@ -124,13 +190,39 @@ class _CreateEventFormState extends State<CreateEventForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '自定义赛事',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '自定义赛事',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      if (_validateMandatoryFields()) {
+                        widget.onDefaultTemplate();
+                      }
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF6B46C1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: const Text(
+                      '默认赛制',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
               ////
               const SizedBox(height: 4),
@@ -145,65 +237,254 @@ class _CreateEventFormState extends State<CreateEventForm> {
               ////
               const SizedBox(height: 30),
               ////
+              Text('赛事名称', style: textStyleLabel),
+              const SizedBox(height: 6),
               TextFormField(
                 controller: _nameController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '请输入赛事名称';
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: Text('赛事名称', style: textStyleLabel),
+                  hintText: '请输入赛事名称',
                 ),
               ),
               ////
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               ////
+              Text('赛制简介', style: textStyleLabel),
+              const SizedBox(height: 6),
               TextFormField(
                 controller: _descController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '请输入赛制简介';
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: Text('赛制简介', style: textStyleLabel),
+                  hintText: '简单描述本次赛事或赛制',
                 ),
               ),
               ////
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               ////
+              Text('赛事日期', style: textStyleLabel),
+              const SizedBox(height: 6),
               SizedBox(
                   width: 260,
                   child: TextFormField(
                     mouseCursor: SystemMouseCursors.click,
                       readOnly: true,
                       controller: _dateController,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '请选择日期';
+                        }
+                        return null;
+                      },
                       decoration: _inputDecoration('请选择日期').copyWith(
                           suffixIcon: const Icon(Icons.calendar_today_rounded,
                               size: 18)),
                       onTap: () async {
-                        final DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: _selectedDate,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100));
+                        DateTime? startDate = _selectedDateRange?.start;
+                        DateTime? endDate = _selectedDateRange?.end;
 
-                        if (pickedDate == null) return;
-                        final TimeOfDay? pickedTime = await showTimePicker(
+                        final result = await showDialog<DateTimeRange>(
                           context: context,
-                          initialTime: TimeOfDay.now(),
+                          builder: (dialogContext) => StatefulBuilder(
+                            builder: (context, setDialogState) => Dialog(
+                              child: Container(
+                                width: 500,
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          '选择日期范围',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.close),
+                                          onPressed: () => Navigator.of(dialogContext).pop(),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                '开始日期',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              InkWell(
+                                                onTap: () async {
+                                                  final date = await showDatePicker(
+                                                    context: context,
+                                                    initialDate: startDate ?? DateTime.now(),
+                                                    firstDate: DateTime(2000),
+                                                    lastDate: DateTime(2100),
+                                                  );
+                                                  if (date != null) {
+                                                    setDialogState(() {
+                                                      startDate = date;
+                                                    });
+                                                  }
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 12,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(color: Colors.grey.shade300),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        startDate != null
+                                                            ? DateFormat('yyyy-MM-dd').format(startDate!)
+                                                            : '选择开始日期',
+                                                        style: TextStyle(
+                                                          color: startDate != null
+                                                              ? Colors.black
+                                                              : Colors.grey,
+                                                        ),
+                                                      ),
+                                                      const Icon(Icons.calendar_today, size: 18),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                '结束日期',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              InkWell(
+                                                onTap: () async {
+                                                  final date = await showDatePicker(
+                                                    context: context,
+                                                    initialDate: endDate ?? (startDate ?? DateTime.now()),
+                                                    firstDate: startDate ?? DateTime(2000),
+                                                    lastDate: DateTime(2100),
+                                                  );
+                                                  if (date != null) {
+                                                    setDialogState(() {
+                                                      endDate = date;
+                                                    });
+                                                  }
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 12,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(color: Colors.grey.shade300),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        endDate != null
+                                                            ? DateFormat('yyyy-MM-dd').format(endDate!)
+                                                            : '选择结束日期',
+                                                        style: TextStyle(
+                                                          color: endDate != null
+                                                              ? Colors.black
+                                                              : Colors.grey,
+                                                        ),
+                                                      ),
+                                                      const Icon(Icons.calendar_today, size: 18),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(dialogContext).pop(),
+                                          child: const Text('取消'),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        FilledButton(
+                                          onPressed: () {
+                                            if (startDate != null && endDate != null) {
+                                              Navigator.of(dialogContext).pop(
+                                                DateTimeRange(start: startDate!, end: endDate!),
+                                              );
+                                            }
+                                          },
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: const Color(0xFF6B46C1),
+                                          ),
+                                          child: const Text('确定'),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         );
 
-                        if (pickedTime == null) return;
+                        if (result == null) return;
 
                         setState(() {
-                          _selectedDate = DateTime(
-                              pickedDate.year,
-                              pickedDate.month,
-                              pickedDate.day,
-                              pickedTime.hour,
-                              pickedTime.minute);
-
-                          _dateController.text = DateFormat('yyyy-MM-dd HH:mm')
-                              .format(_selectedDate);
+                          _selectedDateRange = result;
+                          _dateController.text = 
+                              '${DateFormat('yyyy-MM-dd').format(result.start)} - ${DateFormat('yyyy-MM-dd').format(result.end)}';
                         });
                       })),
               ////
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               ////
+              Text('参赛队数量', style: textStyleLabel),
+              const SizedBox(height: 6),
               TextFormField(
                 controller: _teamNumController,
                 keyboardType: TextInputType.number,
@@ -212,7 +493,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
                 ],
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: Text('参赛队数量', style: textStyleLabel),
+                  hintText: '例如: 2',
                 ),
               ),
               const SizedBox(height: 24),
@@ -220,7 +501,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
               const SizedBox(height: 6),
               _uploadButton('点击上传'),
               const SizedBox(height: 16),
-              Text('音效文件', style: textStyleLabel),
+              Text('背景音乐', style: textStyleLabel),
               const SizedBox(height: 6),
               _uploadButton('点击上传'),
               const SizedBox(height: 16),
@@ -239,7 +520,11 @@ class _CreateEventFormState extends State<CreateEventForm> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FilledButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (_formKey.currentState!.validate() && _validateMandatoryFields()) {
+                        widget.onNext(null);
+                      }
+                    },
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
                       padding: const EdgeInsets.symmetric(
