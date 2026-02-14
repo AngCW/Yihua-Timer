@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/navigation_sidebar.dart';
-import '../widgets/recent_events_section.dart';
-import '../widgets/create_event_section.dart';
-import '../widgets/shortcuts_section.dart';
-import '../widgets/event_schedule_sidebar.dart';
-import '../widgets/search_bar.dart';
+import '../widgets/general_widgets/navigation_sidebar.dart';
+import '../widgets/main_menu/recent_events_section.dart';
+import '../widgets/main_menu/create_event_section.dart';
+import '../widgets/main_menu/shortcuts_section.dart';
+import '../widgets/general_widgets/event_schedule_sidebar.dart';
+import '../widgets/general_widgets/search_bar.dart';
 import '../widgets/create_event/create_event_form.dart';
 
 class DashboardScreen extends StatefulWidget {
