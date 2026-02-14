@@ -61,7 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 Expanded(
                   child: _buildTabButton(
-                    label: '音量设置',
+                    label: '音频设置',
                     index: 1,
                     isSelected: _selectedTabIndex == 1,
                   ),
