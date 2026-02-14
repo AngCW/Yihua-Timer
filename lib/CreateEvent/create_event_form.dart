@@ -1,5 +1,4 @@
-import 'package:debate_timer/FileManager/file_manager.dart';
-import 'package:debate_timer/models/profile.dart';
+import 'package:debate_timer/models/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -50,7 +49,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
 
   void _submitData() async {
     if (_formKey.currentState!.validate()) {
-      ProfileModel newProfile = ProfileModel(
+      EventModel newEvent = EventModel(
           name: _nameController.text,
           desc: _descController.text,
           date: DateTime.parse(_dateController.text),
@@ -58,10 +57,10 @@ class _CreateEventFormState extends State<CreateEventForm> {
           bgImgName: _bgImgNameController.text);
       print("saved form value to model");
 
-      newProfile.saveToDevice();
+      newEvent.saveToDevice();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile saved to device')),
+        const SnackBar(content: Text('Event saved to device')),
       );
     }
   }

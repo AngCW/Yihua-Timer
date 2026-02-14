@@ -1,13 +1,13 @@
 import '../FileManager/file_manager.dart';
 
-class ProfileModel {
+class EventModel {
   final String name;
   final String? desc;
   final DateTime date;
   final int teamNum;
   final String bgImgName;
 
-  ProfileModel({
+  EventModel({
     required this.name,
     this.desc,
     required this.date,
@@ -15,8 +15,8 @@ class ProfileModel {
     required this.bgImgName
   });
 
-  factory ProfileModel.fromJson(Map<String, dynamic> json) {
-    return ProfileModel(
+  factory EventModel.fromJson(Map<String, dynamic> json) {
+    return EventModel(
       name: json['name'] as String,
       desc: json['desc'] as String?,
       date: json['date'] as DateTime,
@@ -36,6 +36,6 @@ class ProfileModel {
   }
 
   void saveToDevice() {
-    saveToJsonFile(toJson(), name, "profile.json");
+    saveToJsonFile(toJson(), name, "event.json");
   }
 }
