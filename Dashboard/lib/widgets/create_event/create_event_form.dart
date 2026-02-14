@@ -61,36 +61,13 @@ class CreateEventForm extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  '自定义赛制',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    // Handle default format button
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    side: const BorderSide(color: Color(0xFF6B46C1)),
-                    foregroundColor: const Color(0xFF6B46C1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  child: const Text(
-                    '默认赛制',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ),
-              ],
+            const Text(
+              '自定义赛事',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
