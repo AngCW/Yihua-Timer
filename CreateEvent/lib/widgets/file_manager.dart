@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
 import "package:path_provider/path_provider.dart";
 import 'package:path/path.dart' as p;
 
