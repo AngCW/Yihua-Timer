@@ -1,0 +1,55 @@
+CREATE TABLE event (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    event_name VARCHAR NOT NULL,
+    event_desc TEXT,
+    start_date DATE,
+    end_date DATE,
+    team_num INTEGER,
+    remark TEXT
+);
+
+CREATE TABLE timer_template (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE ding_value (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ding_time TEXT,
+    ding_amount INTEGER,
+    timer_template_id INTEGER
+);
+
+CREATE TABLE flow (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    flow_name VARCHAR,
+    event_id INTEGER
+);
+
+CREATE TABLE images (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    image_name VARCHAR,
+    image_type VARCHAR, -- schoolA, schoolB or background
+    page_id INTEGER,
+    xpos DOUBLE,
+    ypos DOUBLE
+) AS ImagesData;
+
+CREATE TABLE timer (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    timer_template_id INTEGER,
+    start_time TEXT,
+    page_id INTEGER
+);
+
+CREATE TABLE page (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    page_name VARCHAR,
+    section_name VARCHAR,
+    font_name VARCHAR,
+    bgm_name VARCHAR,
+    page_type_id VARCHAR,
+    hotkey_value VARCHAR, -- only available for bonuses pages
+    flow_id INTEGER,
+    page_position INTEGER
+);

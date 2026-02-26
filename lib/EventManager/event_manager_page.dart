@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'event_details_page.dart';
+import '../main.dart';
+import '../database/app_database.dart';
 
 class EventManagerPage extends StatefulWidget {
   const EventManagerPage({super.key});
@@ -8,9 +12,11 @@ class EventManagerPage extends StatefulWidget {
 }
 
 class _EventManagerPageState extends State<EventManagerPage> {
-  final testGrid = List.generate(15, (index) => index + 1);
+  Widget _buildEventCard(EventData event) {
+    final dateStr = event.startDate != null
+        ? DateFormat('yyyy-MM-dd').format(event.startDate!)
+        : '无日期';
 
-  Widget _buildEventCard(int index) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -29,7 +35,12 @@ class _EventManagerPageState extends State<EventManagerPage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            print("$index grid clicked");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailsPage(event: event),
+              ),
+            );
           },
           hoverColor: Colors.purple.withOpacity(0.05),
           splashColor: Colors.purple.withOpacity(0.1),
@@ -66,13 +77,15 @@ class _EventManagerPageState extends State<EventManagerPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "赛事 $index",
+                      event.eventName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1F2937),
                         letterSpacing: -0.5,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -84,7 +97,7 @@ class _EventManagerPageState extends State<EventManagerPage> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          "27/02/2022 13:00",
+                          dateStr,
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade500,
@@ -137,23 +150,53 @@ class _EventManagerPageState extends State<EventManagerPage> {
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 300,
-                mainAxisExtent: 180,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (content, index) {
-                  final tempGrid = testGrid[index];
-                  return _buildEventCard(tempGrid);
-                },
-                childCount: testGrid.length,
-              ),
-            ),
+          StreamBuilder<List<EventData>>(
+            stream: database.select(database.event).watch(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  child: Center(child: Text('加载失败: ${snapshot.error}')),
+                );
+              }
+
+              final events = snapshot.data ?? [];
+
+              if (events.isEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      '暂无赛事，去创建一个吧！',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                );
+              }
+
+              return SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 300,
+                    mainAxisExtent: 180,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (content, index) {
+                      return _buildEventCard(events[index]);
+                    },
+                    childCount: events.length,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

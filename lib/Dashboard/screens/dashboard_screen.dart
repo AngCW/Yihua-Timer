@@ -33,22 +33,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
             },
           ),
-          
           Expanded(
             child: Container(
               color: const Color(0xFFFAFAFA),
               child: Column(
                 children: [
-                  if (_selectedNavIndex != 1 && _selectedNavIndex != 4 )
+                  if (_selectedNavIndex != 1 && _selectedNavIndex != 4)
                     const SearchBarWidget(),
                   Expanded(
-                    child: _buildMainContent(),
+                    child: KeyedSubtree(
+                      key: ValueKey(_selectedNavIndex),
+                      child: _buildMainContent(),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          
           const EventScheduleSidebar(),
         ],
       ),
@@ -58,7 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildMainContent() {
     switch (_selectedNavIndex) {
       case 0:
-        return  const SingleChildScrollView(
+        return const SingleChildScrollView(
           padding: EdgeInsets.all(32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

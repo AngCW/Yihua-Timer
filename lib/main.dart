@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'Dashboard/screens/dashboard_screen.dart';
+import 'database/app_database.dart';
+
+late AppDatabase database;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  database = AppDatabase();
   runApp(const DebateTimerApp());
 }
 
@@ -36,4 +40,3 @@ class DebateTimerApp extends StatelessWidget {
     );
   }
 }
-
