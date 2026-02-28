@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../database/app_database.dart';
 import '../main.dart';
+import 'page_manager_page.dart';
 
 class FlowManagerPage extends StatefulWidget {
   final EventData event;
@@ -20,11 +21,10 @@ class FlowManagerPage extends StatefulWidget {
 class _FlowManagerPageState extends State<FlowManagerPage> {
   final _flowNameController = TextEditingController();
   FlowData? _currentFlow;
-  PageData? _selectedPage;
-  List<ImagesData> _currentImages = [];
   String? _fontFile;
   String? _frontpageFile;
   String? _backgroundFile;
+  String? _imagesDirPath;
   bool _isLoading = true;
 
   @override
@@ -34,10 +34,17 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   }
 
   Future<void> _loadFlow() async {
+    final supportDir = await getApplicationSupportDirectory();
+    _imagesDirPath = p.join(
+        supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
+
     if (widget.initialFlow != null) {
       _currentFlow = widget.initialFlow;
       _flowNameController.text = _currentFlow!.flowName ?? '';
-      _loadPagesAndHandleSelection();
+      _updateFileExistence();
+      setState(() {
+        _isLoading = false;
+      });
     } else {
       setState(() {
         _isLoading = false;
@@ -45,43 +52,10 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
     }
   }
 
-  Future<void> _loadPagesAndHandleSelection() async {
-    final pages = await (database.select(database.page)
-          ..where((t) => t.flowId.equals(_currentFlow!.id))
-          ..orderBy([(t) => drift.OrderingTerm(expression: t.pagePosition)]))
-        .get();
-
-    if (mounted) {
-      setState(() {
-        if (pages.isNotEmpty) {
-          _selectedPage = pages.first;
-          _loadSelectedPageAssets();
-        }
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadSelectedPageAssets() async {
-    if (_selectedPage == null) return;
-
-    final images = await (database.select(database.images)
-          ..where((t) => t.pageId.equals(_selectedPage!.id)))
-        .get();
-
-    if (mounted) {
-      setState(() {
-        _currentImages = images;
-      });
-      // Pre-compute file existence for UI
-      _updateFileExistence();
-    }
-  }
-
   Future<void> _updateFileExistence() async {
-    final font = await _getImagePathFromData('font');
-    final front = await _getImagePathFromData('frontpage');
-    final back = await _getImagePathFromData('background');
+    final font = await _getFlowFontPath();
+    final front = await _getFlowImagePath('frontpage');
+    final back = await _getFlowImagePath('background');
     if (mounted) {
       setState(() {
         _fontFile = font;
@@ -91,24 +65,34 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
     }
   }
 
-  Future<String?> _getImagePathFromData(String type) async {
+  Future<String?> _getFlowFontPath() async {
+    if (_currentFlow?.fontName == null) return null;
     try {
-      ImagesData? img;
-      for (final i in _currentImages) {
-        if (i.imageType == type) {
-          img = i;
-          break;
-        }
-      }
-
-      if (img == null || img.imageName == null) return null;
-
       final supportDir = await getApplicationSupportDirectory();
       final filePath = p.join(supportDir.path, 'YiHuaTimer', 'images',
-          widget.event.id.toString(), img.imageName!);
-
+          widget.event.id.toString(), _currentFlow!.fontName!);
       if (await File(filePath).exists()) {
-        return img.imageName;
+        return _currentFlow!.fontName;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> _getFlowImagePath(String type) async {
+    final fileName = type == 'frontpage'
+        ? _currentFlow?.frontpageName
+        : _currentFlow?.backgroundName;
+
+    if (fileName == null) return null;
+
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final filePath = p.join(supportDir.path, 'YiHuaTimer', 'images',
+          widget.event.id.toString(), fileName);
+      if (await File(filePath).exists()) {
+        return fileName;
       }
       return null;
     } catch (_) {
@@ -117,26 +101,21 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   }
 
   Future<void> _pickAndSaveFile(String type) async {
+    if (_currentFlow == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先保存赛程')),
+      );
+      return;
+    }
+
     final result = await FilePicker.platform.pickFiles(
       type: type == 'font' ? FileType.any : FileType.image,
     );
 
     if (result != null && result.files.single.path != null) {
-      if (_selectedPage == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请先选择或添加一个页面')),
-        );
-        return;
-      }
-
       final originalPath = result.files.single.path!;
       final extension = p.extension(result.files.single.name);
-      final dbType = type == 'font'
-          ? 'font'
-          : (type == 'frontpage' ? 'frontpage' : 'background');
-
-      // Rename to type identifier
-      final fileName = '$dbType$extension';
+      final fileName = '$type$extension';
 
       try {
         final supportDir = await getApplicationSupportDirectory();
@@ -147,38 +126,52 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
           await imagesDir.create(recursive: true);
         }
 
-        // Check for existing entry of this type for this page
-        final existing = _currentImages.where((img) => img.imageType == dbType);
-        if (existing.isNotEmpty) {
-          final oldImage = existing.first;
-          // Delete old physical file (always delete to overwrite correctly)
-          final oldFilePath = p.join(imagesDir.path, oldImage.imageName!);
+        // Handle Flow level assets
+        String? oldFileName;
+        if (type == 'font') {
+          oldFileName = _currentFlow!.fontName;
+        } else if (type == 'frontpage') {
+          oldFileName = _currentFlow!.frontpageName;
+        } else if (type == 'background') {
+          oldFileName = _currentFlow!.backgroundName;
+        }
+
+        if (oldFileName != null) {
+          final oldFilePath = p.join(imagesDir.path, oldFileName);
           final oldFile = File(oldFilePath);
           if (await oldFile.exists()) {
             await oldFile.delete();
           }
-
-          await (database.update(database.images)
-                ..where((t) => t.id.equals(oldImage.id)))
-              .write(ImagesCompanion(imageName: drift.Value(fileName)));
-        } else {
-          await database.into(database.images).insert(ImagesCompanion.insert(
-                imageName: drift.Value(fileName),
-                imageType: drift.Value(dbType),
-                pageId: drift.Value(_selectedPage!.id),
-              ));
         }
+
+        final companion = FlowCompanion(
+          fontName: type == 'font'
+              ? drift.Value(fileName)
+              : const drift.Value.absent(),
+          frontpageName: type == 'frontpage'
+              ? drift.Value(fileName)
+              : const drift.Value.absent(),
+          backgroundName: type == 'background'
+              ? drift.Value(fileName)
+              : const drift.Value.absent(),
+        );
+
+        await (database.update(database.flow)
+              ..where((t) => t.id.equals(_currentFlow!.id)))
+            .write(companion);
+
+        final updatedFlow = await (database.select(database.flow)
+              ..where((t) => t.id.equals(_currentFlow!.id)))
+            .getSingle();
+        _currentFlow = updatedFlow;
 
         final targetPath = p.join(imagesDir.path, fileName);
         await File(originalPath).copy(targetPath);
-
-        // Reload assets
-        await _loadSelectedPageAssets();
+        await _updateFileExistence();
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('${type == 'font' ? '字体' : '素材'}已更新: $fileName')),
+            SnackBar(content: Text('${_getAssetLabel(type)}已更新: $fileName')),
           );
         }
       } catch (e) {
@@ -188,6 +181,19 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
           );
         }
       }
+    }
+  }
+
+  String _getAssetLabel(String type) {
+    switch (type) {
+      case 'font':
+        return '字体';
+      case 'frontpage':
+        return '封面';
+      case 'background':
+        return '背景';
+      default:
+        return '素材';
     }
   }
 
@@ -208,67 +214,26 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
             PageCompanion.insert(
               pageName: drift.Value('第${pages.length + 1}页'),
               flowId: drift.Value(_currentFlow!.id),
-              pagePosition: drift.Value(pages.length),
+              pagePosition: drift.Value(pages.length + 1),
             ),
           );
 
-      setState(() {
-        _selectedPage = newPage;
-        _loadSelectedPageAssets();
-      });
-
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('新页面已添加')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PageManagerPage(
+              event: widget.event,
+              flow: _currentFlow!,
+              page: newPage,
+            ),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('添加失败: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _saveFlowName() async {
-    if (_flowNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入赛程名称')),
-      );
-      return;
-    }
-
-    try {
-      if (_currentFlow == null) {
-        // Create new flow
-        final newFlow = await database.into(database.flow).insertReturning(
-              FlowCompanion.insert(
-                flowName: drift.Value(_flowNameController.text),
-                eventId: drift.Value(widget.event.id),
-              ),
-            );
-        setState(() {
-          _currentFlow = newFlow;
-        });
-      } else {
-        // Update existing flow
-        await (database.update(database.flow)
-              ..where((t) => t.id.equals(_currentFlow!.id)))
-            .write(FlowCompanion(
-          flowName: drift.Value(_flowNameController.text),
-        ));
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('赛程名称已保存')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e')),
         );
       }
     }
@@ -301,8 +266,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Flow Name Input Section
-            _buildSectionTitle('赛程名称 (Flow Name)'),
+            // Flow Info Section
+            _buildSectionTitle('赛程设置 (Flow Settings)'),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -311,13 +276,10 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                     controller: _flowNameController,
                     decoration: InputDecoration(
                       hintText: '例如: 初赛第一场',
+                      labelText: '赛程名称 (Flow Name)',
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade200),
                       ),
@@ -335,32 +297,27 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                         borderRadius: BorderRadius.circular(8)),
                   ),
                   icon: const Icon(Icons.check_rounded, size: 20),
-                  label: const Text('保存名称'),
+                  label: const Text('保存赛程'),
                 ),
               ],
             ),
-
-            const SizedBox(height: 40),
-
-            // Assets Section
-            _buildSectionTitle('素材管理 (Assets Management)'),
             const SizedBox(height: 16),
             Wrap(
               spacing: 20,
               runSpacing: 20,
               children: [
                 _buildUploadBox(
-                    label: '字体 (Font)',
+                    label: '全局字体 (Flow Font)',
                     icon: Icons.font_download_rounded,
                     onTap: () => _pickAndSaveFile('font'),
                     currentFile: _fontFile),
                 _buildUploadBox(
-                    label: '封面 (Front Page)',
+                    label: '全局封面 (Flow Frontpage)',
                     icon: Icons.image_rounded,
                     onTap: () => _pickAndSaveFile('frontpage'),
                     currentFile: _frontpageFile),
                 _buildUploadBox(
-                    label: '背景 (Background)',
+                    label: '全局背景 (Flow Background)',
                     icon: Icons.wallpaper_rounded,
                     onTap: () => _pickAndSaveFile('background'),
                     currentFile: _backgroundFile),
@@ -369,7 +326,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
 
             const SizedBox(height: 40),
 
-            // Pages Section
+            // Pages Selection
             _buildSectionTitle('页面管理 (Page Management)'),
             const SizedBox(height: 16),
             Container(
@@ -392,13 +349,34 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                           .watch(),
                       builder: (context, snapshot) {
                         final pages = snapshot.data ?? [];
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          crossAxisAlignment: WrapCrossAlignment.start,
+                        return Column(
                           children: [
-                            ...pages.map((p) => _buildPageBox(context, p)),
-                            _buildAddPageButton(context),
+                            SizedBox(
+                              height: 130, // Enough for 80x80 box + text
+                              child: ReorderableListView(
+                                scrollDirection: Axis.horizontal,
+                                onReorder: (oldIndex, newIndex) {
+                                  _reorderPages(pages, oldIndex, newIndex);
+                                },
+                                children: [
+                                  ...pages.map((p) =>
+                                      ReorderableDelayedDragStartListener(
+                                        key: ValueKey(p.id),
+                                        index: pages.indexOf(p),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child: _buildPageBox(context, p),
+                                        ),
+                                      )),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: _buildAddPageButton(context),
+                            ),
                           ],
                         );
                       },
@@ -408,6 +386,64 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _reorderPages(
+      List<PageData> pages, int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = pages.removeAt(oldIndex);
+    pages.insert(newIndex, item);
+
+    for (int i = 0; i < pages.length; i++) {
+      await (database.update(database.page)
+            ..where((t) => t.id.equals(pages[i].id)))
+          .write(PageCompanion(pagePosition: drift.Value(i + 1)));
+    }
+  }
+
+  Future<void> _saveFlowName() async {
+    if (_flowNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入赛程名称')),
+      );
+      return;
+    }
+
+    try {
+      if (_currentFlow == null) {
+        final flows = await (database.select(database.flow)
+              ..where((t) => t.eventId.equals(widget.event.id)))
+            .get();
+
+        final newFlow = await database.into(database.flow).insertReturning(
+              FlowCompanion.insert(
+                flowName: drift.Value(_flowNameController.text),
+                eventId: drift.Value(widget.event.id),
+                flowPosition: drift.Value(flows.length + 1),
+              ),
+            );
+        setState(() {
+          _currentFlow = newFlow;
+        });
+      } else {
+        await (database.update(database.flow)
+              ..where((t) => t.id.equals(_currentFlow!.id)))
+            .write(FlowCompanion(
+          flowName: drift.Value(_flowNameController.text),
+        ));
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('赛程信息已保存')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存失败: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildSectionTitle(String title) {
@@ -502,54 +538,178 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   }
 
   Widget _buildPageBox(BuildContext context, PageData page) {
-    final isSelected = _selectedPage?.id == page.id;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedPage = page;
-          _loadSelectedPageAssets();
-        });
+    return GestureDetector(
+      onSecondaryTapDown: (details) {
+        _showPageContextMenu(context, page, details.globalPosition);
       },
-      borderRadius: BorderRadius.circular(12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF6B46C1).withOpacity(0.05)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color:
-                    isSelected ? const Color(0xFF6B46C1) : Colors.grey.shade300,
-                width: isSelected ? 2 : 1,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PageManagerPage(
+                event: widget.event,
+                flow: _currentFlow!,
+                page: page,
               ),
             ),
-            child: Icon(
-              Icons.description_rounded,
-              size: 32,
-              color:
-                  isSelected ? const Color(0xFF6B46C1) : Colors.grey.shade400,
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1,
+                ),
+              ),
+              child: _buildMiniPreview(page),
             ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 80,
+              child: Text(
+                page.pageName ?? '未命名',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPageContextMenu(
+      BuildContext context, PageData page, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx + 1, position.dy + 1),
+      items: [
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.delete_rounded, color: Colors.red, size: 20),
+              SizedBox(width: 8),
+              Text('删除页面', style: TextStyle(color: Colors.red)),
+            ],
           ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: 80,
-            child: Text(
-              page.pageName ?? '未命名',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: isSelected
-                    ? const Color(0xFF6B46C1)
-                    : const Color(0xFF374151),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          onTap: () => _deletePage(page),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _deletePage(PageData page) async {
+    final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('确认删除'),
+              content: Text('确认要删除页面 "${page.pageName}" 吗？'),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消')),
+                TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child:
+                        const Text('删除', style: TextStyle(color: Colors.red))),
+              ],
+            ));
+
+    if (confirmed == true) {
+      try {
+        final allPages = await (database.select(database.page)
+              ..where((t) => t.flowId.equals(_currentFlow!.id))
+              ..orderBy(
+                  [(t) => drift.OrderingTerm(expression: t.pagePosition)]))
+            .get();
+
+        await (database.delete(database.timer)
+              ..where((t) => t.pageId.equals(page.id)))
+            .go();
+        await (database.delete(database.images)
+              ..where((t) => t.pageId.equals(page.id)))
+            .go();
+
+        await (database.delete(database.page)
+              ..where((t) => t.id.equals(page.id)))
+            .go();
+
+        // Renumber
+        int pos = 1;
+        for (final p in allPages) {
+          if (p.id == page.id) continue;
+          await (database.update(database.page)
+                ..where((t) => t.id.equals(p.id)))
+              .write(PageCompanion(pagePosition: drift.Value(pos++)));
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('页面已删除')));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        }
+      }
+    }
+  }
+
+  Widget _buildMiniPreview(PageData page) {
+    if (_imagesDirPath == null || _currentFlow == null) {
+      return const Icon(Icons.description_rounded,
+          size: 32, color: Color(0xFF6B46C1));
+    }
+
+    final imageName =
+        (page.useFrontpage == true && _currentFlow!.frontpageName != null)
+            ? _currentFlow!.frontpageName
+            : _currentFlow!.backgroundName;
+
+    if (imageName == null) {
+      return const Icon(Icons.description_rounded,
+          size: 32, color: Color(0xFF6B46C1));
+    }
+
+    final imagePath = p.join(_imagesDirPath!, imageName);
+    final file = File(imagePath);
+
+    if (!file.existsSync()) {
+      return const Icon(Icons.description_rounded,
+          size: 32, color: Color(0xFF6B46C1));
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(11),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.file(file, fit: BoxFit.cover),
+          Container(color: Colors.black12),
+          Center(
+            child: Icon(
+              page.pageTypeId == 'C'
+                  ? Icons.image_outlined
+                  : Icons.timer_outlined,
+              size: 24,
+              color: Colors.white70,
             ),
           ),
         ],

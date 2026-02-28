@@ -8,22 +8,32 @@ CREATE TABLE event (
     remark TEXT
 );
 
+CREATE TABLE ding_audio (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ding_name VARCHAR NOT NULL
+);
+
 CREATE TABLE timer_template (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    template_name VARCHAR,
+    ding_audio_id INTEGER REFERENCES ding_audio(id)
 );
 
 CREATE TABLE ding_value (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     ding_time TEXT,
     ding_amount INTEGER,
-    timer_template_id INTEGER
+    timer_template_id INTEGER REFERENCES timer_template(id)
 );
 
 CREATE TABLE flow (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     flow_name VARCHAR,
-    event_id INTEGER
+    font_name VARCHAR,
+    frontpage_name VARCHAR,
+    background_name VARCHAR,
+    event_id INTEGER,
+    flow_position INTEGER
 );
 
 CREATE TABLE images (
@@ -37,19 +47,31 @@ CREATE TABLE images (
 
 CREATE TABLE timer (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    timer_template_id INTEGER,
+    timer_template_id INTEGER REFERENCES timer_template(id),
     start_time TEXT,
-    page_id INTEGER
+    timer_type VARCHAR, -- single, doubleL, doubleR
+    page_id INTEGER REFERENCES page(id),
+    xpos DOUBLE DEFAULT 0.0,
+    ypos DOUBLE DEFAULT 0.0,
+    scale DOUBLE DEFAULT 1.0
+);
+
+CREATE TABLE bgm (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    bgm_name VARCHAR NOT NULL
 );
 
 CREATE TABLE page (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     page_name VARCHAR,
     section_name VARCHAR,
-    font_name VARCHAR,
-    bgm_name VARCHAR,
+    bgm_id INTEGER REFERENCES bgm(id),
     page_type_id VARCHAR,
     hotkey_value VARCHAR, -- only available for bonuses pages
     flow_id INTEGER,
-    page_position INTEGER
+    page_position INTEGER,
+    section_xpos DOUBLE DEFAULT 0.0,
+    section_ypos DOUBLE DEFAULT 0.0,
+    section_scale DOUBLE DEFAULT 1.0,
+    use_frontpage BOOLEAN DEFAULT FALSE
 );

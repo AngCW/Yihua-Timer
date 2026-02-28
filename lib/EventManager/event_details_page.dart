@@ -5,21 +5,27 @@ import '../FlowManager/flow_manager_page.dart';
 import '../main.dart';
 import 'package:drift/drift.dart' as drift;
 
-class EventDetailsPage extends StatelessWidget {
+class EventDetailsPage extends StatefulWidget {
   final EventData event;
 
   const EventDetailsPage({super.key, required this.event});
 
   @override
+  State<EventDetailsPage> createState() => _EventDetailsPageState();
+}
+
+class _EventDetailsPageState extends State<EventDetailsPage> {
+  @override
   Widget build(BuildContext context) {
-    final dateRange = (event.startDate != null && event.endDate != null)
-        ? '${DateFormat('yyyy-MM-dd').format(event.startDate!)} ~ ${DateFormat('yyyy-MM-dd').format(event.endDate!)}'
+    final dateRange = (widget.event.startDate != null &&
+            widget.event.endDate != null)
+        ? '${DateFormat('yyyy-MM-dd').format(widget.event.startDate!)} ~ ${DateFormat('yyyy-MM-dd').format(widget.event.endDate!)}'
         : '未设置日期';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: Text(event.eventName),
+        title: Text(widget.event.eventName),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF111827),
@@ -42,15 +48,15 @@ class EventDetailsPage extends StatelessWidget {
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   children: [
-                    _buildInfoRow('赛事名称', event.eventName),
+                    _buildInfoRow('赛事名称', widget.event.eventName),
                     _buildDivider(),
-                    _buildInfoRow('赛制简介', event.eventDesc ?? '无'),
+                    _buildInfoRow('赛制简介', widget.event.eventDesc ?? '无'),
                     _buildDivider(),
                     _buildInfoRow('赛事日期', dateRange),
                     _buildDivider(),
-                    _buildInfoRow('参赛队数量', '${event.teamNum ?? 0}'),
+                    _buildInfoRow('参赛队数量', '${widget.event.teamNum ?? 0}'),
                     _buildDivider(),
-                    _buildInfoRow('备注', event.remark ?? '无'),
+                    _buildInfoRow('备注', widget.event.remark ?? '无'),
                   ],
                 ),
               ),
@@ -78,17 +84,40 @@ class EventDetailsPage extends StatelessWidget {
               ),
               child: StreamBuilder<List<FlowData>>(
                 stream: (database.select(database.flow)
-                      ..where((t) => t.eventId.equals(event.id)))
+                      ..where((t) => t.eventId.equals(widget.event.id))
+                      ..orderBy([
+                        (t) => drift.OrderingTerm(expression: t.flowPosition)
+                      ]))
                     .watch(),
                 builder: (context, snapshot) {
                   final flows = snapshot.data ?? [];
-                  return Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    crossAxisAlignment: WrapCrossAlignment.start,
+                  return Column(
                     children: [
-                      ...flows.map((flow) => _buildFlowBox(context, flow)),
-                      _buildAddFlowButton(context),
+                      SizedBox(
+                        height: 130,
+                        child: ReorderableListView(
+                          scrollDirection: Axis.horizontal,
+                          onReorder: (oldIndex, newIndex) {
+                            _reorderFlows(flows, oldIndex, newIndex);
+                          },
+                          children: [
+                            ...flows.map((flow) =>
+                                ReorderableDelayedDragStartListener(
+                                  key: ValueKey(flow.id),
+                                  index: flows.indexOf(flow),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 16.0),
+                                    child: _buildFlowBox(context, flow),
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: _buildAddFlowButton(context),
+                      ),
                     ],
                   );
                 },
@@ -98,6 +127,19 @@ class EventDetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _reorderFlows(
+      List<FlowData> flows, int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = flows.removeAt(oldIndex);
+    flows.insert(newIndex, item);
+
+    for (int i = 0; i < flows.length; i++) {
+      await (database.update(database.flow)
+            ..where((t) => t.id.equals(flows[i].id)))
+          .write(FlowCompanion(flowPosition: drift.Value(i + 1)));
+    }
   }
 
   Widget _buildSectionTitle(String title) {
@@ -149,71 +191,168 @@ class EventDetailsPage extends StatelessWidget {
   }
 
   Widget _buildFlowBox(BuildContext context, FlowData flow) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                FlowManagerPage(event: event, initialFlow: flow),
-          ),
-        );
+    return GestureDetector(
+      onSecondaryTapDown: (details) {
+        _showFlowContextMenu(context, flow, details.globalPosition);
       },
-      borderRadius: BorderRadius.circular(12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF6B46C1).withOpacity(0.3),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6B46C1).withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  FlowManagerPage(event: widget.event, initialFlow: flow),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF6B46C1).withOpacity(0.3),
+                  width: 1,
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.alt_route_rounded,
-              size: 32,
-              color: Color(0xFF6B46C1),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: 80,
-            child: Text(
-              flow.flowName ?? '未命名',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF374151),
-                fontWeight: FontWeight.w500,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6B46C1).withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              child: const Icon(
+                Icons.alt_route_rounded,
+                size: 32,
+                color: Color(0xFF6B46C1),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 80,
+              child: Text(
+                flow.flowName ?? '未命名',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _showFlowContextMenu(
+      BuildContext context, FlowData flow, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx + 1, position.dy + 1),
+      items: [
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.delete_rounded, color: Colors.red, size: 20),
+              SizedBox(width: 8),
+              Text('删除赛程', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+          onTap: () => _deleteFlow(flow),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _deleteFlow(FlowData flow) async {
+    final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('确认删除'),
+              content: Text('确认要删除赛程 "${flow.flowName}" 吗？此操作将删除该赛程下的所有页面和数据。'),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消')),
+                TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('确认删除',
+                        style: TextStyle(color: Colors.red))),
+              ],
+            ));
+
+    if (confirmed == true) {
+      try {
+        // Renumber others
+        final allFlows = await (database.select(database.flow)
+              ..where((t) => t.eventId.equals(widget.event.id))
+              ..orderBy(
+                  [(t) => drift.OrderingTerm(expression: t.flowPosition)]))
+            .get();
+
+        final flowPages = await (database.select(database.page)
+              ..where((t) => t.flowId.equals(flow.id)))
+            .get();
+        for (final p in flowPages) {
+          await (database.delete(database.timer)
+                ..where((t) => t.pageId.equals(p.id)))
+              .go();
+          await (database.delete(database.images)
+                ..where((t) => t.pageId.equals(p.id)))
+              .go();
+          await (database.delete(database.page)
+                ..where((t) => t.id.equals(p.id)))
+              .go();
+        }
+
+        await (database.delete(database.flow)
+              ..where((t) => t.id.equals(flow.id)))
+            .go();
+
+        int pos = 1;
+        for (final f in allFlows) {
+          if (f.id == flow.id) continue;
+          await (database.update(database.flow)
+                ..where((t) => t.id.equals(f.id)))
+              .write(FlowCompanion(flowPosition: drift.Value(pos++)));
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('赛程已删除')));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        }
+      }
+    }
   }
 
   Widget _buildAddFlowButton(BuildContext context) {
     return InkWell(
       onTap: () async {
+        final flows = await (database.select(database.flow)
+              ..where((t) => t.eventId.equals(widget.event.id)))
+            .get();
+
         final newFlow = await database.into(database.flow).insertReturning(
               FlowCompanion.insert(
                 flowName: const drift.Value('未命名'),
-                eventId: drift.Value(event.id),
+                eventId: drift.Value(widget.event.id),
+                flowPosition: drift.Value(flows.length + 1),
               ),
             );
 
@@ -222,7 +361,7 @@ class EventDetailsPage extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  FlowManagerPage(event: event, initialFlow: newFlow),
+                  FlowManagerPage(event: widget.event, initialFlow: newFlow),
             ),
           );
         }
