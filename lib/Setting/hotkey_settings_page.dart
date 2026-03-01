@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'hotkey_binding_model.dart';
 
 class HotkeySettingsPage extends StatefulWidget {
@@ -18,6 +20,23 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
   void initState() {
     super.initState();
     _hotkeySettings = HotkeySettings.defaultSettings();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('hotkey_settings');
+    if (jsonString != null) {
+      setState(() {
+        _hotkeySettings = HotkeySettings.fromJson(jsonDecode(jsonString));
+      });
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        'hotkey_settings', jsonEncode(_hotkeySettings.toJson()));
   }
 
   @override
@@ -42,82 +61,93 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-                  // General Controls Section
-                  _buildSectionCard(
-                    title: '通用控制',
-                    children: [
-                      _buildHotkeyRow(
-                        binding: _hotkeySettings.previousPage,
-                        icon: Icons.arrow_back,
-                      ),
-                      const Divider(height: 32),
-                      _buildHotkeyRow(
-                        binding: _hotkeySettings.nextPage,
-                        icon: Icons.arrow_forward,
-                      ),
-                      const Divider(height: 32),
-                      _buildHotkeyRow(
-                        binding: _hotkeySettings.specialPage,
-                        customText: '可在各自的flow另外调',
-                      ),
-                    ],
+          // General Controls Section
+          _buildSectionCard(
+            title: '通用控制',
+            children: [
+              _buildHotkeyRow(
+                binding: _hotkeySettings.previousPage,
+                icon: Icons.arrow_back,
+              ),
+              const Divider(height: 32),
+              _buildHotkeyRow(
+                binding: _hotkeySettings.nextPage,
+                icon: Icons.arrow_forward,
+              ),
+              const Divider(height: 32),
+              _buildHotkeyRow(
+                binding: _hotkeySettings.specialPage,
+                customText: '可在各自的flow另外调',
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Page A1 Section
+          _buildSectionCard(
+            title: '页面 A1',
+            children: [
+              _buildHotkeyRow(
+                binding: _hotkeySettings.pageA1StartStop,
+              ),
+              const Divider(height: 32),
+              _buildHotkeyRow(
+                binding: _hotkeySettings.pageA1Reset,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Page A2 Section
+          _buildSectionCard(
+            title: '页面 A2',
+            children: [
+              // Left Timer
+              _buildSubSection(
+                title: '左边 Timer',
+                children: [
+                  _buildHotkeyRow(
+                    binding: _hotkeySettings.pageA2LeftStartStop,
                   ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Page A1 Section
-                  _buildSectionCard(
-                    title: '页面 A1',
-                    children: [
-                      _buildHotkeyRow(
-                        binding: _hotkeySettings.pageA1StartStop,
-                      ),
-                      const Divider(height: 32),
-                      _buildHotkeyRow(
-                        binding: _hotkeySettings.pageA1Reset,
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Page A2 Section
-                  _buildSectionCard(
-                    title: '页面 A2',
-                    children: [
-                      // Left Timer
-                      _buildSubSection(
-                        title: '左边 Timer',
-                        children: [
-                          _buildHotkeyRow(
-                            binding: _hotkeySettings.pageA2LeftStartStop,
-                          ),
-                          const Divider(height: 32),
-                          _buildHotkeyRow(
-                            binding: _hotkeySettings.pageA2LeftReset,
-                          ),
-                        ],
-                      ),
-                      
-                      const Divider(height: 24),
-                      
-                      // Right Timer
-                      _buildSubSection(
-                        title: '右边 Timer',
-                        children: [
-                          _buildHotkeyRow(
-                            binding: _hotkeySettings.pageA2RightStartStop,
-                          ),
-                          const Divider(height: 32),
-                          _buildHotkeyRow(
-                            binding: _hotkeySettings.pageA2RightReset,
-                          ),
-                        ],
-                      ),
-                    ],
+                  const Divider(height: 32),
+                  _buildHotkeyRow(
+                    binding: _hotkeySettings.pageA2LeftReset,
                   ),
                 ],
               ),
+
+              const Divider(height: 24),
+
+              // Right Timer
+              _buildSubSection(
+                title: '右边 Timer',
+                children: [
+                  _buildHotkeyRow(
+                    binding: _hotkeySettings.pageA2RightStartStop,
+                  ),
+                  const Divider(height: 32),
+                  _buildHotkeyRow(
+                    binding: _hotkeySettings.pageA2RightReset,
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+
+              // Swap Timer
+              _buildSubSection(
+                title: '两端控制',
+                children: [
+                  _buildHotkeyRow(
+                    binding: _hotkeySettings.pageA2Swap,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -182,7 +212,7 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
     String? customText,
   }) {
     final isEditing = _editingBindingId == binding.id;
-    
+
     return Row(
       children: [
         Expanded(
@@ -211,14 +241,13 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
             width: 80,
             height: 40,
             decoration: BoxDecoration(
-              color: isEditing 
+              color: isEditing
                   ? const Color(0xFF6B46C1).withOpacity(0.1)
                   : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isEditing 
-                    ? const Color(0xFF6B46C1)
-                    : Colors.grey.shade300,
+                color:
+                    isEditing ? const Color(0xFF6B46C1) : Colors.grey.shade300,
                 width: isEditing ? 2 : 1,
               ),
             ),
@@ -291,18 +320,18 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
     if (key == LogicalKeyboardKey.arrowRight) return '→';
     if (key == LogicalKeyboardKey.arrowUp) return '↑';
     if (key == LogicalKeyboardKey.arrowDown) return '↓';
-    
+
     // Get the key label, removing "Key" prefix
     final keyLabel = key.keyLabel;
     if (keyLabel.length == 1) {
       return keyLabel.toUpperCase();
     }
-    
+
     // Handle special keys
     if (keyLabel.startsWith('Key')) {
       return keyLabel.substring(3);
     }
-    
+
     return keyLabel.length <= 2 ? keyLabel.toUpperCase() : null;
   }
 
@@ -322,7 +351,8 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
         );
       } else if (id == _hotkeySettings.pageA1StartStop.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
-          pageA1StartStop: _hotkeySettings.pageA1StartStop.copyWith(key: newKey),
+          pageA1StartStop:
+              _hotkeySettings.pageA1StartStop.copyWith(key: newKey),
         );
       } else if (id == _hotkeySettings.pageA1Reset.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
@@ -330,22 +360,31 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
         );
       } else if (id == _hotkeySettings.pageA2LeftStartStop.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
-          pageA2LeftStartStop: _hotkeySettings.pageA2LeftStartStop.copyWith(key: newKey),
+          pageA2LeftStartStop:
+              _hotkeySettings.pageA2LeftStartStop.copyWith(key: newKey),
         );
       } else if (id == _hotkeySettings.pageA2LeftReset.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
-          pageA2LeftReset: _hotkeySettings.pageA2LeftReset.copyWith(key: newKey),
+          pageA2LeftReset:
+              _hotkeySettings.pageA2LeftReset.copyWith(key: newKey),
         );
       } else if (id == _hotkeySettings.pageA2RightStartStop.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
-          pageA2RightStartStop: _hotkeySettings.pageA2RightStartStop.copyWith(key: newKey),
+          pageA2RightStartStop:
+              _hotkeySettings.pageA2RightStartStop.copyWith(key: newKey),
         );
       } else if (id == _hotkeySettings.pageA2RightReset.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
-          pageA2RightReset: _hotkeySettings.pageA2RightReset.copyWith(key: newKey),
+          pageA2RightReset:
+              _hotkeySettings.pageA2RightReset.copyWith(key: newKey),
+        );
+      } else if (id == _hotkeySettings.pageA2Swap.id) {
+        _hotkeySettings = _hotkeySettings.copyWith(
+          pageA2Swap: _hotkeySettings.pageA2Swap.copyWith(key: newKey),
         );
       }
     });
+
+    _saveSettings();
   }
 }
-

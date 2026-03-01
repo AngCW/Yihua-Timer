@@ -9,6 +9,20 @@ class HotkeyBinding {
     required this.key,
   });
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'key': key,
+      };
+
+  factory HotkeyBinding.fromJson(Map<String, dynamic> json) {
+    return HotkeyBinding(
+      id: json['id'],
+      label: json['label'],
+      key: json['key'],
+    );
+  }
+
   HotkeyBinding copyWith({String? key}) {
     return HotkeyBinding(
       id: id,
@@ -36,6 +50,9 @@ class HotkeySettings {
   final HotkeyBinding pageA2RightStartStop;
   final HotkeyBinding pageA2RightReset;
 
+  // Page A2 - Common
+  final HotkeyBinding pageA2Swap;
+
   HotkeySettings({
     required this.previousPage,
     required this.nextPage,
@@ -46,6 +63,7 @@ class HotkeySettings {
     required this.pageA2LeftReset,
     required this.pageA2RightStartStop,
     required this.pageA2RightReset,
+    required this.pageA2Swap,
   });
 
   factory HotkeySettings.defaultSettings() {
@@ -95,6 +113,43 @@ class HotkeySettings {
         label: '重置计时:',
         key: 'D',
       ),
+      pageA2Swap: HotkeyBinding(
+        id: 'page_a2_swap',
+        label: '开始一端并停止另一端:',
+        key: 'SPACE',
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'previousPage': previousPage.toJson(),
+        'nextPage': nextPage.toJson(),
+        'specialPage': specialPage.toJson(),
+        'pageA1StartStop': pageA1StartStop.toJson(),
+        'pageA1Reset': pageA1Reset.toJson(),
+        'pageA2LeftStartStop': pageA2LeftStartStop.toJson(),
+        'pageA2LeftReset': pageA2LeftReset.toJson(),
+        'pageA2RightStartStop': pageA2RightStartStop.toJson(),
+        'pageA2RightReset': pageA2RightReset.toJson(),
+        'pageA2Swap': pageA2Swap.toJson(),
+      };
+
+  factory HotkeySettings.fromJson(Map<String, dynamic> json) {
+    return HotkeySettings(
+      previousPage: HotkeyBinding.fromJson(json['previousPage']),
+      nextPage: HotkeyBinding.fromJson(json['nextPage']),
+      specialPage: HotkeyBinding.fromJson(json['specialPage']),
+      pageA1StartStop: HotkeyBinding.fromJson(json['pageA1StartStop']),
+      pageA1Reset: HotkeyBinding.fromJson(json['pageA1Reset']),
+      pageA2LeftStartStop: HotkeyBinding.fromJson(json['pageA2LeftStartStop']),
+      pageA2LeftReset: HotkeyBinding.fromJson(json['pageA2LeftReset']),
+      pageA2RightStartStop:
+          HotkeyBinding.fromJson(json['pageA2RightStartStop']),
+      pageA2RightReset: HotkeyBinding.fromJson(json['pageA2RightReset']),
+      pageA2Swap: json['pageA2Swap'] != null
+          ? HotkeyBinding.fromJson(json['pageA2Swap'])
+          : HotkeyBinding(
+              id: 'page_a2_swap', label: '开始一端并停止另一端:', key: 'SPACE'),
     );
   }
 
@@ -108,6 +163,7 @@ class HotkeySettings {
     HotkeyBinding? pageA2LeftReset,
     HotkeyBinding? pageA2RightStartStop,
     HotkeyBinding? pageA2RightReset,
+    HotkeyBinding? pageA2Swap,
   }) {
     return HotkeySettings(
       previousPage: previousPage ?? this.previousPage,
@@ -119,12 +175,31 @@ class HotkeySettings {
       pageA2LeftReset: pageA2LeftReset ?? this.pageA2LeftReset,
       pageA2RightStartStop: pageA2RightStartStop ?? this.pageA2RightStartStop,
       pageA2RightReset: pageA2RightReset ?? this.pageA2RightReset,
+      pageA2Swap: pageA2Swap ?? this.pageA2Swap,
     );
   }
 
   void updateBinding(String id, String newKey) {
-    // This method would be used to update a specific binding
-    // Implementation depends on how you want to handle updates
+    if (previousPage.id == id) {
+      previousPage.key = newKey;
+    } else if (nextPage.id == id) {
+      nextPage.key = newKey;
+    } else if (specialPage.id == id) {
+      specialPage.key = newKey;
+    } else if (pageA1StartStop.id == id) {
+      pageA1StartStop.key = newKey;
+    } else if (pageA1Reset.id == id) {
+      pageA1Reset.key = newKey;
+    } else if (pageA2LeftStartStop.id == id) {
+      pageA2LeftStartStop.key = newKey;
+    } else if (pageA2LeftReset.id == id) {
+      pageA2LeftReset.key = newKey;
+    } else if (pageA2RightStartStop.id == id) {
+      pageA2RightStartStop.key = newKey;
+    } else if (pageA2RightReset.id == id) {
+      pageA2RightReset.key = newKey;
+    } else if (pageA2Swap.id == id) {
+      pageA2Swap.key = newKey;
+    }
   }
 }
-

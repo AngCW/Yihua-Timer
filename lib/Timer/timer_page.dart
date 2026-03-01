@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../database/app_database.dart';
+import '../main.dart';
+import 'timer_event_detail_page.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -8,9 +11,7 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
-  final testGrid = List.generate(15, (index) => index + 1);
-
-  Widget _buildEventCard(int index) {
+  Widget _buildEventCard(EventData event) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -29,7 +30,12 @@ class _TimerPageState extends State<TimerPage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            print("$index grid clicked");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TimerEventDetailPage(event: event),
+              ),
+            );
           },
           hoverColor: Colors.blue.withOpacity(0.05),
           splashColor: Colors.blue.withOpacity(0.1),
@@ -66,13 +72,15 @@ class _TimerPageState extends State<TimerPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "赛事 $index",
+                      event.eventName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1F2937),
                         letterSpacing: -0.5,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -84,7 +92,9 @@ class _TimerPageState extends State<TimerPage> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          "27/02/2022 13:00",
+                          event.startDate != null
+                              ? "${event.startDate!.day}/${event.startDate!.month}/${event.startDate!.year}"
+                              : "未设置日期",
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade500,
@@ -137,23 +147,34 @@ class _TimerPageState extends State<TimerPage> {
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 300,
-                mainAxisExtent: 180,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (content, index) {
-                  final tempGrid = testGrid[index];
-                  return _buildEventCard(tempGrid);
-                },
-                childCount: testGrid.length,
-              ),
-            ),
+          StreamBuilder<List<EventData>>(
+            stream: database.select(database.event).watch(),
+            builder: (context, snapshot) {
+              final events = snapshot.data ?? [];
+              if (events.isEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(child: Text('暂无赛事，请先在赛事管理中创建')),
+                );
+              }
+              return SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 300,
+                    mainAxisExtent: 180,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (content, index) {
+                      return _buildEventCard(events[index]);
+                    },
+                    childCount: events.length,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

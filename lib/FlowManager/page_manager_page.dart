@@ -66,22 +66,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
   String? _fontPath;
   String? _fontFamily;
 
-  // Layout State
-  double _sectionX = 0;
-  double _sectionY = -300; // Default top-ish
-  double _sectionScale = 1.0;
-
-  double _timerX = 0;
-  double _timerY = 0;
-  double _timerScale = 1.0;
-
-  double _timerLeftX = -300;
-  double _timerLeftY = 0;
-  double _timerLeftScale = 1.0;
-
-  double _timerRightX = 300;
-  double _timerRightY = 0;
-  double _timerRightScale = 1.0;
   bool _useFrontpage = false;
 
   async.StreamSubscription? _flowSub;
@@ -94,10 +78,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _sectionNameController.text = _currentPage.sectionName ?? '';
     _selectedBgmId = _currentPage.bgmId;
     _selectedPageType = _currentPage.pageTypeId;
-
-    _sectionX = _currentPage.sectionXpos ?? 0;
-    _sectionY = _currentPage.sectionYpos ?? -300;
-    _sectionScale = _currentPage.sectionScale ?? 1.0;
     _useFrontpage = _currentPage.useFrontpage ?? false;
 
     _loadData();
@@ -287,10 +267,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
             final m = int.tryParse(parts[0]) ?? 0;
             final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
             _previewSeconds = m * 60 + s;
-
-            _timerX = timer.xpos ?? 0;
-            _timerY = timer.ypos ?? 0;
-            _timerScale = timer.scale ?? 1.0;
           } else if (timer.timerType == 'doubleL') {
             _leftTemplateId = timer.timerTemplateId;
             final parts = (timer.startTime ?? '0:0').split(':');
@@ -300,10 +276,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
             final m = int.tryParse(parts[0]) ?? 0;
             final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
             _previewSecLeft = m * 60 + s;
-
-            _timerLeftX = timer.xpos ?? -300;
-            _timerLeftY = timer.ypos ?? 0;
-            _timerLeftScale = timer.scale ?? 1.0;
           } else if (timer.timerType == 'doubleR') {
             _rightTemplateId = timer.timerTemplateId;
             final parts = (timer.startTime ?? '0:1').split(':');
@@ -313,10 +285,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
             final m = int.tryParse(parts[0]) ?? 0;
             final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
             _previewSecRight = m * 60 + s;
-
-            _timerRightX = timer.xpos ?? 300;
-            _timerRightY = timer.ypos ?? 0;
-            _timerRightScale = timer.scale ?? 1.0;
           }
         }
         _isLoading = false;
@@ -590,15 +558,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
             .write(TimerCompanion(
           timerTemplateId: drift.Value(templateId),
           startTime: drift.Value(startTime),
-          xpos: drift.Value(type == 'single'
-              ? _timerX
-              : (type == 'doubleL' ? _timerLeftX : _timerRightX)),
-          ypos: drift.Value(type == 'single'
-              ? _timerY
-              : (type == 'doubleL' ? _timerLeftY : _timerRightY)),
-          scale: drift.Value(type == 'single'
-              ? _timerScale
-              : (type == 'doubleL' ? _timerLeftScale : _timerRightScale)),
         ));
       } else {
         await database.into(database.timer).insert(TimerCompanion.insert(
@@ -606,15 +565,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
               startTime: drift.Value(startTime),
               timerType: drift.Value(type),
               pageId: drift.Value(_currentPage.id),
-              xpos: drift.Value(type == 'single'
-                  ? _timerX
-                  : (type == 'doubleL' ? _timerLeftX : _timerRightX)),
-              ypos: drift.Value(type == 'single'
-                  ? _timerY
-                  : (type == 'doubleL' ? _timerLeftY : _timerRightY)),
-              scale: drift.Value(type == 'single'
-                  ? _timerScale
-                  : (type == 'doubleL' ? _timerLeftScale : _timerRightScale)),
             ));
       }
 
@@ -677,9 +627,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
         sectionName: drift.Value(_sectionNameController.text.trim()),
         bgmId: drift.Value(_selectedBgmId),
         pageTypeId: drift.Value(_selectedPageType),
-        sectionXpos: drift.Value(_sectionX),
-        sectionYpos: drift.Value(_sectionY),
-        sectionScale: drift.Value(_sectionScale),
         useFrontpage: drift.Value(_useFrontpage),
       ));
       final updated = await (database.select(database.page)
@@ -952,26 +899,22 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                       if (_selectedPageType != 'C')
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              vertical: 80, horizontal: 100),
+                                              vertical: 100, horizontal: 100),
                                           child: Stack(
                                             children: [
                                               // Section Name
-                                              _buildLayoutItem(
-                                                x: _sectionX,
-                                                y: _sectionY,
-                                                scale: _sectionScale,
-                                                onTranslate: (nx, ny) =>
-                                                    setState(() {
-                                                  _sectionX = nx;
-                                                  _sectionY = ny;
-                                                }),
-                                                onScale: (s) => setState(() {
-                                                  _sectionScale = s;
-                                                }),
+                                              Align(
+                                                alignment:
+                                                    _selectedPageType == 'B'
+                                                        ? Alignment.center
+                                                        : Alignment.topCenter,
                                                 child: Text(
                                                   _sectionNameController
                                                           .text.isEmpty
-                                                      ? '环节名称预览'
+                                                      ? (_selectedPageType ==
+                                                              'B'
+                                                          ? '中间环节名称预览'
+                                                          : '环节名称预览')
                                                       : _sectionNameController
                                                           .text,
                                                   textAlign: TextAlign.center,
@@ -994,18 +937,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
                                               // Timer A1
                                               if (_selectedPageType == 'A1')
-                                                _buildLayoutItem(
-                                                  x: _timerX,
-                                                  y: _timerY,
-                                                  scale: _timerScale,
-                                                  onTranslate: (nx, ny) =>
-                                                      setState(() {
-                                                    _timerX = nx;
-                                                    _timerY = ny;
-                                                  }),
-                                                  onScale: (s) => setState(() {
-                                                    _timerScale = s;
-                                                  }),
+                                                Align(
+                                                  alignment: Alignment.center,
                                                   child:
                                                       _buildPreviewTimerWidget(
                                                     time: _previewSeconds,
@@ -1025,69 +958,49 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                 ),
 
                                               // Timer A2
-                                              if (_selectedPageType ==
-                                                  'A2') ...[
-                                                _buildLayoutItem(
-                                                  x: _timerLeftX,
-                                                  y: _timerLeftY,
-                                                  scale: _timerLeftScale,
-                                                  onTranslate: (nx, ny) =>
-                                                      setState(() {
-                                                    _timerLeftX = nx;
-                                                    _timerLeftY = ny;
-                                                  }),
-                                                  onScale: (s) => setState(() {
-                                                    _timerLeftScale = s;
-                                                  }),
-                                                  child:
+                                              if (_selectedPageType == 'A2')
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
                                                       _buildPreviewTimerWidget(
-                                                    time: _previewSecLeft,
-                                                    isRunning:
-                                                        _isPreviewRunningLeft,
-                                                    onToggle:
-                                                        _togglePreviewTimerLeft,
-                                                    onReset: () {
-                                                      _previewTimerLeft
-                                                          ?.cancel();
-                                                      _updatePreviewSeconds();
-                                                      setState(() {
-                                                        _isPreviewRunningLeft =
-                                                            false;
-                                                      });
-                                                    },
+                                                        time: _previewSecLeft,
+                                                        isRunning:
+                                                            _isPreviewRunningLeft,
+                                                        onToggle:
+                                                            _togglePreviewTimerLeft,
+                                                        onReset: () {
+                                                          _previewTimerLeft
+                                                              ?.cancel();
+                                                          _updatePreviewSeconds();
+                                                          setState(() {
+                                                            _isPreviewRunningLeft =
+                                                                false;
+                                                          });
+                                                        },
+                                                      ),
+                                                      _buildPreviewTimerWidget(
+                                                        time: _previewSecRight,
+                                                        isRunning:
+                                                            _isPreviewRunningRight,
+                                                        onToggle:
+                                                            _togglePreviewTimerRight,
+                                                        onReset: () {
+                                                          _previewTimerRight
+                                                              ?.cancel();
+                                                          _updatePreviewSeconds();
+                                                          setState(() {
+                                                            _isPreviewRunningRight =
+                                                                false;
+                                                          });
+                                                        },
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                                _buildLayoutItem(
-                                                  x: _timerRightX,
-                                                  y: _timerRightY,
-                                                  scale: _timerRightScale,
-                                                  onTranslate: (nx, ny) =>
-                                                      setState(() {
-                                                    _timerRightX = nx;
-                                                    _timerRightY = ny;
-                                                  }),
-                                                  onScale: (s) => setState(() {
-                                                    _timerRightScale = s;
-                                                  }),
-                                                  child:
-                                                      _buildPreviewTimerWidget(
-                                                    time: _previewSecRight,
-                                                    isRunning:
-                                                        _isPreviewRunningRight,
-                                                    onToggle:
-                                                        _togglePreviewTimerRight,
-                                                    onReset: () {
-                                                      _previewTimerRight
-                                                          ?.cancel();
-                                                      _updatePreviewSeconds();
-                                                      setState(() {
-                                                        _isPreviewRunningRight =
-                                                            false;
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
                                             ],
                                           ),
                                         ),
@@ -1117,38 +1030,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLayoutItem({
-    required double x,
-    required double y,
-    required double scale,
-    required Function(double, double) onTranslate,
-    required Function(double) onScale,
-    required Widget child,
-  }) {
-    return Positioned(
-      left: x,
-      top: y,
-      child: GestureDetector(
-        onScaleUpdate: (details) {
-          if (details.scale != 1.0) {
-            onScale(scale * details.scale);
-          }
-          if (details.focalPointDelta != Offset.zero) {
-            onTranslate(
-                x + details.focalPointDelta.dx, y + details.focalPointDelta.dy);
-          }
-        },
-        child: MouseRegion(
-          cursor: SystemMouseCursors.move,
-          child: Transform.scale(
-            scale: scale,
-            child: child,
-          ),
         ),
       ),
     );
