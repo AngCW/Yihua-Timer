@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import '../EventManager/event_manager_page.dart';
 
 class PageConfigDialog extends StatefulWidget {
   final String pageName;
@@ -73,6 +74,7 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
   String? _bgmPath;
   int _previewSecA = 0;
   int _previewSecB = 0;
+  String _timerCount = '两个'; // 无, 一个, 两个
 
   @override
   void initState() {
@@ -182,7 +184,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 FilledButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    // Close the dialog first
                     Navigator.of(context).pop({
                       'pageName': _pageNameController.text,
                       'pageType': _pageTypeController.text.toUpperCase(),
@@ -193,6 +196,34 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                       'timerBStartTime': '${_timerBMinController.text}:${_timerBSecController.text}',
                       'bgmPath': _bgmPath,
                     });
+                    
+                    // Show success message
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('保存成功'),
+                          backgroundColor: Color(0xFF6B46C1),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      
+                      // Wait a bit for the message to be visible, then navigate
+                      await Future.delayed(const Duration(milliseconds: 500));
+                      
+                      // Pop all dialogs and routes until we reach the dashboard
+                      if (context.mounted) {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        
+                        // Navigate to EventManagerPage (已保存赛事)
+                        if (context.mounted) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const EventManagerPage(),
+                            ),
+                          );
+                        }
+                      }
+                    }
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF6B46C1),
@@ -228,13 +259,22 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   _buildTextField(_sectionNameController, '例如: 正方三辩 反方三辩 对辩环节'),
                   const SizedBox(height: 24),
 
-                  // Timer A (左边)
-                  _buildTimerBox('计时器A (左边)', true),
+                  // Timer Count Toggle
+                  _buildLabel('计时器:'),
+                  const SizedBox(height: 8),
+                  _buildTimerCountSelector(),
                   const SizedBox(height: 24),
 
-                  // Timer B (右边)
-                  _buildTimerBox('计时器B (右边)', false),
-                  const SizedBox(height: 24),
+                  // Timer - show based on selection
+                  if (_timerCount == '一个') ...[
+                    _buildTimerBox('计时器(中间)', true),
+                    const SizedBox(height: 24),
+                  ] else if (_timerCount == '两个') ...[
+                    _buildTimerBox('计时器A (左边)', true),
+                    const SizedBox(height: 24),
+                    _buildTimerBox('计时器B (右边)', false),
+                    const SizedBox(height: 24),
+                  ],
 
                   // Background Music
                   _buildLabel('背景音乐:'),
@@ -292,6 +332,47 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
     );
   }
 
+  Widget _buildTimerCountSelector() {
+    return Row(
+      children: [
+        _buildTimerCountOption('无'),
+        const SizedBox(width: 12),
+        _buildTimerCountOption('一个'),
+        const SizedBox(width: 12),
+        _buildTimerCountOption('两个'),
+      ],
+    );
+  }
+
+  Widget _buildTimerCountOption(String value) {
+    final isSelected = _timerCount == value;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _timerCount = value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF6B46C1) : Colors.white,
+            border: Border.all(
+              color: isSelected ? const Color(0xFF6B46C1) : Colors.grey.shade300,
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF111827),
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildTimerBox(String title, bool isTimerA) {
     final minController = isTimerA ? _timerAMinController : _timerBMinController;
@@ -482,8 +563,25 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
               ),
             ),
 
-          // Timer A (if A1 or A2) - left side
-          if (pageType == 'A1' || pageType == 'A2')
+          // Timer A - center if 一个, left if 两个
+          if (_timerCount == '一个')
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 100),
+                child: Text(
+                  _formatTime(_previewSecA),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 56,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+          // Timer A - left side (if 两个)
+          if (_timerCount == '两个')
             Positioned(
               left: 80,
               bottom: 100,
@@ -497,8 +595,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
               ),
             ),
 
-          // Timer B (if A2) - right side
-          if (pageType == 'A2')
+          // Timer B - right side (if 两个)
+          if (_timerCount == '两个')
             Positioned(
               right: 80,
               bottom: 100,
