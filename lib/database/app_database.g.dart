@@ -3310,7 +3310,7 @@ final class $DingAudioReferences
 
   $TimerTemplateProcessedTableManager get timerTemplateRefs {
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.dingAudioId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.dingAudioId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerTemplateRefsTable($_db));
     return ProcessedTableManager(
@@ -3457,8 +3457,7 @@ class $DingAudioTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (timerTemplateRefs)
-                    await $_getPrefetchedData<DingAudioData, DingAudio,
-                            TimerTemplateData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $DingAudioReferences._timerTemplateRefsTable(db),
@@ -3508,10 +3507,9 @@ final class $TimerTemplateReferences
           $_aliasNameGenerator(db.timerTemplate.dingAudioId, db.dingAudio.id));
 
   $DingAudioProcessedTableManager? get dingAudioId {
-    final $_column = $_itemColumn<int>('ding_audio_id');
-    if ($_column == null) return null;
+    if ($_item.dingAudioId == null) return null;
     final manager = $DingAudioTableManager($_db, $_db.dingAudio)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.dingAudioId!));
     final item = $_typedResult.readTableOrNull(_dingAudioIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -3525,8 +3523,8 @@ final class $TimerTemplateReferences
                   db.timerTemplate.id, db.dingValue.timerTemplateId));
 
   $DingValueProcessedTableManager get dingValueRefs {
-    final manager = $DingValueTableManager($_db, $_db.dingValue).filter(
-        (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager = $DingValueTableManager($_db, $_db.dingValue)
+        .filter((f) => f.timerTemplateId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_dingValueRefsTable($_db));
     return ProcessedTableManager(
@@ -3540,8 +3538,8 @@ final class $TimerTemplateReferences
               db.timerTemplate.id, db.timer.timerTemplateId));
 
   $TimerProcessedTableManager get timerRefs {
-    final manager = $TimerTableManager($_db, $_db.timer).filter(
-        (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager = $TimerTableManager($_db, $_db.timer)
+        .filter((f) => f.timerTemplateId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -3826,8 +3824,7 @@ class $TimerTemplateTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (dingValueRefs)
-                    await $_getPrefetchedData<TimerTemplateData, TimerTemplate,
-                            DingValueData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $TimerTemplateReferences._dingValueRefsTable(db),
@@ -3839,8 +3836,7 @@ class $TimerTemplateTableManager extends RootTableManager<
                                 .where((e) => e.timerTemplateId == item.id),
                         typedResults: items),
                   if (timerRefs)
-                    await $_getPrefetchedData<TimerTemplateData, TimerTemplate,
-                            TimerData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $TimerTemplateReferences._timerRefsTable(db),
@@ -3892,10 +3888,9 @@ final class $DingValueReferences
           db.dingValue.timerTemplateId, db.timerTemplate.id));
 
   $TimerTemplateProcessedTableManager? get timerTemplateId {
-    final $_column = $_itemColumn<int>('timer_template_id');
-    if ($_column == null) return null;
+    if ($_item.timerTemplateId == null) return null;
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.timerTemplateId!));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -4496,8 +4491,8 @@ final class $BgmReferences extends BaseReferences<_$AppDatabase, Bgm, BgmData> {
           aliasName: $_aliasNameGenerator(db.bgm.id, db.page.bgmId));
 
   $PageProcessedTableManager get pageRefs {
-    final manager = $PageTableManager($_db, $_db.page)
-        .filter((f) => f.bgmId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager =
+        $PageTableManager($_db, $_db.page).filter((f) => f.bgmId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_pageRefsTable($_db));
     return ProcessedTableManager(
@@ -4641,7 +4636,7 @@ class $BgmTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (pageRefs)
-                    await $_getPrefetchedData<BgmData, Bgm, PageData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $BgmReferences._pageRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -4706,10 +4701,9 @@ final class $PageReferences
       db.bgm.createAlias($_aliasNameGenerator(db.page.bgmId, db.bgm.id));
 
   $BgmProcessedTableManager? get bgmId {
-    final $_column = $_itemColumn<int>('bgm_id');
-    if ($_column == null) return null;
-    final manager = $BgmTableManager($_db, $_db.bgm)
-        .filter((f) => f.id.sqlEquals($_column));
+    if ($_item.bgmId == null) return null;
+    final manager =
+        $BgmTableManager($_db, $_db.bgm).filter((f) => f.id($_item.bgmId!));
     final item = $_typedResult.readTableOrNull(_bgmIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -4723,7 +4717,7 @@ final class $PageReferences
 
   $TimerProcessedTableManager get timerRefs {
     final manager = $TimerTableManager($_db, $_db.timer)
-        .filter((f) => f.pageId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.pageId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -5074,7 +5068,7 @@ class $PageTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (timerRefs)
-                    await $_getPrefetchedData<PageData, Page, TimerData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $PageReferences._timerRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -5132,10 +5126,9 @@ final class $TimerReferences
           $_aliasNameGenerator(db.timer.timerTemplateId, db.timerTemplate.id));
 
   $TimerTemplateProcessedTableManager? get timerTemplateId {
-    final $_column = $_itemColumn<int>('timer_template_id');
-    if ($_column == null) return null;
+    if ($_item.timerTemplateId == null) return null;
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.timerTemplateId!));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5146,10 +5139,9 @@ final class $TimerReferences
       db.page.createAlias($_aliasNameGenerator(db.timer.pageId, db.page.id));
 
   $PageProcessedTableManager? get pageId {
-    final $_column = $_itemColumn<int>('page_id');
-    if ($_column == null) return null;
-    final manager = $PageTableManager($_db, $_db.page)
-        .filter((f) => f.id.sqlEquals($_column));
+    if ($_item.pageId == null) return null;
+    final manager =
+        $PageTableManager($_db, $_db.page).filter((f) => f.id($_item.pageId!));
     final item = $_typedResult.readTableOrNull(_pageIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

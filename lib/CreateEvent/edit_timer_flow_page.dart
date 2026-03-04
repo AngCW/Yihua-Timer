@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'page_config_dialog.dart';
 
 class EditTimerFlowPage extends StatefulWidget {
   final String flowName;
@@ -26,6 +29,10 @@ class EditTimerFlowPage extends StatefulWidget {
 class _EditTimerFlowPageState extends State<EditTimerFlowPage> {
   final List<FlowCard> _flowCards = [];
   final List<FlowCard> _extraFlowCards = [];
+  final TextEditingController _team1NameController = TextEditingController();
+  final TextEditingController _team2NameController = TextEditingController();
+  String? _team1LogoPath;
+  String? _team2LogoPath;
 
   @override
   void initState() {
@@ -42,6 +49,13 @@ class _EditTimerFlowPageState extends State<EditTimerFlowPage> {
       FlowCard(name: '立场捍卫', subtitle: '环节', pageType: 'C', shortcut: '3'),
       FlowCard(name: '资料检证', subtitle: '环节', pageType: 'C', shortcut: '4'),
     ]);
+  }
+
+  @override
+  void dispose() {
+    _team1NameController.dispose();
+    _team2NameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -83,6 +97,9 @@ class _EditTimerFlowPageState extends State<EditTimerFlowPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Team Info Section
+                  _buildTeamInfoSection(),
+                  const SizedBox(height: 24),
                   // Flow Section
                   _buildFlowSection(),
                   const SizedBox(height: 24),
@@ -130,6 +147,186 @@ class _EditTimerFlowPageState extends State<EditTimerFlowPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTeamInfoSection() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Team 1
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '参赛队1:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _team1NameController,
+                decoration: InputDecoration(
+                  hintText: '请输入参赛队1名称',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '队伍校徽:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildLogoUploadField(1),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Team 2
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '参赛队2:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _team2NameController,
+                decoration: InputDecoration(
+                  hintText: '请输入参赛队2名称',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '队伍校徽:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildLogoUploadField(2),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogoUploadField(int teamNumber) {
+    final isTeam1 = teamNumber == 1;
+    final logoPath = isTeam1 ? _team1LogoPath : _team2LogoPath;
+    
+    return InkWell(
+      onTap: () async {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.image,
+          allowMultiple: false,
+        );
+
+        if (result != null && result.files.single.path != null) {
+          setState(() {
+            if (isTeam1) {
+              _team1LogoPath = result.files.single.path;
+            } else {
+              _team2LogoPath = result.files.single.path;
+            }
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey.shade300,
+            width: 2,
+            style: BorderStyle.solid,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.grey.shade50,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.upload_file,
+              color: Colors.grey.shade600,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                logoPath != null
+                    ? logoPath.split(Platform.pathSeparator).last
+                    : '点击上传队伍校徽',
+                style: TextStyle(
+                  color: logoPath != null
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (logoPath != null) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                color: Colors.grey.shade600,
+                onPressed: () {
+                  setState(() {
+                    if (isTeam1) {
+                      _team1LogoPath = null;
+                    } else {
+                      _team2LogoPath = null;
+                    }
+                  });
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -284,8 +481,18 @@ class _EditTimerFlowPageState extends State<EditTimerFlowPage> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-                  onPressed: () {
-                    // TODO: Implement edit functionality
+                  onPressed: () async {
+                    final result = await PageConfigDialog.show(
+                      context,
+                      pageName: card.name,
+                      pageType: card.pageType,
+                    );
+                    if (result != null) {
+                      // Update the card with new values if needed
+                      setState(() {
+                        // You can update the card here if result contains updated data
+                      });
+                    }
                   },
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
