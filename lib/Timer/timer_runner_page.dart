@@ -496,7 +496,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 80,
+                        fontSize: 48,
                         fontWeight: FontWeight.bold,
                         fontFamily: widget.fontFamily,
                         shadows: [
@@ -525,6 +525,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
                             _secondsC = _initSecC;
                           });
                         },
+                        isA2: false,
                       ),
                     ),
 
@@ -546,6 +547,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
                                 _secL = _initSecL;
                               });
                             },
+                            isA2: true,
                           ),
                           _buildTimerWidget(
                             time: _secR,
@@ -558,6 +560,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
                                 _secR = _initSecR;
                               });
                             },
+                            isA2: true,
+                            isRight: true,
                           ),
                         ],
                       ),
@@ -575,48 +579,78 @@ class _TimerPageViewState extends State<_TimerPageView> {
     required bool isRunning,
     required VoidCallback onToggle,
     required VoidCallback onReset,
+    required bool isA2,
+    bool isRight = false,
   }) {
+    final controls = Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton.filled(
+          iconSize: isA2 ? 48 : 64,
+          onPressed: onToggle,
+          icon:
+              Icon(isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded),
+          style: IconButton.styleFrom(backgroundColor: Colors.white12),
+        ),
+        const SizedBox(width: 24),
+        IconButton.filled(
+          iconSize: isA2 ? 48 : 64,
+          onPressed: onReset,
+          icon: const Icon(Icons.refresh_rounded),
+          style: IconButton.styleFrom(backgroundColor: Colors.white12),
+        ),
+      ],
+    );
+
+    final timerText = Text(
+      _format(time),
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: isA2 ? 140 : 200,
+        fontWeight: FontWeight.bold,
+        fontFamily: widget.fontFamily,
+        fontFeatures: const [ui.FontFeature.tabularFigures()],
+        shadows: [
+          Shadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
+      ),
+    );
+
+    if (isA2) {
+      if (isRight) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            controls,
+            const SizedBox(width: 32),
+            timerText,
+          ],
+        );
+      } else {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            timerText,
+            const SizedBox(width: 32),
+            controls,
+          ],
+        );
+      }
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          _format(time),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 200,
-            fontWeight: FontWeight.bold,
-            fontFamily: widget.fontFamily,
-            fontFeatures: const [ui.FontFeature.tabularFigures()],
-            shadows: [
-              Shadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              )
-            ],
-          ),
-        ),
+        timerText,
         const SizedBox(height: 24),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton.filled(
-              iconSize: 64,
-              onPressed: onToggle,
-              icon: Icon(
-                  isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded),
-              style: IconButton.styleFrom(backgroundColor: Colors.white12),
-            ),
-            const SizedBox(width: 24),
-            IconButton.filled(
-              iconSize: 64,
-              onPressed: onReset,
-              icon: const Icon(Icons.refresh_rounded),
-              style: IconButton.styleFrom(backgroundColor: Colors.white12),
-            ),
-          ],
-        ),
+        controls,
       ],
     );
   }

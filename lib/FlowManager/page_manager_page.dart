@@ -920,7 +920,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                     color: Colors.white,
-                                                    fontSize: 80,
+                                                    fontSize: 48,
                                                     fontWeight: FontWeight.bold,
                                                     fontFamily: _fontFamily,
                                                     shadows: [
