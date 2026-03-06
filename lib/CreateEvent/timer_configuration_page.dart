@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'edit_timer_flow_page.dart';
 
-class TimerConfigurationPage extends StatelessWidget {
+class TimerConfigurationPage extends StatefulWidget {
   final String? ringtoneFileName;
   final bool isDefaultTemplate;
   final VoidCallback? onBack;
@@ -12,6 +12,23 @@ class TimerConfigurationPage extends StatelessWidget {
     this.isDefaultTemplate = false,
     this.onBack,
   });
+
+  @override
+  State<TimerConfigurationPage> createState() => _TimerConfigurationPageState();
+}
+
+class _TimerConfigurationPageState extends State<TimerConfigurationPage> {
+  // List to store timer flows
+  late List<String> _timerFlows;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with default flows if using default template
+    _timerFlows = widget.isDefaultTemplate
+        ? ['初赛A', '初赛B', '16强A']
+        : [];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +48,7 @@ class TimerConfigurationPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton.icon(
-                      onPressed: onBack ?? () {},
+                      onPressed: widget.onBack ?? () {},
                       icon: const Icon(Icons.arrow_back, size: 18),
                       label: const Text('返回'),
                       style: TextButton.styleFrom(
@@ -118,7 +135,7 @@ class TimerConfigurationPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _buildTimerFlows(),
+                  _buildTimerFlows(context),
                 ],
               ),
             ),
@@ -132,10 +149,10 @@ class TimerConfigurationPage extends StatelessWidget {
   }
 
   Widget _buildRingtoneTemplates() {
-    final templates = isDefaultTemplate
+    final templates = widget.isDefaultTemplate
         ? ['default']
-        : ringtoneFileName != null && ringtoneFileName!.isNotEmpty
-            ? [ringtoneFileName!]
+        : widget.ringtoneFileName != null && widget.ringtoneFileName!.isNotEmpty
+            ? [widget.ringtoneFileName!]
             : [];
 
     return LayoutBuilder(
@@ -148,7 +165,7 @@ class TimerConfigurationPage extends StatelessWidget {
             runSpacing: 12,
             children: [
               ...templates.map((template) => _buildTemplateCard(template)),
-              _buildAddButton('添加模板'),
+              _buildAddButton(context, '添加模板', isTimerFlow: false),
             ],
           ),
         );
@@ -156,11 +173,7 @@ class TimerConfigurationPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimerFlows() {
-    final flows = isDefaultTemplate
-        ? ['初赛A', '初赛B', '16强A']
-        : [];
-
+  Widget _buildTimerFlows(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
@@ -170,8 +183,8 @@ class TimerConfigurationPage extends StatelessWidget {
             spacing: 12,
             runSpacing: 12,
             children: [
-              ...flows.map((flow) => _buildFlowCard(context, flow)),
-              _buildAddButton('添加流程'),
+              ..._timerFlows.map((flow) => _buildFlowCard(context, flow)),
+              _buildAddButton(context, '添加流程', isTimerFlow: true),
             ],
           ),
         );
@@ -287,35 +300,115 @@ class TimerConfigurationPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton(String label) {
+  Widget _buildAddButton(BuildContext context, String label, {bool isTimerFlow = true}) {
     return SizedBox(
       width: 200,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 20), // Match text height
-            const SizedBox(height: 12), // Match spacing
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.add,
-                  color: Color(0xFF6B46C1),
-                  size: 24,
-                ),
-              ],
-            ),
-            const SizedBox(height: 18), // Match icon button row height
-          ],
+      child: InkWell(
+        onTap: isTimerFlow ? () => _showAddFlowDialog(context) : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 20), // Match text height
+              const SizedBox(height: 12), // Match spacing
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.add,
+                    color: Color(0xFF6B46C1),
+                    size: 24,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18), // Match icon button row height
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showAddFlowDialog(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('添加计时器流程'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '计时器流程名称',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  hintText: '请输入流程名称',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                ),
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                nameController.dispose();
+              },
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final flowName = nameController.text.trim();
+                if (flowName.isNotEmpty) {
+                  setState(() {
+                    _timerFlows.add(flowName);
+                  });
+                  Navigator.of(dialogContext).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('已添加流程: $flowName'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+                nameController.dispose();
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6B46C1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              child: const Text('添加'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
