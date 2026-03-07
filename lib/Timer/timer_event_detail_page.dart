@@ -4,6 +4,7 @@ import '../database/app_database.dart';
 import '../main.dart';
 import 'package:drift/drift.dart' as drift;
 import 'timer_runner_page.dart';
+import 'timer_folder_detail_page.dart';
 
 class TimerEventDetailPage extends StatefulWidget {
   final EventData event;
@@ -82,32 +83,87 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                   ),
                 ],
               ),
-              child: StreamBuilder<List<FlowData>>(
-                stream: (database.select(database.flow)
-                      ..where((t) => t.eventId.equals(widget.event.id))
-                      ..orderBy([
-                        (t) => drift.OrderingTerm(expression: t.flowPosition)
-                      ]))
-                    .watch(),
-                builder: (context, snapshot) {
-                  final flows = snapshot.data ?? [];
-                  if (flows.isEmpty) {
-                    return const Center(child: Text('该赛事下暂无赛程配置'));
-                  }
-                  return SizedBox(
-                    height: 130,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: flows.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: _buildFlowBox(context, flows[index]),
-                        );
-                      },
-                    ),
-                  );
-                },
+              child: Column(
+                children: [
+                  // Folders Section
+                  StreamBuilder<List<FlowFolderData>>(
+                    stream: (database.select(database.flowFolder)
+                          ..where((t) => t.eventId.equals(widget.event.id))
+                          ..orderBy([
+                            (t) =>
+                                drift.OrderingTerm(expression: t.folderPosition)
+                          ]))
+                        .watch(),
+                    builder: (context, snapshot) {
+                      final folders = snapshot.data ?? [];
+                      if (folders.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('文件夹',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 160,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: folders.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 16.0),
+                                  child:
+                                      _buildFolderBox(context, folders[index]),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  ),
+
+                  // Outermost Flows Section
+                  StreamBuilder<List<FlowData>>(
+                    stream: (database.select(database.flow)
+                          ..where((t) => t.eventId.equals(widget.event.id))
+                          ..where((t) => t.folderId.isNull())
+                          ..orderBy([
+                            (t) =>
+                                drift.OrderingTerm(expression: t.flowPosition)
+                          ]))
+                        .watch(),
+                    builder: (context, snapshot) {
+                      final flows = snapshot.data ?? [];
+                      if (flows.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('独立赛程',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 160,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: flows.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 16.0),
+                                  child: _buildFlowBox(context, flows[index]),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],
@@ -205,17 +261,85 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
           ),
           const SizedBox(height: 8),
           SizedBox(
-            width: 80,
-            child: Text(
-              flow.flowName ?? '未命名',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF374151),
-                fontWeight: FontWeight.w500,
+            width: 90,
+            child: Tooltip(
+              message: flow.flowName ?? '未命名',
+              child: Text(
+                flow.flowName ?? '未命名',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFolderBox(BuildContext context, FlowFolderData folder) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                TimerFolderDetailPage(event: widget.event, folder: folder),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Tooltip(
+            message: folder.folderName,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.amber.shade200,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.folder_rounded,
+                size: 40,
+                color: Colors.amber,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 90,
+            child: Tooltip(
+              message: folder.folderName,
+              child: Text(
+                folder.folderName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ],

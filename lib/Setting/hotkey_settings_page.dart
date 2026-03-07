@@ -292,20 +292,27 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           )
-                        : icon != null
-                            ? Icon(
-                                icon,
-                                color: const Color(0xFF374151),
-                                size: 20,
-                              )
-                            : Text(
-                                binding.key,
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (icon != null) ...[
+                                Icon(
+                                  icon,
+                                  color: const Color(0xFF374151),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Text(
+                                _getDisplayKey(binding.key),
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   color: Color(0xFF374151),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                            ],
+                          ),
               ),
             ),
           ),
@@ -314,25 +321,16 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
     );
   }
 
+  String _getDisplayKey(String key) {
+    if (key == 'ARROW LEFT') return '←';
+    if (key == 'ARROW RIGHT') return '→';
+    if (key == 'ARROW UP') return '↑';
+    if (key == 'ARROW DOWN') return '↓';
+    return key;
+  }
+
   String? _getKeyString(LogicalKeyboardKey key) {
-    // Map common keys to their display strings
-    if (key == LogicalKeyboardKey.arrowLeft) return '←';
-    if (key == LogicalKeyboardKey.arrowRight) return '→';
-    if (key == LogicalKeyboardKey.arrowUp) return '↑';
-    if (key == LogicalKeyboardKey.arrowDown) return '↓';
-
-    // Get the key label, removing "Key" prefix
-    final keyLabel = key.keyLabel;
-    if (keyLabel.length == 1) {
-      return keyLabel.toUpperCase();
-    }
-
-    // Handle special keys
-    if (keyLabel.startsWith('Key')) {
-      return keyLabel.substring(3);
-    }
-
-    return keyLabel.length <= 2 ? keyLabel.toUpperCase() : null;
+    return key.keyLabel.toUpperCase().replaceAll('KEY ', '');
   }
 
   void _updateBinding(String id, String newKey) {

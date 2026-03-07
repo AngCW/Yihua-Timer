@@ -63,8 +63,18 @@ class _PageManagerPageState extends State<PageManagerPage> {
   async.Timer? _previewTimerLeft;
   async.Timer? _previewTimerRight;
   String? _backgroundPath;
-  String? _fontPath;
-  String? _fontFamily;
+  String? _sectionFontFamily;
+  String? _timerFontFamily;
+
+  // Manual values for preview tweaks
+  double _sectionX = 0;
+  double _sectionY = 0;
+  double _sectionScale = 1.0;
+
+  // Single/Double Timer states
+  double _t1X = 0, _t1Y = 0, _t1Scale = 1.0;
+  double _tL_X = 0, _tL_Y = 0, _tL_Scale = 1.0;
+  double _tR_X = 0, _tR_Y = 0, _tR_Scale = 1.0;
 
   bool _useFrontpage = false;
 
@@ -79,6 +89,10 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _selectedBgmId = _currentPage.bgmId;
     _selectedPageType = _currentPage.pageTypeId;
     _useFrontpage = _currentPage.useFrontpage ?? false;
+
+    _sectionX = _currentPage.sectionXpos ?? 0;
+    _sectionY = _currentPage.sectionYpos ?? 0;
+    _sectionScale = _currentPage.sectionScale ?? 1.0;
 
     _loadData();
     _loadTimerData();
@@ -139,26 +153,87 @@ class _PageManagerPageState extends State<PageManagerPage> {
       _backgroundPath = null;
     }
 
-    if (flow.fontName != null) {
-      _fontPath = p.join(imagesPath, flow.fontName!);
-      _loadCustomFont(flow.id);
+    if (flow.sectionFontName != null) {
+      _loadCustomFont(flow.sectionFontName!, 'section');
     }
+    if (flow.timerFontName != null) {
+      _loadCustomFont(flow.timerFontName!, 'timer');
+    }
+    if (_currentPage.sectionFontName != null) {
+      _loadCustomFont(_currentPage.sectionFontName!, 'section_page');
+    }
+    if (_currentPage.timerFontName != null) {
+      _loadCustomFont(_currentPage.timerFontName!, 'timer_page');
+    }
+
     if (mounted) setState(() {});
   }
 
-  Future<void> _loadCustomFont(int flowId) async {
-    if (_fontPath == null) return;
-    final file = File(_fontPath!);
+  Future<void> _loadCustomFont(String fileName, String type) async {
+    final supportDir = await getApplicationSupportDirectory();
+    final imagesPath = p.join(
+        supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
+    final file = File(p.join(imagesPath, fileName));
+
     if (await file.exists()) {
       final fontData = await file.readAsBytes();
-      final fontName = 'CustomFont_$flowId';
-      final fontLoader = FontLoader(fontName);
+      final familyID = 'Font_${type}_${widget.page.id}';
+      final fontLoader = FontLoader(familyID);
       fontLoader.addFont(Future.value(ByteData.view(fontData.buffer)));
       await fontLoader.load();
       if (mounted) {
         setState(() {
-          _fontFamily = fontName;
+          if (type.contains('section')) _sectionFontFamily = familyID;
+          if (type.contains('timer')) _timerFontFamily = familyID;
         });
+      }
+    }
+  }
+
+  Future<void> _uploadSpecificFont(String target) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['ttf', 'otf', 'woff', 'woff2'],
+    );
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      final fileName =
+          'font_${target}_${DateTime.now().millisecondsSinceEpoch}${p.extension(result.files.single.path!)}';
+
+      try {
+        final supportDir = await getApplicationSupportDirectory();
+        final imagesDir = Directory(p.join(supportDir.path, 'YiHuaTimer',
+            'images', widget.event.id.toString()));
+        if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
+
+        final targetPath = p.join(imagesDir.path, fileName);
+        await file.copy(targetPath);
+
+        // Update database (Flow or Page level? User requested specific fonts for section vs timer)
+        // We'll update the Flow globals if they want, but here we can update Page level for granular control
+        if (target == 'section') {
+          await (database.update(database.page)
+                ..where((t) => t.id.equals(_currentPage.id)))
+              .write(PageCompanion(sectionFontName: drift.Value(fileName)));
+        } else {
+          await (database.update(database.page)
+                ..where((t) => t.id.equals(_currentPage.id)))
+              .write(PageCompanion(timerFontName: drift.Value(fileName)));
+        }
+
+        final updated = await (database.select(database.page)
+              ..where((t) => t.id.equals(_currentPage.id)))
+            .getSingle();
+        setState(() => _currentPage = updated);
+        _loadAssetPaths(widget.flow);
+
+        if (mounted)
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('字体上传成功')));
+      } catch (e) {
+        if (mounted)
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('字体上传失败: $e')));
       }
     }
   }
@@ -264,27 +339,33 @@ class _PageManagerPageState extends State<PageManagerPage> {
             _singleMinController.text = parts[0];
             _singleSecController.text = parts.length > 1 ? parts[1] : '0';
 
-            final m = int.tryParse(parts[0]) ?? 0;
-            final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
-            _previewSeconds = m * 60 + s;
+            _previewSeconds = (int.tryParse(parts[0]) ?? 0) * 60 +
+                (int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0);
+            _t1X = timer.xpos ?? 0;
+            _t1Y = timer.ypos ?? 0;
+            _t1Scale = timer.scale ?? 1.0;
           } else if (timer.timerType == 'doubleL') {
             _leftTemplateId = timer.timerTemplateId;
             final parts = (timer.startTime ?? '0:0').split(':');
             _leftMinController.text = parts[0];
             _leftSecController.text = parts.length > 1 ? parts[1] : '0';
 
-            final m = int.tryParse(parts[0]) ?? 0;
-            final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
-            _previewSecLeft = m * 60 + s;
+            _previewSecLeft = (int.tryParse(parts[0]) ?? 0) * 60 +
+                (int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0);
+            _tL_X = timer.xpos ?? 0;
+            _tL_Y = timer.ypos ?? 0;
+            _tL_Scale = timer.scale ?? 1.0;
           } else if (timer.timerType == 'doubleR') {
             _rightTemplateId = timer.timerTemplateId;
-            final parts = (timer.startTime ?? '0:1').split(':');
+            final parts = (timer.startTime ?? '0:0').split(':');
             _rightMinController.text = parts[0];
             _rightSecController.text = parts.length > 1 ? parts[1] : '0';
 
-            final m = int.tryParse(parts[0]) ?? 0;
-            final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
-            _previewSecRight = m * 60 + s;
+            _previewSecRight = (int.tryParse(parts[0]) ?? 0) * 60 +
+                (int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0);
+            _tR_X = timer.xpos ?? 0;
+            _tR_Y = timer.ypos ?? 0;
+            _tR_Scale = timer.scale ?? 1.0;
           }
         }
         _isLoading = false;
@@ -537,16 +618,28 @@ class _PageManagerPageState extends State<PageManagerPage> {
     }
 
     if (templateId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择模板')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('请选择模板')));
       return;
     }
 
     final startTime = '$min:$sec';
+    double x = 0, y = 0, s = 1.0;
+    if (type == 'single') {
+      x = _t1X;
+      y = _t1Y;
+      s = _t1Scale;
+    } else if (type == 'doubleL') {
+      x = _tL_X;
+      y = _tL_Y;
+      s = _tL_Scale;
+    } else if (type == 'doubleR') {
+      x = _tR_X;
+      y = _tR_Y;
+      s = _tR_Scale;
+    }
 
     try {
-      // Check if exists
       final existing = await (database.select(database.timer)
             ..where((t) => t.pageId.equals(_currentPage.id))
             ..where((t) => t.timerType.equals(type)))
@@ -558,6 +651,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
             .write(TimerCompanion(
           timerTemplateId: drift.Value(templateId),
           startTime: drift.Value(startTime),
+          xpos: drift.Value(x),
+          ypos: drift.Value(y),
+          scale: drift.Value(s),
         ));
       } else {
         await database.into(database.timer).insert(TimerCompanion.insert(
@@ -565,20 +661,18 @@ class _PageManagerPageState extends State<PageManagerPage> {
               startTime: drift.Value(startTime),
               timerType: drift.Value(type),
               pageId: drift.Value(_currentPage.id),
+              xpos: drift.Value(x),
+              ypos: drift.Value(y),
+              scale: drift.Value(s),
             ));
       }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('计时器已保存')),
-        );
-      }
+      if (mounted)
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('计时器已保存')));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e')),
-        );
-      }
+      if (mounted)
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('保存失败: $e')));
     }
   }
 
@@ -628,6 +722,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
         bgmId: drift.Value(_selectedBgmId),
         pageTypeId: drift.Value(_selectedPageType),
         useFrontpage: drift.Value(_useFrontpage),
+        sectionXpos: drift.Value(_sectionX),
+        sectionYpos: drift.Value(_sectionY),
+        sectionScale: drift.Value(_sectionScale),
       ));
       final updated = await (database.select(database.page)
             ..where((t) => t.id.equals(_currentPage.id)))
@@ -850,6 +947,13 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                 '右侧计时器 (Right Timer)', 'doubleR')),
                       ],
                     ),
+                    Row(
+                      children: [
+                        Expanded(child: _buildFontPicker('环节字体', 'section')),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildFontPicker('计时器字体', 'timer')),
+                      ],
+                    ),
                     const SizedBox(height: 24),
                   ],
 
@@ -903,11 +1007,15 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                           child: Stack(
                                             children: [
                                               // Section Name
-                                              Align(
-                                                alignment:
-                                                    _selectedPageType == 'B'
-                                                        ? Alignment.center
-                                                        : Alignment.topCenter,
+                                              _buildDraggableItem(
+                                                x: _sectionX,
+                                                y: _sectionY,
+                                                scale: _sectionScale,
+                                                onChanged: (dx, dy, s) => setState(() {
+                                                  _sectionX = dx;
+                                                  _sectionY = dy;
+                                                  _sectionScale = s;
+                                                }),
                                                 child: Text(
                                                   _sectionNameController
                                                           .text.isEmpty
@@ -922,7 +1030,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                     color: Colors.white,
                                                     fontSize: 48,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: _fontFamily,
+                                                    fontFamily: _sectionFontFamily,
                                                     shadows: [
                                                       Shadow(
                                                           color: Colors.black
@@ -937,8 +1045,15 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
                                               // Timer A1
                                               if (_selectedPageType == 'A1')
-                                                Align(
-                                                  alignment: Alignment.center,
+                                                _buildDraggableItem(
+                                                  x: _t1X,
+                                                  y: _t1Y,
+                                                  scale: _t1Scale,
+                                                  onChanged: (dx, dy, s) => setState(() {
+                                                    _t1X = dx;
+                                                    _t1Y = dy;
+                                                    _t1Scale = s;
+                                                  }),
                                                   child:
                                                       _buildPreviewTimerWidget(
                                                     time: _previewSeconds,
@@ -958,49 +1073,52 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                 ),
 
                                               // Timer A2
-                                              if (_selectedPageType == 'A2')
-                                                Align(
-                                                  alignment: Alignment.center,
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      _buildPreviewTimerWidget(
-                                                        time: _previewSecLeft,
-                                                        isRunning:
-                                                            _isPreviewRunningLeft,
-                                                        onToggle:
-                                                            _togglePreviewTimerLeft,
-                                                        onReset: () {
-                                                          _previewTimerLeft
-                                                              ?.cancel();
-                                                          _updatePreviewSeconds();
-                                                          setState(() {
-                                                            _isPreviewRunningLeft =
-                                                                false;
-                                                          });
-                                                        },
-                                                      ),
-                                                      _buildPreviewTimerWidget(
-                                                        time: _previewSecRight,
-                                                        isRunning:
-                                                            _isPreviewRunningRight,
-                                                        onToggle:
-                                                            _togglePreviewTimerRight,
-                                                        onReset: () {
-                                                          _previewTimerRight
-                                                              ?.cancel();
-                                                          _updatePreviewSeconds();
-                                                          setState(() {
-                                                            _isPreviewRunningRight =
-                                                                false;
-                                                          });
-                                                        },
-                                                      ),
-                                                    ],
+                                              if (_selectedPageType == 'A2') ...[
+                                                _buildDraggableItem(
+                                                  x: _tL_X,
+                                                  y: _tL_Y,
+                                                  scale: _tL_Scale,
+                                                  onChanged: (dx, dy, s) => setState(() {
+                                                    _tL_X = dx;
+                                                    _tL_Y = dy;
+                                                    _tL_Scale = s;
+                                                  }),
+                                                  child: _buildPreviewTimerWidget(
+                                                    time: _previewSecLeft,
+                                                    isRunning: _isPreviewRunningLeft,
+                                                    onToggle: _togglePreviewTimerLeft,
+                                                    onReset: () {
+                                                      _previewTimerLeft?.cancel();
+                                                      _updatePreviewSeconds();
+                                                      setState(() {
+                                                        _isPreviewRunningLeft = false;
+                                                      });
+                                                    },
                                                   ),
                                                 ),
+                                                _buildDraggableItem(
+                                                  x: _tR_X,
+                                                  y: _tR_Y,
+                                                  scale: _tR_Scale,
+                                                  onChanged: (dx, dy, s) => setState(() {
+                                                    _tR_X = dx;
+                                                    _tR_Y = dy;
+                                                    _tR_Scale = s;
+                                                  }),
+                                                  child: _buildPreviewTimerWidget(
+                                                    time: _previewSecRight,
+                                                    isRunning: _isPreviewRunningRight,
+                                                    onToggle: _togglePreviewTimerRight,
+                                                    onReset: () {
+                                                      _previewTimerRight?.cancel();
+                                                      _updatePreviewSeconds();
+                                                      setState(() {
+                                                        _isPreviewRunningRight = false;
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
                                             ],
                                           ),
                                         ),
@@ -1048,9 +1166,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
           _formatTime(time),
           style: TextStyle(
             color: Colors.white,
-            fontSize: 120, // Adjusted for layout system
+            fontSize: 120,
             fontWeight: FontWeight.bold,
-            fontFamily: _fontFamily,
+            fontFamily: _timerFontFamily,
             fontFeatures: const [ui.FontFeature.tabularFigures()],
             shadows: [
               Shadow(
@@ -1279,4 +1397,63 @@ class _DingValueDraft {
   final TextEditingController secController = TextEditingController(text: '0');
   final TextEditingController amountController =
       TextEditingController(text: '1');
+}
+
+extension on _PageManagerPageState {
+  Widget _buildDraggableItem({
+    required double x,
+    required double y,
+    required double scale,
+    required Function(double, double, double) onChanged,
+    required Widget child,
+  }) {
+    return Positioned(
+      left: 100 + x,
+      top: 100 + y,
+      child: GestureDetector(
+        onPanUpdate: (details) =>
+            onChanged(x + details.delta.dx, y + details.delta.dy, scale),
+        onSecondaryTap: () =>
+            onChanged(x, y, (scale + 0.1) > 3.0 ? 1.0 : scale + 0.1),
+        onDoubleTap: () => onChanged(0, 0, 1.0),
+        child: Transform.scale(
+          scale: scale,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.move,
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFontPicker(String title, String target) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          IconButton(
+            onPressed: () => _uploadSpecificFont(target),
+            icon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.font_download_rounded, size: 20),
+                const SizedBox(width: 4),
+                const Text('上传', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

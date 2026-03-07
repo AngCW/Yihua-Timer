@@ -14,7 +14,28 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 4) {
+          await m.createTable(flowFolder);
+          await m.addColumn(flow, flow.folderId);
+        }
+        if (from < 5) {
+          await m.addColumn(flow, flow.sectionFontName);
+          await m.addColumn(flow, flow.timerFontName);
+          await m.addColumn(page, page.sectionFontName);
+          await m.addColumn(page, page.timerFontName);
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {

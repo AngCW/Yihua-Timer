@@ -11,6 +11,7 @@ import 'package:drift/drift.dart' as drift;
 import '../Setting/hotkey_binding_model.dart';
 import '../database/app_database.dart';
 import '../main.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class TimerRunnerPage extends StatefulWidget {
   final EventData event;
@@ -277,6 +278,10 @@ class _TimerPageViewState extends State<_TimerPageView> {
   bool _isLoading = true;
   late async.StreamSubscription<String> _keySub;
 
+  final Map<int, List<DingValueData>> _dingValues = {};
+  final Map<int, String> _timerAudioFiles = {};
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   @override
   void initState() {
     super.initState();
@@ -347,6 +352,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
     _timerC?.cancel();
     _timerL?.cancel();
     _timerR?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -371,6 +377,27 @@ class _TimerPageViewState extends State<_TimerPageView> {
         _initSecR = totalSec;
         _secR = totalSec;
       }
+
+      if (t.timerTemplateId != null) {
+        final dings = await (database.select(database.dingValue)
+              ..where((dv) => dv.timerTemplateId.equals(t.timerTemplateId!)))
+            .get();
+        _dingValues[t.id] = dings;
+
+        final template = await (database.select(database.timerTemplate)
+              ..where((tt) => tt.id.equals(t.timerTemplateId!)))
+            .getSingleOrNull();
+
+        if (template?.dingAudioId != null) {
+          final audio = await (database.select(database.dingAudio)
+                ..where((da) => da.id.equals(template!.dingAudioId!)))
+              .getSingleOrNull();
+
+          if (audio != null) {
+            _timerAudioFiles[t.id] = audio.dingName;
+          }
+        }
+      }
     }
 
     if (mounted) {
@@ -390,11 +417,51 @@ class _TimerPageViewState extends State<_TimerPageView> {
         _timerC = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secondsC > 0) {
             setState(() => _secondsC--);
+            _checkDings('single', _secondsC);
           } else {
             timer.cancel();
             setState(() => _isRunning = false);
           }
         });
+      }
+    }
+  }
+
+  Future<void> _checkDings(String type, int currentSec) async {
+    final timers = await (database.select(database.timer)
+          ..where((t) => t.pageId.equals(widget.pageData.id))
+          ..where((t) => t.timerType.equals(type)))
+        .get();
+
+    for (var t in timers) {
+      final dings = _dingValues[t.id] ?? [];
+      for (var d in dings) {
+        final parts = (d.dingTime ?? '0:0').split(':');
+        final m = int.tryParse(parts[0]) ?? 0;
+        final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+        final dingSec = m * 60 + s;
+
+        if (dingSec == currentSec) {
+          _playSound(t.id, d.dingAmount ?? 1);
+        }
+      }
+    }
+  }
+
+  Future<void> _playSound(int timerId, int amount) async {
+    final fileName = _timerAudioFiles[timerId];
+    if (fileName == null || fileName.isEmpty) return;
+
+    final supportDir = await getApplicationSupportDirectory();
+    final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'images',
+        '${widget.flow.eventId}', fileName);
+
+    if (await File(audioPath).exists()) {
+      for (int i = 0; i < amount; i++) {
+        await _audioPlayer.play(DeviceFileSource(audioPath));
+        if (amount > 1) {
+          await Future.delayed(const Duration(milliseconds: 600));
+        }
       }
     }
   }
@@ -409,6 +476,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         _timerL = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secL > 0) {
             setState(() => _secL--);
+            _checkDings('doubleL', _secL);
           } else {
             timer.cancel();
             setState(() => _isRunningL = false);
@@ -428,6 +496,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         _timerR = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secR > 0) {
             setState(() => _secR--);
+            _checkDings('doubleR', _secR);
           } else {
             timer.cancel();
             setState(() => _isRunningR = false);

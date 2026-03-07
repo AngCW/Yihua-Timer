@@ -26,14 +26,24 @@ CREATE TABLE ding_value (
     timer_template_id INTEGER REFERENCES timer_template(id)
 );
 
+CREATE TABLE flow_folder (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    folder_name VARCHAR NOT NULL,
+    event_id INTEGER NOT NULL,
+    folder_position INTEGER NOT NULL
+) AS FlowFolderData;
+
 CREATE TABLE flow (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     flow_name VARCHAR,
     font_name VARCHAR,
+    section_font_name VARCHAR,
+    timer_font_name VARCHAR,
     frontpage_name VARCHAR,
     background_name VARCHAR,
     event_id INTEGER,
-    flow_position INTEGER
+    flow_position INTEGER,
+    folder_id INTEGER REFERENCES flow_folder(id)
 );
 
 CREATE TABLE images (
@@ -73,5 +83,7 @@ CREATE TABLE page (
     section_xpos DOUBLE DEFAULT 0.0,
     section_ypos DOUBLE DEFAULT 0.0,
     section_scale DOUBLE DEFAULT 1.0,
+    section_font_name VARCHAR,
+    timer_font_name VARCHAR,
     use_frontpage BOOLEAN DEFAULT FALSE
 );
