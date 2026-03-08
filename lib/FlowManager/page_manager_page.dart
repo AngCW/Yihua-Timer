@@ -1090,8 +1090,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
           int? posId = t.positionId;
           if (posId != null) {
+            final existingPosId = posId;
             await (database.update(database.position)
-                  ..where((p) => p.id.equals(posId)))
+                  ..where((p) => p.id.equals(existingPosId)))
                 .write(PositionCompanion(
               xpos: drift.Value(tx),
               ypos: drift.Value(ty),
@@ -1303,6 +1304,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         x: _sectionX,
                         y: _sectionY,
                         scale: _sectionScale,
+                        xCtrl: _sectionXCtrl,
+                        yCtrl: _sectionYCtrl,
+                        scaleCtrl: _sectionScaleCtrl,
                         onXChanged: (val) => setState(() => _sectionX = val),
                         onYChanged: (val) => setState(() => _sectionY = val),
                         onScaleChanged: (val) =>
@@ -1329,6 +1333,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         x: _t1X,
                         y: _t1Y,
                         scale: _t1Scale,
+                        xCtrl: _t1XCtrl,
+                        yCtrl: _t1YCtrl,
+                        scaleCtrl: _t1ScaleCtrl,
                         onXChanged: (val) => setState(() => _t1X = val),
                         onYChanged: (val) => setState(() => _t1Y = val),
                         onScaleChanged: (val) => setState(() => _t1Scale = val),
@@ -1356,6 +1363,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
                             x: _tlX,
                             y: _tlY,
                             scale: _tlScale,
+                            xCtrl: _tlXCtrl,
+                            yCtrl: _tlYCtrl,
+                            scaleCtrl: _tlScaleCtrl,
                             onXChanged: (val) => setState(() => _tlX = val),
                             onYChanged: (val) => setState(() => _tlY = val),
                             onScaleChanged: (val) =>
@@ -1369,6 +1379,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
                             x: _trX,
                             y: _trY,
                             scale: _trScale,
+                            xCtrl: _trXCtrl,
+                            yCtrl: _trYCtrl,
+                            scaleCtrl: _trScaleCtrl,
                             onXChanged: (val) => setState(() => _trX = val),
                             onYChanged: (val) => setState(() => _trY = val),
                             onScaleChanged: (val) =>
@@ -1897,6 +1910,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
     required double x,
     required double y,
     required double scale,
+    required TextEditingController xCtrl,
+    required TextEditingController yCtrl,
+    required TextEditingController scaleCtrl,
     required ValueChanged<double> onXChanged,
     required ValueChanged<double> onYChanged,
     required ValueChanged<double> onScaleChanged,
@@ -1915,7 +1931,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
             Expanded(
               child: _buildPositionInput(
                 label: 'X POS',
-                value: x,
+                controller: xCtrl,
                 onChanged: onXChanged,
                 icon: Icons.swap_horiz_rounded,
               ),
@@ -1924,7 +1940,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
             Expanded(
               child: _buildPositionInput(
                 label: 'Y POS',
-                value: y,
+                controller: yCtrl,
                 onChanged: onYChanged,
                 icon: Icons.swap_vert_rounded,
               ),
@@ -1933,10 +1949,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
             Expanded(
               child: _buildPositionInput(
                 label: 'SIZE',
-                value: scale,
+                controller: scaleCtrl,
                 onChanged: onScaleChanged,
                 icon: Icons.zoom_in_rounded,
-                isScale: true,
               ),
             ),
           ],
@@ -1947,10 +1962,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
   Widget _buildPositionInput({
     required String label,
-    required double value,
+    required TextEditingController controller,
     required ValueChanged<double> onChanged,
     required IconData icon,
-    bool isScale = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1974,6 +1988,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
               Icon(icon, size: 16, color: Colors.grey.shade400),
               Expanded(
                 child: TextField(
+                  controller: controller,
                   keyboardType: const TextInputType.numberWithOptions(
                       decimal: true, signed: true),
                   textAlign: TextAlign.center,
