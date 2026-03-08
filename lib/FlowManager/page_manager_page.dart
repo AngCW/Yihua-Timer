@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 import '../database/app_database.dart';
 import '../main.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'dart:convert';
 
 class PageManagerPage extends StatefulWidget {
   final EventData event;
@@ -68,6 +69,14 @@ class _PageManagerPageState extends State<PageManagerPage> {
   final _trYCtrl = TextEditingController();
   final _trScaleCtrl = TextEditingController();
 
+  // School A/B Position TextEditingControllers
+  final _saxCtrl = TextEditingController();
+  final _sayCtrl = TextEditingController();
+  final _saScaleCtrl = TextEditingController();
+  final _sbxCtrl = TextEditingController();
+  final _sbyCtrl = TextEditingController();
+  final _sbScaleCtrl = TextEditingController();
+
   // Preview State
   int _previewSeconds = 0;
   int _previewSecLeft = 0;
@@ -81,6 +90,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   String? _backgroundPath;
   String? _sectionFontFamily;
   String? _timerFontFamily;
+  String? _schoolFontFamily;
 
   // Manual values for preview tweaks
   double _sectionX = 0;
@@ -91,6 +101,16 @@ class _PageManagerPageState extends State<PageManagerPage> {
   double _t1X = 0, _t1Y = 0, _t1Scale = 1.0;
   double _tlX = 0, _tlY = 0, _tlScale = 1.0;
   double _trX = 0, _trY = 0, _trScale = 1.0;
+
+  // School A/B Position states
+  double _saX = 0, _saY = 0, _saScale = 1.0;
+  double _sbX = 0, _sbY = 0, _sbScale = 1.0;
+
+  // School Info for preview
+  SchoolData? _schoolA;
+  SchoolData? _schoolB;
+  ImagesData? _schoolALogo;
+  ImagesData? _schoolBLogo;
 
   void _syncPositionControllers() {
     _sectionXCtrl.text = _sectionX.toStringAsFixed(0);
@@ -105,6 +125,12 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _trXCtrl.text = _trX.toStringAsFixed(0);
     _trYCtrl.text = _trY.toStringAsFixed(0);
     _trScaleCtrl.text = _trScale.toStringAsFixed(2);
+    _saxCtrl.text = _saX.toStringAsFixed(0);
+    _sayCtrl.text = _saY.toStringAsFixed(0);
+    _saScaleCtrl.text = _saScale.toStringAsFixed(2);
+    _sbxCtrl.text = _sbX.toStringAsFixed(0);
+    _sbyCtrl.text = _sbY.toStringAsFixed(0);
+    _sbScaleCtrl.text = _sbScale.toStringAsFixed(2);
   }
 
   bool _useFrontpage = false;
@@ -114,6 +140,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
   PositionData? _t1Pos;
   PositionData? _tLPos;
   PositionData? _tRPos;
+  PositionData? _saPos;
+  PositionData? _sbPos;
 
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -130,9 +158,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _selectedPageType = _currentPage.pageTypeId;
     _useFrontpage = _currentPage.useFrontpage ?? false;
 
-    _sectionX = _currentPage.sectionXpos ?? 0;
-    _sectionY = _currentPage.sectionYpos ?? 0;
-    _sectionScale = _currentPage.sectionScale ?? 1.0;
+    _useFrontpage = _currentPage.useFrontpage ?? false;
 
     _loadData();
     _loadTimerData();
@@ -143,6 +169,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
         .watchSingle()
         .listen((flow) {
       _loadAssetPaths(flow);
+      _loadFlowSchools(flow);
     });
 
     // Listeners to update preview
@@ -153,6 +180,39 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _leftSecController.addListener(_updatePreviewSeconds);
     _rightMinController.addListener(_updatePreviewSeconds);
     _rightSecController.addListener(_updatePreviewSeconds);
+
+    _loadFlowSchools(widget.flow);
+  }
+
+  Future<void> _loadFlowSchools(FlowData flow) async {
+    if (flow.schoolAId != null) {
+      _schoolA = await (database.select(database.school)
+            ..where((t) => t.id.equals(flow.schoolAId!)))
+          .getSingleOrNull();
+      if (_schoolA?.logoImageId != null) {
+        _schoolALogo = await (database.select(database.images)
+              ..where((t) => t.id.equals(_schoolA!.logoImageId!)))
+            .getSingleOrNull();
+      }
+    } else {
+      _schoolA = null;
+      _schoolALogo = null;
+    }
+
+    if (flow.schoolBId != null) {
+      _schoolB = await (database.select(database.school)
+            ..where((t) => t.id.equals(flow.schoolBId!)))
+          .getSingleOrNull();
+      if (_schoolB?.logoImageId != null) {
+        _schoolBLogo = await (database.select(database.images)
+              ..where((t) => t.id.equals(_schoolB!.logoImageId!)))
+            .getSingleOrNull();
+      }
+    } else {
+      _schoolB = null;
+      _schoolBLogo = null;
+    }
+    if (mounted) setState(() {});
   }
 
   void _updatePreviewSeconds() {
@@ -175,6 +235,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   }
 
   Future<void> _loadAssetPaths(FlowData flow) async {
+    _schoolFontFamily = null;
     final supportDir = await getApplicationSupportDirectory();
     final imagesPath = p.join(
         supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
@@ -218,6 +279,11 @@ class _PageManagerPageState extends State<PageManagerPage> {
     }
     if (timerFont != null) {
       _timerFontFamily = await _loadCustomFont(timerFont);
+    }
+
+    // Load font for school names from flow.fontName
+    if (flow.fontName?.isNotEmpty == true) {
+      _schoolFontFamily = await _loadCustomFont(flow.fontName!);
     }
 
     if (mounted) setState(() {});
@@ -443,21 +509,108 @@ class _PageManagerPageState extends State<PageManagerPage> {
   }
 
   Future<void> _loadTimerData() async {
-    // Load Section Position
+    // 0. Initial hard defaults
+    _sectionX = 0;
+    _sectionY = 0;
+    _sectionScale = 1.0;
+    _t1X = 0;
+    _t1Y = 0;
+    _t1Scale = 1.0;
+    _tlX = 0;
+    _tlY = 0;
+    _tlScale = 1.0;
+    _trX = 0;
+    _trY = 0;
+    _trScale = 1.0;
+    _saX = 0;
+    _saY = 0;
+    _saScale = 1.0;
+    _sbX = 0;
+    _sbY = 0;
+    _sbScale = 1.0;
+
+    // 1. Load Defaults from Flow Config
+    Map<String, dynamic>? flowConfig;
+    try {
+      if (widget.flow.positionConfig != null) {
+        flowConfig = jsonDecode(widget.flow.positionConfig!);
+      }
+    } catch (_) {}
+
+    if (flowConfig != null) {
+      if (flowConfig.containsKey('section')) {
+        final m = flowConfig['section'];
+        _sectionX = m['x']?.toDouble() ?? _sectionX;
+        _sectionY = m['y']?.toDouble() ?? _sectionY;
+        _sectionScale = m['s']?.toDouble() ?? _sectionScale;
+      }
+      if (flowConfig.containsKey('timer_single')) {
+        final m = flowConfig['timer_single'];
+        _t1X = m['x']?.toDouble() ?? _t1X;
+        _t1Y = m['y']?.toDouble() ?? _t1Y;
+        _t1Scale = m['s']?.toDouble() ?? _t1Scale;
+      }
+      if (flowConfig.containsKey('timer_doubleL')) {
+        final m = flowConfig['timer_doubleL'];
+        _tlX = m['x']?.toDouble() ?? _tlX;
+        _tlY = m['y']?.toDouble() ?? _tlY;
+        _tlScale = m['s']?.toDouble() ?? _tlScale;
+      }
+      if (flowConfig.containsKey('timer_doubleR')) {
+        final m = flowConfig['timer_doubleR'];
+        _trX = m['x']?.toDouble() ?? _trX;
+        _trY = m['y']?.toDouble() ?? _trY;
+        _trScale = m['s']?.toDouble() ?? _trScale;
+      }
+      if (flowConfig.containsKey('schoolA')) {
+        final m = flowConfig['schoolA'];
+        _saX = m['x']?.toDouble() ?? _saX;
+        _saY = m['y']?.toDouble() ?? _saY;
+        _saScale = m['s']?.toDouble() ?? _saScale;
+      }
+      if (flowConfig.containsKey('schoolB')) {
+        final m = flowConfig['schoolB'];
+        _sbX = m['x']?.toDouble() ?? _sbX;
+        _sbY = m['y']?.toDouble() ?? _sbY;
+        _sbScale = m['s']?.toDouble() ?? _sbScale;
+      }
+    }
+
+    // 2. Load specifics from Page (Override defaults)
+    _sectionX = _currentPage.sectionXpos ?? _sectionX;
+    _sectionY = _currentPage.sectionYpos ?? _sectionY;
+    _sectionScale = _currentPage.sectionScale ?? _sectionScale;
+
     if (_currentPage.sectionPositionId != null) {
       _sectionPos = await (database.select(database.position)
             ..where((t) => t.id.equals(_currentPage.sectionPositionId!)))
           .getSingleOrNull();
       if (_sectionPos != null) {
-        _sectionX = _sectionPos!.xpos ?? 0;
-        _sectionY = _sectionPos!.ypos ?? 0;
-        _sectionScale = _sectionPos!.size ?? 1.0;
+        _sectionX = _sectionPos!.xpos ?? _sectionX;
+        _sectionY = _sectionPos!.ypos ?? _sectionY;
+        _sectionScale = _sectionPos!.size ?? _sectionScale;
       }
     }
 
     final timers = await (database.select(database.timer)
           ..where((t) => t.pageId.equals(_currentPage.id)))
         .get();
+
+    // Load School A Position
+    PositionData? saPos;
+    if (_currentPage.schoolAPositionId != null) {
+      saPos = await (database.select(database.position)
+            ..where((t) => t.id.equals(_currentPage.schoolAPositionId!)))
+          .getSingleOrNull();
+    }
+
+    // Load School B Position
+    PositionData? sbPos;
+    if (_currentPage.schoolBPositionId != null) {
+      sbPos = await (database.select(database.position)
+            ..where((t) => t.id.equals(_currentPage.schoolBPositionId!)))
+          .getSingleOrNull();
+    }
 
     if (mounted) {
       setState(() {
@@ -475,9 +628,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
             if (timer.positionId != null) {
               _loadTimerPosition(timer.positionId!, 'single');
             } else {
-              _t1X = timer.xpos ?? 0;
-              _t1Y = timer.ypos ?? 0;
-              _t1Scale = timer.scale ?? 1.0;
+              _t1X = timer.xpos ?? _t1X;
+              _t1Y = timer.ypos ?? _t1Y;
+              _t1Scale = timer.scale ?? _t1Scale;
             }
           } else if (timer.timerType == 'doubleL') {
             _leftTemplateId = timer.timerTemplateId;
@@ -491,9 +644,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
             if (timer.positionId != null) {
               _loadTimerPosition(timer.positionId!, 'doubleL');
             } else {
-              _tlX = timer.xpos ?? 0;
-              _tlY = timer.ypos ?? 0;
-              _tlScale = timer.scale ?? 1.0;
+              _tlX = timer.xpos ?? _tlX;
+              _tlY = timer.ypos ?? _tlY;
+              _tlScale = timer.scale ?? _tlScale;
             }
           } else if (timer.timerType == 'doubleR') {
             _rightTemplateId = timer.timerTemplateId;
@@ -507,12 +660,27 @@ class _PageManagerPageState extends State<PageManagerPage> {
             if (timer.positionId != null) {
               _loadTimerPosition(timer.positionId!, 'doubleR');
             } else {
-              _trX = timer.xpos ?? 0;
-              _trY = timer.ypos ?? 0;
-              _trScale = timer.scale ?? 1.0;
+              _trX = timer.xpos ?? _trX;
+              _trY = timer.ypos ?? _trY;
+              _trScale = timer.scale ?? _trScale;
             }
           }
         }
+
+        _saPos = saPos;
+        if (_saPos != null) {
+          _saX = _saPos!.xpos ?? _saX;
+          _saY = _saPos!.ypos ?? _saY;
+          _saScale = _saPos!.size ?? _saScale;
+        }
+
+        _sbPos = sbPos;
+        if (_sbPos != null) {
+          _sbX = _sbPos!.xpos ?? _sbX;
+          _sbY = _sbPos!.ypos ?? _sbY;
+          _sbScale = _sbPos!.size ?? _sbScale;
+        }
+
         _isLoading = false;
       });
       _syncPositionControllers();
@@ -949,6 +1117,54 @@ class _PageManagerPageState extends State<PageManagerPage> {
             .getSingle();
       }
 
+      // Handle School A position save
+      int? saPosId;
+      if (_saPos != null) {
+        await (database.update(database.position)
+              ..where((t) => t.id.equals(_saPos!.id)))
+            .write(PositionCompanion(
+          xpos: drift.Value(_saX),
+          ypos: drift.Value(_saY),
+          size: drift.Value(_saScale),
+        ));
+        saPosId = _saPos!.id;
+      } else {
+        saPosId = await database.into(database.position).insert(
+              PositionCompanion.insert(
+                xpos: drift.Value(_saX),
+                ypos: drift.Value(_saY),
+                size: drift.Value(_saScale),
+              ),
+            );
+        _saPos = await (database.select(database.position)
+              ..where((t) => t.id.equals(saPosId!)))
+            .getSingle();
+      }
+
+      // Handle School B position save
+      int? sbPosId;
+      if (_sbPos != null) {
+        await (database.update(database.position)
+              ..where((t) => t.id.equals(_sbPos!.id)))
+            .write(PositionCompanion(
+          xpos: drift.Value(_sbX),
+          ypos: drift.Value(_sbY),
+          size: drift.Value(_sbScale),
+        ));
+        sbPosId = _sbPos!.id;
+      } else {
+        sbPosId = await database.into(database.position).insert(
+              PositionCompanion.insert(
+                xpos: drift.Value(_sbX),
+                ypos: drift.Value(_sbY),
+                size: drift.Value(_sbScale),
+              ),
+            );
+        _sbPos = await (database.select(database.position)
+              ..where((t) => t.id.equals(sbPosId!)))
+            .getSingle();
+      }
+
       await (database.update(database.page)
             ..where((t) => t.id.equals(_currentPage.id)))
           .write(PageCompanion(
@@ -964,7 +1180,10 @@ class _PageManagerPageState extends State<PageManagerPage> {
         hotkeyValue: drift.Value(_hotkeyController.text.trim().isEmpty
             ? null
             : _hotkeyController.text.trim()),
+        schoolAPositionId: drift.Value(saPosId),
+        schoolBPositionId: drift.Value(sbPosId),
       ));
+
       final updated = await (database.select(database.page)
             ..where((t) => t.id.equals(_currentPage.id)))
           .getSingle();
@@ -1020,6 +1239,12 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _trXCtrl.dispose();
     _trYCtrl.dispose();
     _trScaleCtrl.dispose();
+    _saxCtrl.dispose();
+    _sayCtrl.dispose();
+    _saScaleCtrl.dispose();
+    _sbxCtrl.dispose();
+    _sbyCtrl.dispose();
+    _sbScaleCtrl.dispose();
     super.dispose();
   }
 
@@ -1030,7 +1255,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
       builder: (ctx) => AlertDialog(
         title: const Text('应用位置到全部页面'),
         content: const Text(
-            '是否将当前页面中 环节名称、计时器 的位置和大小配置，应用到同一赛程中的所有页面？\n\n（已有位置数据的页面将被覆盖）'),
+            '是否将当前页面中 环节名称、计时器、学校信息 的位置和大小配置，应用到同一赛程中的所有页面？\n\n（已有位置数据的页面将被覆盖）'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -1128,11 +1353,89 @@ class _PageManagerPageState extends State<PageManagerPage> {
             positionId: drift.Value(posId),
           ));
         }
+
+        // Apply School Positions
+        int? saPosId = pg.schoolAPositionId;
+        if (saPosId != null) {
+          await (database.update(database.position)
+                ..where((t) => t.id.equals(saPosId!)))
+              .write(PositionCompanion(
+            xpos: drift.Value(_saX),
+            ypos: drift.Value(_saY),
+            size: drift.Value(_saScale),
+          ));
+        } else {
+          saPosId = await database.into(database.position).insert(
+                PositionCompanion.insert(
+                  xpos: drift.Value(_saX),
+                  ypos: drift.Value(_saY),
+                  size: drift.Value(_saScale),
+                ),
+              );
+        }
+
+        int? sbPosId = pg.schoolBPositionId;
+        if (sbPosId != null) {
+          await (database.update(database.position)
+                ..where((t) => t.id.equals(sbPosId!)))
+              .write(PositionCompanion(
+            xpos: drift.Value(_sbX),
+            ypos: drift.Value(_sbY),
+            size: drift.Value(_sbScale),
+          ));
+        } else {
+          sbPosId = await database.into(database.position).insert(
+                PositionCompanion.insert(
+                  xpos: drift.Value(_sbX),
+                  ypos: drift.Value(_sbY),
+                  size: drift.Value(_sbScale),
+                ),
+              );
+        }
+
+        await (database.update(database.page)..where((t) => t.id.equals(pg.id)))
+            .write(PageCompanion(
+          schoolAPositionId: drift.Value(saPosId),
+          schoolBPositionId: drift.Value(sbPosId),
+        ));
       }
+
+      // Update Flow defaults for persistence for NEW pages
+      Map<String, dynamic> existingConfig = {};
+      try {
+        if (widget.flow.positionConfig != null) {
+          existingConfig = jsonDecode(widget.flow.positionConfig!);
+        }
+      } catch (_) {}
+
+      final newConfig = Map<String, dynamic>.from(existingConfig);
+      // Always update globals (schools)
+      newConfig['schoolA'] = {'x': _saX, 'y': _saY, 's': _saScale};
+      newConfig['schoolB'] = {'x': _sbX, 'y': _sbY, 's': _sbScale};
+      // Always update current section (we'll treat section as global for simplicity as per existing logic)
+      newConfig['section'] = {
+        'x': _sectionX,
+        'y': _sectionY,
+        's': _sectionScale
+      };
+
+      // Conditionally update timers depending on current page type to avoid accidental reset of other types
+      if (_selectedPageType == 'A1') {
+        newConfig['timer_single'] = {'x': _t1X, 'y': _t1Y, 's': _t1Scale};
+      } else if (_selectedPageType == 'A2') {
+        newConfig['timer_doubleL'] = {'x': _tlX, 'y': _tlY, 's': _tlScale};
+        newConfig['timer_doubleR'] = {'x': _trX, 'y': _trY, 's': _trScale};
+      }
+
+      await (database.update(database.flow)
+            ..where((t) => t.id.equals(widget.flow.id)))
+          .write(FlowCompanion(
+        positionConfig: drift.Value(jsonEncode(newConfig)),
+      ));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('位置已应用到 ${pages.length} 个页面')),
+          SnackBar(content: Text('位置已应用到 ${pages.length} 个页面，并已保存为该赛程的默认配置')),
         );
       }
     } catch (e) {
@@ -1282,8 +1585,14 @@ class _PageManagerPageState extends State<PageManagerPage> {
                             child: FilterChip(
                               label: Text(type),
                               selected: isSelected,
-                              onSelected: (val) => setState(
-                                  () => _selectedPageType = val ? type : null),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    _selectedPageType = type;
+                                  });
+                                  _loadTimerData();
+                                }
+                              },
                               selectedColor: const Color(0xFF6B46C1)
                                   .withValues(alpha: 0.2),
                               checkmarkColor: const Color(0xFF6B46C1),
@@ -1424,10 +1733,76 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         Expanded(child: _buildFontPicker('计时器字体', 'timer')),
                       ],
                     ),
-                    const SizedBox(height: 24),
                   ],
+                  const SizedBox(height: 24),
 
                   const SizedBox(height: 32),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionTitle('学校 A 位置 (School A Config)'),
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border:
+                                      Border.all(color: Colors.grey.shade200)),
+                              child: _buildPositionControl(
+                                label: '位置与大小 (Position & Scale)',
+                                x: _saX,
+                                y: _saY,
+                                scale: _saScale,
+                                xCtrl: _saxCtrl,
+                                yCtrl: _sayCtrl,
+                                scaleCtrl: _saScaleCtrl,
+                                onXChanged: (val) => setState(() => _saX = val),
+                                onYChanged: (val) => setState(() => _saY = val),
+                                onScaleChanged: (val) =>
+                                    setState(() => _saScale = val),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionTitle('学校 B 位置 (School B Config)'),
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border:
+                                      Border.all(color: Colors.grey.shade200)),
+                              child: _buildPositionControl(
+                                label: '位置与大小 (Position & Scale)',
+                                x: _sbX,
+                                y: _sbY,
+                                scale: _sbScale,
+                                xCtrl: _sbxCtrl,
+                                yCtrl: _sbyCtrl,
+                                scaleCtrl: _sbScaleCtrl,
+                                onXChanged: (val) => setState(() => _sbX = val),
+                                onYChanged: (val) => setState(() => _sbY = val),
+                                onScaleChanged: (val) =>
+                                    setState(() => _sbScale = val),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
 
                   const SizedBox(height: 32),
                   _buildSectionTitle('页面预览 (Preview)'),
@@ -1600,6 +1975,27 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                             ],
                                           ),
                                         ),
+                                      // School Logos & Names
+                                      _buildDraggableItem(
+                                        alignment: Alignment.bottomLeft,
+                                        x: _saX,
+                                        y: _saY,
+                                        scale: _saScale,
+                                        onChanged: (dx, dy, s) {},
+                                        child: _buildSchoolPreview(
+                                            _schoolA, _schoolALogo,
+                                            isA: true),
+                                      ),
+                                      _buildDraggableItem(
+                                        alignment: Alignment.bottomRight,
+                                        x: _sbX,
+                                        y: _sbY,
+                                        scale: _sbScale,
+                                        onChanged: (dx, dy, s) {},
+                                        child: _buildSchoolPreview(
+                                            _schoolB, _schoolBLogo,
+                                            isA: false),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -2034,6 +2430,58 @@ class _PageManagerPageState extends State<PageManagerPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSchoolPreview(SchoolData? school, ImagesData? logo,
+      {required bool isA}) {
+    if (school == null) return const SizedBox.shrink();
+
+    final logoWidget = FutureBuilder<Directory>(
+      future: getApplicationSupportDirectory(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || logo?.imageName == null) {
+          return const Icon(Icons.school, size: 60, color: Colors.black54);
+        }
+        final path = p.join(snapshot.data!.path, 'YiHuaTimer', 'schools',
+            widget.event.id.toString(), logo!.imageName!);
+        if (!File(path).existsSync()) {
+          return const Icon(Icons.school, size: 60, color: Colors.black54);
+        }
+        return Image.file(File(path),
+            width: 100, height: 100, fit: BoxFit.contain);
+      },
+    );
+
+    final nameWidget = Text(
+      school.schoolName,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 36,
+        fontWeight: FontWeight.bold,
+        fontFamily: _schoolFontFamily,
+      ),
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      child: isA
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                logoWidget,
+                const SizedBox(width: 16),
+                nameWidget,
+              ],
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                nameWidget,
+                const SizedBox(width: 16),
+                logoWidget,
+              ],
+            ),
     );
   }
 }

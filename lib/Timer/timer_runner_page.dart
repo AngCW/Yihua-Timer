@@ -391,6 +391,14 @@ class _TimerPageViewState extends State<_TimerPageView> {
   String? _pageSectionFont;
   String? _pageTimerFont;
 
+  SchoolData? _schoolA;
+  SchoolData? _schoolB;
+  ImagesData? _logoA;
+  ImagesData? _logoB;
+  PositionData? _posA;
+  PositionData? _posB;
+  String? _schoolFontFamily;
+
   @override
   void initState() {
     super.initState();
@@ -567,10 +575,68 @@ class _TimerPageViewState extends State<_TimerPageView> {
       _timerIdsByType[t.timerType ?? ''] = t.id;
     }
 
+    await _loadSchoolInfo();
+
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadSchoolInfo() async {
+    // 1. Fetch schools
+    if (widget.flow.schoolAId != null) {
+      _schoolA = await (database.select(database.school)
+            ..where((t) => t.id.equals(widget.flow.schoolAId!)))
+          .getSingleOrNull();
+
+      if (_schoolA?.logoImageId != null) {
+        _logoA = await (database.select(database.images)
+              ..where((t) => t.id.equals(_schoolA!.logoImageId!)))
+            .getSingleOrNull();
+      }
+    }
+    if (widget.flow.schoolBId != null) {
+      _schoolB = await (database.select(database.school)
+            ..where((t) => t.id.equals(widget.flow.schoolBId!)))
+          .getSingleOrNull();
+
+      if (_schoolB?.logoImageId != null) {
+        _logoB = await (database.select(database.images)
+              ..where((t) => t.id.equals(_schoolB!.logoImageId!)))
+            .getSingleOrNull();
+      }
+    }
+
+    // 2. Fetch positions
+    if (widget.pageData.schoolAPositionId != null) {
+      _posA = await (database.select(database.position)
+            ..where((t) => t.id.equals(widget.pageData.schoolAPositionId!)))
+          .getSingleOrNull();
+    }
+    if (widget.pageData.schoolBPositionId != null) {
+      _posB = await (database.select(database.position)
+            ..where((t) => t.id.equals(widget.pageData.schoolBPositionId!)))
+          .getSingleOrNull();
+    }
+
+    // 3. Load font family
+    if (widget.flow.fontName?.isNotEmpty == true) {
+      final fileName = widget.flow.fontName!;
+      final supportDir = await getApplicationSupportDirectory();
+      final imagesDir = Directory(p.join(
+          supportDir.path, 'YiHuaTimer', 'images', '${widget.flow.eventId}'));
+      final fontFile = File(p.join(imagesDir.path, fileName));
+
+      if (await fontFile.exists()) {
+        final family = 'Font_School_${widget.flow.id}';
+        final fontLoader = FontLoader(family);
+        fontLoader.addFont(
+            Future.value(fontFile.readAsBytesSync().buffer.asByteData()));
+        await fontLoader.load();
+        _schoolFontFamily = family;
+      }
     }
   }
 
@@ -882,7 +948,93 @@ class _TimerPageViewState extends State<_TimerPageView> {
                 ],
               ),
             ),
+
+          // School Info (Always show on all pages, matches PageManagerPage layout)
+          Stack(
+            children: [
+              if (_schoolA != null)
+                _buildSchoolRender(
+                  _schoolA!,
+                  _logoA,
+                  _posA,
+                  isA: true,
+                ),
+              if (_schoolB != null)
+                _buildSchoolRender(
+                  _schoolB!,
+                  _logoB,
+                  _posB,
+                  isA: false,
+                ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSchoolRender(
+      SchoolData school, ImagesData? logo, PositionData? pos,
+      {required bool isA}) {
+    final logoWidget = FutureBuilder<Directory>(
+      future: getApplicationSupportDirectory(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || logo?.imageName == null) {
+          return const Icon(Icons.school, size: 60, color: Colors.black54);
+        }
+        final path = p.join(snapshot.data!.path, 'YiHuaTimer', 'schools',
+            widget.flow.eventId.toString(), logo!.imageName!);
+        if (!File(path).existsSync()) {
+          return const Icon(Icons.school, size: 60, color: Colors.black54);
+        }
+        return Image.file(File(path),
+            width: 100, height: 100, fit: BoxFit.contain);
+      },
+    );
+
+    final nameWidget = Text(
+      school.schoolName,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 36,
+        fontWeight: FontWeight.bold,
+        fontFamily: _schoolFontFamily,
+        shadows: [
+          Shadow(
+            color: Colors.white.withValues(alpha: 0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+    );
+
+    final content = isA
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              logoWidget,
+              const SizedBox(width: 16),
+              nameWidget,
+            ],
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              nameWidget,
+              const SizedBox(width: 16),
+              logoWidget,
+            ],
+          );
+
+    return Align(
+      alignment: isA ? Alignment.bottomLeft : Alignment.bottomRight,
+      child: Transform.translate(
+        offset: Offset(pos?.xpos ?? 0, pos?.ypos ?? 0),
+        child: Transform.scale(
+          scale: pos?.size ?? 1.0,
+          child: content,
+        ),
       ),
     );
   }

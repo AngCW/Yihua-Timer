@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:convert';
 import 'dart:io';
 import '../main.dart';
 import '../database/app_database.dart';
 import 'edit_timer_flow_page.dart';
 
-// ─── Event Draft with Persistence ──────────────────────────────────────────
+// ─── Event Draft (Memory Only) ──────────────────────────────────────────────
 class _EventDraft {
   String name = '';
   String desc = '';
@@ -20,45 +18,9 @@ class _EventDraft {
   String? votingDataPath;
   String? bgmPath;
   String? bgImgPath;
+  int? eventId;
 
   _EventDraft();
-
-  Future<void> save() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = {
-      'name': name,
-      'desc': desc,
-      'dateStart': dateRange?.start.toIso8601String(),
-      'dateEnd': dateRange?.end.toIso8601String(),
-      'teamNum': teamNum,
-      'remark': remark,
-      'votingDataPath': votingDataPath,
-      'bgmPath': bgmPath,
-      'bgImgPath': bgImgPath,
-    };
-    await prefs.setString('event_draft', jsonEncode(data));
-  }
-
-  Future<void> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('event_draft');
-    if (json != null) {
-      final data = jsonDecode(json) as Map<String, dynamic>;
-      name = data['name'] ?? '';
-      desc = data['desc'] ?? '';
-      if (data['dateStart'] != null && data['dateEnd'] != null) {
-        dateRange = DateTimeRange(
-          start: DateTime.parse(data['dateStart']),
-          end: DateTime.parse(data['dateEnd']),
-        );
-      }
-      teamNum = data['teamNum'] ?? '';
-      remark = data['remark'] ?? '';
-      votingDataPath = data['votingDataPath'];
-      bgmPath = data['bgmPath'];
-      bgImgPath = data['bgImgPath'];
-    }
-  }
 
   void clear() {
     name = '';
@@ -69,6 +31,7 @@ class _EventDraft {
     votingDataPath = null;
     bgmPath = null;
     bgImgPath = null;
+    eventId = null;
   }
 }
 
@@ -83,25 +46,12 @@ class CreateEventPage extends StatefulWidget {
 class _CreateEventPageState extends State<CreateEventPage> {
   int _currentStep = 0;
   final _draft = _EventDraft();
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _initDraft();
-  }
-
-  Future<void> _initDraft() async {
-    await _draft.load();
-    if (mounted) setState(() => _isLoading = false);
-  }
 
   void _goToStep2() => setState(() => _currentStep = 1);
   void _goToStep1() => setState(() => _currentStep = 0);
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
     return _currentStep == 0
         ? _EventFormPage(draft: _draft, onNext: _goToStep2)
         : _EventConfigPage(draft: _draft, onBack: _goToStep1);
@@ -148,7 +98,6 @@ class _EventFormPageState extends State<_EventFormPage> {
     widget.draft.desc = _descCtrl.text;
     widget.draft.teamNum = _teamCtrl.text;
     widget.draft.remark = _remarkCtrl.text;
-    widget.draft.save();
   }
 
   bool _validate() {
@@ -485,13 +434,46 @@ class _EventConfigPageState extends State<_EventConfigPage> {
   EventData? _savedEvent;
   final List<FlowData> _flows = [];
   bool _saving = false;
+  bool _initializing = true;
 
-  Future<void> _saveEvent() async {
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    if (widget.draft.eventId != null) {
+      _savedEvent = await (database.select(database.event)
+            ..where((t) => t.id.equals(widget.draft.eventId!)))
+          .getSingleOrNull();
+    }
+
+    // Always attempt to save (create or update) when proceeding to this page
+    await _saveEvent(silent: true);
+
+    if (_savedEvent != null) {
+      final flows = await (database.select(database.flow)
+            ..where((t) => t.eventId.equals(_savedEvent!.id))
+            ..orderBy([(t) => drift.OrderingTerm(expression: t.flowPosition)]))
+          .get();
+      if (mounted) {
+        setState(() {
+          _flows.clear();
+          _flows.addAll(flows);
+        });
+      }
+    }
+
+    if (mounted) setState(() => _initializing = false);
+  }
+
+  Future<void> _saveEvent({bool silent = false}) async {
     if (widget.draft.name.trim().isEmpty) {
-      _snack('赛事名称不能为空，请返回填写');
+      if (!silent) _snack('赛事名称不能为空，请返回填写');
       return;
     }
-    setState(() => _saving = true);
+    if (mounted) setState(() => _saving = true);
     try {
       final d = widget.draft;
       if (_savedEvent == null) {
@@ -505,8 +487,7 @@ class _EventConfigPageState extends State<_EventConfigPage> {
                 remark: drift.Value(d.remark),
               ),
             );
-        _snack('赛事已保存 ✓');
-        // Clear draft after successful creation if desired, but user might want to keep it or add flows.
+        if (!silent) _snack('赛事已保存 ✓');
       } else {
         await (database.update(database.event)
               ..where((t) => t.id.equals(_savedEvent!.id)))
@@ -518,10 +499,10 @@ class _EventConfigPageState extends State<_EventConfigPage> {
           teamNum: drift.Value(int.tryParse(d.teamNum)),
           remark: drift.Value(d.remark),
         ));
-        _snack('赛事已更新 ✓');
+        if (!silent) _snack('赛事已更新 ✓');
       }
     } catch (e) {
-      _snack('保存失败: $e');
+      if (!silent) _snack('保存失败: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -684,6 +665,9 @@ class _EventConfigPageState extends State<_EventConfigPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initializing) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(

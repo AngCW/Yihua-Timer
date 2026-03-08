@@ -1,0 +1,90 @@
+Analyzing Yihua-Timer...                                        
+
+   info - Statements in an if should be enclosed in a block - lib\CreateEvent\create_event_form.dart:214:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\CreateEvent\create_event_form.dart:659:9 - curly_braces_in_flow_control_structures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\CreateEvent\create_event_form.dart:795:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\CreateEvent\edit_timer_flow_page.dart:425:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\CreateEvent\edit_timer_flow_page.dart:429:45 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\CreateEvent\edit_timer_flow_page.dart:532:16 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\CreateEvent\edit_timer_flow_page.dart:535:21 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance - lib\CreateEvent\edit_timer_flow_page.dart:538:13 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\CreateEvent\edit_timer_flow_page.dart:540:25 - prefer_const_literals_to_create_immutables
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Dashboard\widgets\navigation_sidebar.dart:27:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Dashboard\widgets\navigation_sidebar.dart:138:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Dashboard\widgets\recent_events_section.dart:18:33 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:59:11 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\Dashboard\widgets\recent_events_section.dart:60:23 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:61:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:62:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:70:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:71:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:79:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:80:24 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Dashboard\widgets\recent_events_section.dart:176:52 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\Dashboard\widgets\recent_events_section.dart:182:23 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:101:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:428:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:433:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:502:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:854:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:857:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:921:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:924:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:971:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:974:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:1037:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:1040:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:1158:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:1196:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:1199:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_details_page.dart:1246:37 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\EventManager\event_details_page.dart:1441:35 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\EventManager\event_details_page.dart:1442:42 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\EventManager\event_details_page.dart:1447:42 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_folder_detail_page.dart:48:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_folder_detail_page.dart:159:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_folder_detail_page.dart:164:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_folder_detail_page.dart:360:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_folder_detail_page.dart:363:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_manager_page.dart:166:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_manager_page.dart:185:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\EventManager\event_manager_page.dart:186:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\FlowManager\flow_manager_page.dart:346:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\FlowManager\flow_manager_page.dart:638:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\FlowManager\flow_manager_page.dart:950:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\FlowManager\flow_manager_page.dart:953:48 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\FlowManager\flow_manager_page.dart:1050:7 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\FlowManager\flow_manager_page.dart:1194:21 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\FlowManager\flow_manager_page.dart:1213:44 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\FlowManager\page_manager_page.dart:1494:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\FlowManager\page_manager_page.dart:1740:64 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\Setting\general_settings_page.dart:122:13 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Setting\hotkey_settings_page.dart:245:45 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\Setting\settings_page.dart:28:20 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\Setting\settings_page.dart:30:25 - prefer_const_literals_to_create_immutables
+   info - The import of 'package:flutter/services.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\Setting\timer_template_settings_page.dart:2:8 - unnecessary_import
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\Setting\timer_template_settings_page.dart:266:27 - deprecated_member_use
+   info - The private field _ringtones could be 'final' - lib\Setting\volume_settings_page.dart:14:16 - prefer_final_fields
+warning - The value of the local variable 'nameController' isn't used - lib\Setting\volume_settings_page.dart:241:33 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance - lib\Setting\volume_settings_page.dart:267:31 - prefer_const_constructors
+warning - The operand must be 'null', so the condition is always 'false' - lib\Setting\volume_settings_page.dart:328:44 - unnecessary_null_comparison
+   info - Use 'const' with the constructor to improve performance - lib\Setting\volume_settings_page.dart:482:31 - prefer_const_constructors
+warning - The operand must be 'null', so the condition is always 'false' - lib\Setting\volume_settings_page.dart:573:44 - unnecessary_null_comparison
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_event_detail_page.dart:80:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_event_detail_page.dart:245:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_event_detail_page.dart:250:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_event_detail_page.dart:314:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_folder_detail_page.dart:48:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_folder_detail_page.dart:122:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_folder_detail_page.dart:127:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_page.dart:21:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_page.dart:40:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Timer\timer_page.dart:41:36 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\Timer\timer_runner_page.dart:815:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\Timer\timer_runner_page.dart:844:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\Timer\timer_runner_page.dart:873:35 - curly_braces_in_flow_control_structures
+   info - The imported package 'sqlite3' isn't a dependency of the importing package - lib\database\app_database.dart:8:8 - depend_on_referenced_packages
+warning - Unused import: 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart' - lib\database\app_database.dart:9:8 - unused_import
+warning - The operand can't be 'null', so the condition is always 'false' - lib\database\app_database.g.dart:6397:24 - unnecessary_null_comparison
+warning - The '!' will have no effect because the receiver can't be null - lib\database\app_database.g.dart:6399:43 - unnecessary_non_null_assertion
+

@@ -2277,6 +2277,13 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'REFERENCES school(id)');
+  static const VerificationMeta _positionConfigMeta =
+      const VerificationMeta('positionConfig');
+  late final GeneratedColumn<String> positionConfig = GeneratedColumn<String>(
+      'position_config', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2290,7 +2297,8 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
         flowPosition,
         folderId,
         schoolAId,
-        schoolBId
+        schoolBId,
+        positionConfig
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2363,6 +2371,12 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
           schoolBId.isAcceptableOrUnknown(
               data['school_b_id']!, _schoolBIdMeta));
     }
+    if (data.containsKey('position_config')) {
+      context.handle(
+          _positionConfigMeta,
+          positionConfig.isAcceptableOrUnknown(
+              data['position_config']!, _positionConfigMeta));
+    }
     return context;
   }
 
@@ -2396,6 +2410,8 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
           .read(DriftSqlType.int, data['${effectivePrefix}school_a_id']),
       schoolBId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}school_b_id']),
+      positionConfig: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}position_config']),
     );
   }
 
@@ -2421,6 +2437,7 @@ class FlowData extends DataClass implements Insertable<FlowData> {
   final int? folderId;
   final int? schoolAId;
   final int? schoolBId;
+  final String? positionConfig;
   const FlowData(
       {required this.id,
       this.flowName,
@@ -2433,7 +2450,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       this.flowPosition,
       this.folderId,
       this.schoolAId,
-      this.schoolBId});
+      this.schoolBId,
+      this.positionConfig});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2470,6 +2488,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
     }
     if (!nullToAbsent || schoolBId != null) {
       map['school_b_id'] = Variable<int>(schoolBId);
+    }
+    if (!nullToAbsent || positionConfig != null) {
+      map['position_config'] = Variable<String>(positionConfig);
     }
     return map;
   }
@@ -2510,6 +2531,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       schoolBId: schoolBId == null && nullToAbsent
           ? const Value.absent()
           : Value(schoolBId),
+      positionConfig: positionConfig == null && nullToAbsent
+          ? const Value.absent()
+          : Value(positionConfig),
     );
   }
 
@@ -2529,6 +2553,7 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       folderId: serializer.fromJson<int?>(json['folder_id']),
       schoolAId: serializer.fromJson<int?>(json['school_a_id']),
       schoolBId: serializer.fromJson<int?>(json['school_b_id']),
+      positionConfig: serializer.fromJson<String?>(json['position_config']),
     );
   }
   @override
@@ -2547,6 +2572,7 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       'folder_id': serializer.toJson<int?>(folderId),
       'school_a_id': serializer.toJson<int?>(schoolAId),
       'school_b_id': serializer.toJson<int?>(schoolBId),
+      'position_config': serializer.toJson<String?>(positionConfig),
     };
   }
 
@@ -2562,7 +2588,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
           Value<int?> flowPosition = const Value.absent(),
           Value<int?> folderId = const Value.absent(),
           Value<int?> schoolAId = const Value.absent(),
-          Value<int?> schoolBId = const Value.absent()}) =>
+          Value<int?> schoolBId = const Value.absent(),
+          Value<String?> positionConfig = const Value.absent()}) =>
       FlowData(
         id: id ?? this.id,
         flowName: flowName.present ? flowName.value : this.flowName,
@@ -2582,6 +2609,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
         folderId: folderId.present ? folderId.value : this.folderId,
         schoolAId: schoolAId.present ? schoolAId.value : this.schoolAId,
         schoolBId: schoolBId.present ? schoolBId.value : this.schoolBId,
+        positionConfig:
+            positionConfig.present ? positionConfig.value : this.positionConfig,
       );
   FlowData copyWithCompanion(FlowCompanion data) {
     return FlowData(
@@ -2607,6 +2636,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       folderId: data.folderId.present ? data.folderId.value : this.folderId,
       schoolAId: data.schoolAId.present ? data.schoolAId.value : this.schoolAId,
       schoolBId: data.schoolBId.present ? data.schoolBId.value : this.schoolBId,
+      positionConfig: data.positionConfig.present
+          ? data.positionConfig.value
+          : this.positionConfig,
     );
   }
 
@@ -2624,7 +2656,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
           ..write('flowPosition: $flowPosition, ')
           ..write('folderId: $folderId, ')
           ..write('schoolAId: $schoolAId, ')
-          ..write('schoolBId: $schoolBId')
+          ..write('schoolBId: $schoolBId, ')
+          ..write('positionConfig: $positionConfig')
           ..write(')'))
         .toString();
   }
@@ -2642,7 +2675,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       flowPosition,
       folderId,
       schoolAId,
-      schoolBId);
+      schoolBId,
+      positionConfig);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2658,7 +2692,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
           other.flowPosition == this.flowPosition &&
           other.folderId == this.folderId &&
           other.schoolAId == this.schoolAId &&
-          other.schoolBId == this.schoolBId);
+          other.schoolBId == this.schoolBId &&
+          other.positionConfig == this.positionConfig);
 }
 
 class FlowCompanion extends UpdateCompanion<FlowData> {
@@ -2674,6 +2709,7 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
   final Value<int?> folderId;
   final Value<int?> schoolAId;
   final Value<int?> schoolBId;
+  final Value<String?> positionConfig;
   const FlowCompanion({
     this.id = const Value.absent(),
     this.flowName = const Value.absent(),
@@ -2687,6 +2723,7 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     this.folderId = const Value.absent(),
     this.schoolAId = const Value.absent(),
     this.schoolBId = const Value.absent(),
+    this.positionConfig = const Value.absent(),
   });
   FlowCompanion.insert({
     this.id = const Value.absent(),
@@ -2701,6 +2738,7 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     this.folderId = const Value.absent(),
     this.schoolAId = const Value.absent(),
     this.schoolBId = const Value.absent(),
+    this.positionConfig = const Value.absent(),
   });
   static Insertable<FlowData> custom({
     Expression<int>? id,
@@ -2715,6 +2753,7 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     Expression<int>? folderId,
     Expression<int>? schoolAId,
     Expression<int>? schoolBId,
+    Expression<String>? positionConfig,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2729,6 +2768,7 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
       if (folderId != null) 'folder_id': folderId,
       if (schoolAId != null) 'school_a_id': schoolAId,
       if (schoolBId != null) 'school_b_id': schoolBId,
+      if (positionConfig != null) 'position_config': positionConfig,
     });
   }
 
@@ -2744,7 +2784,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
       Value<int?>? flowPosition,
       Value<int?>? folderId,
       Value<int?>? schoolAId,
-      Value<int?>? schoolBId}) {
+      Value<int?>? schoolBId,
+      Value<String?>? positionConfig}) {
     return FlowCompanion(
       id: id ?? this.id,
       flowName: flowName ?? this.flowName,
@@ -2758,6 +2799,7 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
       folderId: folderId ?? this.folderId,
       schoolAId: schoolAId ?? this.schoolAId,
       schoolBId: schoolBId ?? this.schoolBId,
+      positionConfig: positionConfig ?? this.positionConfig,
     );
   }
 
@@ -2800,6 +2842,9 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     if (schoolBId.present) {
       map['school_b_id'] = Variable<int>(schoolBId.value);
     }
+    if (positionConfig.present) {
+      map['position_config'] = Variable<String>(positionConfig.value);
+    }
     return map;
   }
 
@@ -2817,7 +2862,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
           ..write('flowPosition: $flowPosition, ')
           ..write('folderId: $folderId, ')
           ..write('schoolAId: $schoolAId, ')
-          ..write('schoolBId: $schoolBId')
+          ..write('schoolBId: $schoolBId, ')
+          ..write('positionConfig: $positionConfig')
           ..write(')'))
         .toString();
   }
@@ -3124,6 +3170,20 @@ class Page extends Table with TableInfo<Page, PageData> {
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression('FALSE'));
+  static const VerificationMeta _schoolAPositionIdMeta =
+      const VerificationMeta('schoolAPositionId');
+  late final GeneratedColumn<int> schoolAPositionId = GeneratedColumn<int>(
+      'school_a_position_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES position(id)');
+  static const VerificationMeta _schoolBPositionIdMeta =
+      const VerificationMeta('schoolBPositionId');
+  late final GeneratedColumn<int> schoolBPositionId = GeneratedColumn<int>(
+      'school_b_position_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES position(id)');
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -3141,7 +3201,9 @@ class Page extends Table with TableInfo<Page, PageData> {
         timerFontName,
         useFrontpage,
         sectionPositionId,
-        isDefaultPage
+        isDefaultPage,
+        schoolAPositionId,
+        schoolBPositionId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3240,6 +3302,18 @@ class Page extends Table with TableInfo<Page, PageData> {
           isDefaultPage.isAcceptableOrUnknown(
               data['is_default_page']!, _isDefaultPageMeta));
     }
+    if (data.containsKey('school_a_position_id')) {
+      context.handle(
+          _schoolAPositionIdMeta,
+          schoolAPositionId.isAcceptableOrUnknown(
+              data['school_a_position_id']!, _schoolAPositionIdMeta));
+    }
+    if (data.containsKey('school_b_position_id')) {
+      context.handle(
+          _schoolBPositionIdMeta,
+          schoolBPositionId.isAcceptableOrUnknown(
+              data['school_b_position_id']!, _schoolBPositionIdMeta));
+    }
     return context;
   }
 
@@ -3281,6 +3355,10 @@ class Page extends Table with TableInfo<Page, PageData> {
           DriftSqlType.int, data['${effectivePrefix}section_position_id']),
       isDefaultPage: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_default_page']),
+      schoolAPositionId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}school_a_position_id']),
+      schoolBPositionId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}school_b_position_id']),
     );
   }
 
@@ -3312,6 +3390,8 @@ class PageData extends DataClass implements Insertable<PageData> {
   final bool? useFrontpage;
   final int? sectionPositionId;
   final bool? isDefaultPage;
+  final int? schoolAPositionId;
+  final int? schoolBPositionId;
   const PageData(
       {required this.id,
       this.pageName,
@@ -3328,7 +3408,9 @@ class PageData extends DataClass implements Insertable<PageData> {
       this.timerFontName,
       this.useFrontpage,
       this.sectionPositionId,
-      this.isDefaultPage});
+      this.isDefaultPage,
+      this.schoolAPositionId,
+      this.schoolBPositionId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3377,6 +3459,12 @@ class PageData extends DataClass implements Insertable<PageData> {
     }
     if (!nullToAbsent || isDefaultPage != null) {
       map['is_default_page'] = Variable<bool>(isDefaultPage);
+    }
+    if (!nullToAbsent || schoolAPositionId != null) {
+      map['school_a_position_id'] = Variable<int>(schoolAPositionId);
+    }
+    if (!nullToAbsent || schoolBPositionId != null) {
+      map['school_b_position_id'] = Variable<int>(schoolBPositionId);
     }
     return map;
   }
@@ -3427,6 +3515,12 @@ class PageData extends DataClass implements Insertable<PageData> {
       isDefaultPage: isDefaultPage == null && nullToAbsent
           ? const Value.absent()
           : Value(isDefaultPage),
+      schoolAPositionId: schoolAPositionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(schoolAPositionId),
+      schoolBPositionId: schoolBPositionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(schoolBPositionId),
     );
   }
 
@@ -3450,6 +3544,10 @@ class PageData extends DataClass implements Insertable<PageData> {
       useFrontpage: serializer.fromJson<bool?>(json['use_frontpage']),
       sectionPositionId: serializer.fromJson<int?>(json['section_position_id']),
       isDefaultPage: serializer.fromJson<bool?>(json['is_default_page']),
+      schoolAPositionId:
+          serializer.fromJson<int?>(json['school_a_position_id']),
+      schoolBPositionId:
+          serializer.fromJson<int?>(json['school_b_position_id']),
     );
   }
   @override
@@ -3472,6 +3570,8 @@ class PageData extends DataClass implements Insertable<PageData> {
       'use_frontpage': serializer.toJson<bool?>(useFrontpage),
       'section_position_id': serializer.toJson<int?>(sectionPositionId),
       'is_default_page': serializer.toJson<bool?>(isDefaultPage),
+      'school_a_position_id': serializer.toJson<int?>(schoolAPositionId),
+      'school_b_position_id': serializer.toJson<int?>(schoolBPositionId),
     };
   }
 
@@ -3491,7 +3591,9 @@ class PageData extends DataClass implements Insertable<PageData> {
           Value<String?> timerFontName = const Value.absent(),
           Value<bool?> useFrontpage = const Value.absent(),
           Value<int?> sectionPositionId = const Value.absent(),
-          Value<bool?> isDefaultPage = const Value.absent()}) =>
+          Value<bool?> isDefaultPage = const Value.absent(),
+          Value<int?> schoolAPositionId = const Value.absent(),
+          Value<int?> schoolBPositionId = const Value.absent()}) =>
       PageData(
         id: id ?? this.id,
         pageName: pageName.present ? pageName.value : this.pageName,
@@ -3518,6 +3620,12 @@ class PageData extends DataClass implements Insertable<PageData> {
             : this.sectionPositionId,
         isDefaultPage:
             isDefaultPage.present ? isDefaultPage.value : this.isDefaultPage,
+        schoolAPositionId: schoolAPositionId.present
+            ? schoolAPositionId.value
+            : this.schoolAPositionId,
+        schoolBPositionId: schoolBPositionId.present
+            ? schoolBPositionId.value
+            : this.schoolBPositionId,
       );
   PageData copyWithCompanion(PageCompanion data) {
     return PageData(
@@ -3556,6 +3664,12 @@ class PageData extends DataClass implements Insertable<PageData> {
       isDefaultPage: data.isDefaultPage.present
           ? data.isDefaultPage.value
           : this.isDefaultPage,
+      schoolAPositionId: data.schoolAPositionId.present
+          ? data.schoolAPositionId.value
+          : this.schoolAPositionId,
+      schoolBPositionId: data.schoolBPositionId.present
+          ? data.schoolBPositionId.value
+          : this.schoolBPositionId,
     );
   }
 
@@ -3577,7 +3691,9 @@ class PageData extends DataClass implements Insertable<PageData> {
           ..write('timerFontName: $timerFontName, ')
           ..write('useFrontpage: $useFrontpage, ')
           ..write('sectionPositionId: $sectionPositionId, ')
-          ..write('isDefaultPage: $isDefaultPage')
+          ..write('isDefaultPage: $isDefaultPage, ')
+          ..write('schoolAPositionId: $schoolAPositionId, ')
+          ..write('schoolBPositionId: $schoolBPositionId')
           ..write(')'))
         .toString();
   }
@@ -3599,7 +3715,9 @@ class PageData extends DataClass implements Insertable<PageData> {
       timerFontName,
       useFrontpage,
       sectionPositionId,
-      isDefaultPage);
+      isDefaultPage,
+      schoolAPositionId,
+      schoolBPositionId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3619,7 +3737,9 @@ class PageData extends DataClass implements Insertable<PageData> {
           other.timerFontName == this.timerFontName &&
           other.useFrontpage == this.useFrontpage &&
           other.sectionPositionId == this.sectionPositionId &&
-          other.isDefaultPage == this.isDefaultPage);
+          other.isDefaultPage == this.isDefaultPage &&
+          other.schoolAPositionId == this.schoolAPositionId &&
+          other.schoolBPositionId == this.schoolBPositionId);
 }
 
 class PageCompanion extends UpdateCompanion<PageData> {
@@ -3639,6 +3759,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
   final Value<bool?> useFrontpage;
   final Value<int?> sectionPositionId;
   final Value<bool?> isDefaultPage;
+  final Value<int?> schoolAPositionId;
+  final Value<int?> schoolBPositionId;
   const PageCompanion({
     this.id = const Value.absent(),
     this.pageName = const Value.absent(),
@@ -3656,6 +3778,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.useFrontpage = const Value.absent(),
     this.sectionPositionId = const Value.absent(),
     this.isDefaultPage = const Value.absent(),
+    this.schoolAPositionId = const Value.absent(),
+    this.schoolBPositionId = const Value.absent(),
   });
   PageCompanion.insert({
     this.id = const Value.absent(),
@@ -3674,6 +3798,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.useFrontpage = const Value.absent(),
     this.sectionPositionId = const Value.absent(),
     this.isDefaultPage = const Value.absent(),
+    this.schoolAPositionId = const Value.absent(),
+    this.schoolBPositionId = const Value.absent(),
   });
   static Insertable<PageData> custom({
     Expression<int>? id,
@@ -3692,6 +3818,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
     Expression<bool>? useFrontpage,
     Expression<int>? sectionPositionId,
     Expression<bool>? isDefaultPage,
+    Expression<int>? schoolAPositionId,
+    Expression<int>? schoolBPositionId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3710,6 +3838,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
       if (useFrontpage != null) 'use_frontpage': useFrontpage,
       if (sectionPositionId != null) 'section_position_id': sectionPositionId,
       if (isDefaultPage != null) 'is_default_page': isDefaultPage,
+      if (schoolAPositionId != null) 'school_a_position_id': schoolAPositionId,
+      if (schoolBPositionId != null) 'school_b_position_id': schoolBPositionId,
     });
   }
 
@@ -3729,7 +3859,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
       Value<String?>? timerFontName,
       Value<bool?>? useFrontpage,
       Value<int?>? sectionPositionId,
-      Value<bool?>? isDefaultPage}) {
+      Value<bool?>? isDefaultPage,
+      Value<int?>? schoolAPositionId,
+      Value<int?>? schoolBPositionId}) {
     return PageCompanion(
       id: id ?? this.id,
       pageName: pageName ?? this.pageName,
@@ -3747,6 +3879,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
       useFrontpage: useFrontpage ?? this.useFrontpage,
       sectionPositionId: sectionPositionId ?? this.sectionPositionId,
       isDefaultPage: isDefaultPage ?? this.isDefaultPage,
+      schoolAPositionId: schoolAPositionId ?? this.schoolAPositionId,
+      schoolBPositionId: schoolBPositionId ?? this.schoolBPositionId,
     );
   }
 
@@ -3801,6 +3935,12 @@ class PageCompanion extends UpdateCompanion<PageData> {
     if (isDefaultPage.present) {
       map['is_default_page'] = Variable<bool>(isDefaultPage.value);
     }
+    if (schoolAPositionId.present) {
+      map['school_a_position_id'] = Variable<int>(schoolAPositionId.value);
+    }
+    if (schoolBPositionId.present) {
+      map['school_b_position_id'] = Variable<int>(schoolBPositionId.value);
+    }
     return map;
   }
 
@@ -3822,7 +3962,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
           ..write('timerFontName: $timerFontName, ')
           ..write('useFrontpage: $useFrontpage, ')
           ..write('sectionPositionId: $sectionPositionId, ')
-          ..write('isDefaultPage: $isDefaultPage')
+          ..write('isDefaultPage: $isDefaultPage, ')
+          ..write('schoolAPositionId: $schoolAPositionId, ')
+          ..write('schoolBPositionId: $schoolBPositionId')
           ..write(')'))
         .toString();
   }
@@ -5690,21 +5832,6 @@ final class $PositionReferences
         manager.$state.copyWith(prefetchedData: cache));
   }
 
-  static MultiTypedResultKey<Page, List<PageData>> _pageRefsTable(
-          _$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(db.page,
-          aliasName:
-              $_aliasNameGenerator(db.position.id, db.page.sectionPositionId));
-
-  $PageProcessedTableManager get pageRefs {
-    final manager = $PageTableManager($_db, $_db.page)
-        .filter((f) => f.sectionPositionId.id($_item.id));
-
-    final cache = $_typedResult.readTableOrNull(_pageRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-
   static MultiTypedResultKey<Timer, List<TimerData>> _timerRefsTable(
           _$AppDatabase db) =>
       MultiTypedResultKey.fromTable(db.timer,
@@ -5753,27 +5880,6 @@ class $PositionFilterComposer extends Composer<_$AppDatabase, Position> {
             $ImagesFilterComposer(
               $db: $db,
               $table: $db.images,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<bool> pageRefs(
-      Expression<bool> Function($PageFilterComposer f) f) {
-    final $PageFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.page,
-        getReferencedColumn: (t) => t.sectionPositionId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $PageFilterComposer(
-              $db: $db,
-              $table: $db.page,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -5866,27 +5972,6 @@ class $PositionAnnotationComposer extends Composer<_$AppDatabase, Position> {
     return f(composer);
   }
 
-  Expression<T> pageRefs<T extends Object>(
-      Expression<T> Function($PageAnnotationComposer a) f) {
-    final $PageAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.page,
-        getReferencedColumn: (t) => t.sectionPositionId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $PageAnnotationComposer(
-              $db: $db,
-              $table: $db.page,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
   Expression<T> timerRefs<T extends Object>(
       Expression<T> Function($TimerAnnotationComposer a) f) {
     final $TimerAnnotationComposer composer = $composerBuilder(
@@ -5920,7 +6005,7 @@ class $PositionTableManager extends RootTableManager<
     $PositionUpdateCompanionBuilder,
     (PositionData, $PositionReferences),
     PositionData,
-    PrefetchHooks Function({bool imagesRefs, bool pageRefs, bool timerRefs})> {
+    PrefetchHooks Function({bool imagesRefs, bool timerRefs})> {
   $PositionTableManager(_$AppDatabase db, Position table)
       : super(TableManagerState(
           db: db,
@@ -5959,13 +6044,11 @@ class $PositionTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $PositionReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: (
-              {imagesRefs = false, pageRefs = false, timerRefs = false}) {
+          prefetchHooksCallback: ({imagesRefs = false, timerRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (imagesRefs) db.images,
-                if (pageRefs) db.page,
                 if (timerRefs) db.timer
               ],
               addJoins: null,
@@ -5981,16 +6064,6 @@ class $PositionTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.positionId == item.id),
-                        typedResults: items),
-                  if (pageRefs)
-                    await $_getPrefetchedData(
-                        currentTable: table,
-                        referencedTable: $PositionReferences._pageRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $PositionReferences(db, table, p0).pageRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) => referencedItems
-                                .where((e) => e.sectionPositionId == item.id),
                         typedResults: items),
                   if (timerRefs)
                     await $_getPrefetchedData(
@@ -6021,7 +6094,7 @@ typedef $PositionProcessedTableManager = ProcessedTableManager<
     $PositionUpdateCompanionBuilder,
     (PositionData, $PositionReferences),
     PositionData,
-    PrefetchHooks Function({bool imagesRefs, bool pageRefs, bool timerRefs})>;
+    PrefetchHooks Function({bool imagesRefs, bool timerRefs})>;
 typedef $ImagesCreateCompanionBuilder = ImagesCompanion Function({
   Value<int> id,
   Value<String?> imageName,
@@ -6674,6 +6747,7 @@ typedef $FlowCreateCompanionBuilder = FlowCompanion Function({
   Value<int?> folderId,
   Value<int?> schoolAId,
   Value<int?> schoolBId,
+  Value<String?> positionConfig,
 });
 typedef $FlowUpdateCompanionBuilder = FlowCompanion Function({
   Value<int> id,
@@ -6688,6 +6762,7 @@ typedef $FlowUpdateCompanionBuilder = FlowCompanion Function({
   Value<int?> folderId,
   Value<int?> schoolAId,
   Value<int?> schoolBId,
+  Value<String?> positionConfig,
 });
 
 final class $FlowReferences
@@ -6770,6 +6845,10 @@ class $FlowFilterComposer extends Composer<_$AppDatabase, Flow> {
 
   ColumnFilters<int> get flowPosition => $composableBuilder(
       column: $table.flowPosition, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get positionConfig => $composableBuilder(
+      column: $table.positionConfig,
+      builder: (column) => ColumnFilters(column));
 
   $FlowFolderFilterComposer get folderId {
     final $FlowFolderFilterComposer composer = $composerBuilder(
@@ -6872,6 +6951,10 @@ class $FlowOrderingComposer extends Composer<_$AppDatabase, Flow> {
       column: $table.flowPosition,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get positionConfig => $composableBuilder(
+      column: $table.positionConfig,
+      builder: (column) => ColumnOrderings(column));
+
   $FlowFolderOrderingComposer get folderId {
     final $FlowFolderOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -6967,6 +7050,9 @@ class $FlowAnnotationComposer extends Composer<_$AppDatabase, Flow> {
 
   GeneratedColumn<int> get flowPosition => $composableBuilder(
       column: $table.flowPosition, builder: (column) => column);
+
+  GeneratedColumn<String> get positionConfig => $composableBuilder(
+      column: $table.positionConfig, builder: (column) => column);
 
   $FlowFolderAnnotationComposer get folderId {
     final $FlowFolderAnnotationComposer composer = $composerBuilder(
@@ -7064,6 +7150,7 @@ class $FlowTableManager extends RootTableManager<
             Value<int?> folderId = const Value.absent(),
             Value<int?> schoolAId = const Value.absent(),
             Value<int?> schoolBId = const Value.absent(),
+            Value<String?> positionConfig = const Value.absent(),
           }) =>
               FlowCompanion(
             id: id,
@@ -7078,6 +7165,7 @@ class $FlowTableManager extends RootTableManager<
             folderId: folderId,
             schoolAId: schoolAId,
             schoolBId: schoolBId,
+            positionConfig: positionConfig,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -7092,6 +7180,7 @@ class $FlowTableManager extends RootTableManager<
             Value<int?> folderId = const Value.absent(),
             Value<int?> schoolAId = const Value.absent(),
             Value<int?> schoolBId = const Value.absent(),
+            Value<String?> positionConfig = const Value.absent(),
           }) =>
               FlowCompanion.insert(
             id: id,
@@ -7106,6 +7195,7 @@ class $FlowTableManager extends RootTableManager<
             folderId: folderId,
             schoolAId: schoolAId,
             schoolBId: schoolBId,
+            positionConfig: positionConfig,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $FlowReferences(db, table, e)))
@@ -7383,6 +7473,8 @@ typedef $PageCreateCompanionBuilder = PageCompanion Function({
   Value<bool?> useFrontpage,
   Value<int?> sectionPositionId,
   Value<bool?> isDefaultPage,
+  Value<int?> schoolAPositionId,
+  Value<int?> schoolBPositionId,
 });
 typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int> id,
@@ -7401,6 +7493,8 @@ typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<bool?> useFrontpage,
   Value<int?> sectionPositionId,
   Value<bool?> isDefaultPage,
+  Value<int?> schoolAPositionId,
+  Value<int?> schoolBPositionId,
 });
 
 final class $PageReferences
@@ -7429,6 +7523,34 @@ final class $PageReferences
     final manager = $PositionTableManager($_db, $_db.position)
         .filter((f) => f.id($_item.sectionPositionId!));
     final item = $_typedResult.readTableOrNull(_sectionPositionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static Position _schoolAPositionIdTable(_$AppDatabase db) =>
+      db.position.createAlias(
+          $_aliasNameGenerator(db.page.schoolAPositionId, db.position.id));
+
+  $PositionProcessedTableManager? get schoolAPositionId {
+    if ($_item.schoolAPositionId == null) return null;
+    final manager = $PositionTableManager($_db, $_db.position)
+        .filter((f) => f.id($_item.schoolAPositionId!));
+    final item = $_typedResult.readTableOrNull(_schoolAPositionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static Position _schoolBPositionIdTable(_$AppDatabase db) =>
+      db.position.createAlias(
+          $_aliasNameGenerator(db.page.schoolBPositionId, db.position.id));
+
+  $PositionProcessedTableManager? get schoolBPositionId {
+    if ($_item.schoolBPositionId == null) return null;
+    final manager = $PositionTableManager($_db, $_db.position)
+        .filter((f) => f.id($_item.schoolBPositionId!));
+    final item = $_typedResult.readTableOrNull(_schoolBPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
@@ -7524,6 +7646,46 @@ class $PageFilterComposer extends Composer<_$AppDatabase, Page> {
     final $PositionFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.sectionPositionId,
+        referencedTable: $db.position,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $PositionFilterComposer(
+              $db: $db,
+              $table: $db.position,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $PositionFilterComposer get schoolAPositionId {
+    final $PositionFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolAPositionId,
+        referencedTable: $db.position,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $PositionFilterComposer(
+              $db: $db,
+              $table: $db.position,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $PositionFilterComposer get schoolBPositionId {
+    final $PositionFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolBPositionId,
         referencedTable: $db.position,
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
@@ -7657,6 +7819,46 @@ class $PageOrderingComposer extends Composer<_$AppDatabase, Page> {
             ));
     return composer;
   }
+
+  $PositionOrderingComposer get schoolAPositionId {
+    final $PositionOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolAPositionId,
+        referencedTable: $db.position,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $PositionOrderingComposer(
+              $db: $db,
+              $table: $db.position,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $PositionOrderingComposer get schoolBPositionId {
+    final $PositionOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolBPositionId,
+        referencedTable: $db.position,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $PositionOrderingComposer(
+              $db: $db,
+              $table: $db.position,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $PageAnnotationComposer extends Composer<_$AppDatabase, Page> {
@@ -7749,6 +7951,46 @@ class $PageAnnotationComposer extends Composer<_$AppDatabase, Page> {
     return composer;
   }
 
+  $PositionAnnotationComposer get schoolAPositionId {
+    final $PositionAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolAPositionId,
+        referencedTable: $db.position,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $PositionAnnotationComposer(
+              $db: $db,
+              $table: $db.position,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $PositionAnnotationComposer get schoolBPositionId {
+    final $PositionAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolBPositionId,
+        referencedTable: $db.position,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $PositionAnnotationComposer(
+              $db: $db,
+              $table: $db.position,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   Expression<T> timerRefs<T extends Object>(
       Expression<T> Function($TimerAnnotationComposer a) f) {
     final $TimerAnnotationComposer composer = $composerBuilder(
@@ -7783,7 +8025,11 @@ class $PageTableManager extends RootTableManager<
     (PageData, $PageReferences),
     PageData,
     PrefetchHooks Function(
-        {bool bgmId, bool sectionPositionId, bool timerRefs})> {
+        {bool bgmId,
+        bool sectionPositionId,
+        bool schoolAPositionId,
+        bool schoolBPositionId,
+        bool timerRefs})> {
   $PageTableManager(_$AppDatabase db, Page table)
       : super(TableManagerState(
           db: db,
@@ -7811,6 +8057,8 @@ class $PageTableManager extends RootTableManager<
             Value<bool?> useFrontpage = const Value.absent(),
             Value<int?> sectionPositionId = const Value.absent(),
             Value<bool?> isDefaultPage = const Value.absent(),
+            Value<int?> schoolAPositionId = const Value.absent(),
+            Value<int?> schoolBPositionId = const Value.absent(),
           }) =>
               PageCompanion(
             id: id,
@@ -7829,6 +8077,8 @@ class $PageTableManager extends RootTableManager<
             useFrontpage: useFrontpage,
             sectionPositionId: sectionPositionId,
             isDefaultPage: isDefaultPage,
+            schoolAPositionId: schoolAPositionId,
+            schoolBPositionId: schoolBPositionId,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -7847,6 +8097,8 @@ class $PageTableManager extends RootTableManager<
             Value<bool?> useFrontpage = const Value.absent(),
             Value<int?> sectionPositionId = const Value.absent(),
             Value<bool?> isDefaultPage = const Value.absent(),
+            Value<int?> schoolAPositionId = const Value.absent(),
+            Value<int?> schoolBPositionId = const Value.absent(),
           }) =>
               PageCompanion.insert(
             id: id,
@@ -7865,12 +8117,18 @@ class $PageTableManager extends RootTableManager<
             useFrontpage: useFrontpage,
             sectionPositionId: sectionPositionId,
             isDefaultPage: isDefaultPage,
+            schoolAPositionId: schoolAPositionId,
+            schoolBPositionId: schoolBPositionId,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $PageReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: (
-              {bgmId = false, sectionPositionId = false, timerRefs = false}) {
+              {bgmId = false,
+              sectionPositionId = false,
+              schoolAPositionId = false,
+              schoolBPositionId = false,
+              timerRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [if (timerRefs) db.timer],
@@ -7903,6 +8161,26 @@ class $PageTableManager extends RootTableManager<
                         $PageReferences._sectionPositionIdTable(db),
                     referencedColumn:
                         $PageReferences._sectionPositionIdTable(db).id,
+                  ) as T;
+                }
+                if (schoolAPositionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.schoolAPositionId,
+                    referencedTable:
+                        $PageReferences._schoolAPositionIdTable(db),
+                    referencedColumn:
+                        $PageReferences._schoolAPositionIdTable(db).id,
+                  ) as T;
+                }
+                if (schoolBPositionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.schoolBPositionId,
+                    referencedTable:
+                        $PageReferences._schoolBPositionIdTable(db),
+                    referencedColumn:
+                        $PageReferences._schoolBPositionIdTable(db).id,
                   ) as T;
                 }
 
@@ -7939,7 +8217,11 @@ typedef $PageProcessedTableManager = ProcessedTableManager<
     (PageData, $PageReferences),
     PageData,
     PrefetchHooks Function(
-        {bool bgmId, bool sectionPositionId, bool timerRefs})>;
+        {bool bgmId,
+        bool sectionPositionId,
+        bool schoolAPositionId,
+        bool schoolBPositionId,
+        bool timerRefs})>;
 typedef $TimerCreateCompanionBuilder = TimerCompanion Function({
   Value<int> id,
   Value<int?> timerTemplateId,

@@ -20,6 +20,9 @@ class EventDetailsPage extends StatefulWidget {
 }
 
 class _EventDetailsPageState extends State<EventDetailsPage> {
+  static FlowData? _copiedFlow;
+  static FlowFolderData? _copiedFolder;
+
   @override
   Widget build(BuildContext context) {
     final dateRange = (widget.event.startDate != null &&
@@ -41,7 +44,20 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Information Section
-            _buildSectionTitle('赛事详情'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSectionTitle('赛事详情'),
+                TextButton.icon(
+                  onPressed: _showEditEventDialog,
+                  icon: const Icon(Icons.edit_rounded, size: 18),
+                  label: const Text('编辑详情'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF6B46C1),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             Card(
               elevation: 0,
@@ -101,35 +117,47 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         .watch(),
                     builder: (context, snapshot) {
                       final folders = snapshot.data ?? [];
-                      if (folders.isEmpty) return const SizedBox.shrink();
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('文件夹',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey)),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            height: 160,
-                            child: ReorderableListView(
-                              scrollDirection: Axis.horizontal,
-                              onReorder: (oldIndex, newIndex) {
-                                _reorderFolders(folders, oldIndex, newIndex);
-                              },
-                              children: [
-                                ...folders.map((folder) =>
-                                    ReorderableDelayedDragStartListener(
-                                      key: ValueKey(folder.id),
-                                      index: folders.indexOf(folder),
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 16.0),
-                                        child: _buildFolderBox(context, folder),
-                                      ),
-                                    )),
-                              ],
+                          if (folders.isNotEmpty) ...[
+                            const Text('文件夹',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey)),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 160,
+                              child: ReorderableListView(
+                                scrollDirection: Axis.horizontal,
+                                onReorder: (oldIndex, newIndex) {
+                                  _reorderFolders(folders, oldIndex, newIndex);
+                                },
+                                children: [
+                                  ...folders.map((folder) =>
+                                      ReorderableDelayedDragStartListener(
+                                        key: ValueKey(folder.id),
+                                        index: folders.indexOf(folder),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 16.0),
+                                          child:
+                                              _buildFolderBox(context, folder),
+                                        ),
+                                      )),
+                                ],
+                              ),
                             ),
+                            const SizedBox(height: 16),
+                          ],
+                          Row(
+                            children: [
+                              _buildAddFolderButton(context),
+                              if (_copiedFolder != null) ...[
+                                const SizedBox(width: 16),
+                                _buildPasteFolderButton(context),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -184,8 +212,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                           Row(
                             children: [
                               _buildAddFlowButton(context),
-                              const SizedBox(width: 16),
-                              _buildAddFolderButton(context),
+                              if (_copiedFlow != null) ...[
+                                const SizedBox(width: 16),
+                                _buildPasteFlowButton(context),
+                              ],
                             ],
                           ),
                         ],
@@ -199,6 +229,100 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _showEditEventDialog() async {
+    final e = widget.event;
+    final nameCtrl = TextEditingController(text: e.eventName);
+    final descCtrl = TextEditingController(text: e.eventDesc);
+    final teamCtrl = TextEditingController(text: e.teamNum?.toString() ?? '');
+    final remarkCtrl = TextEditingController(text: e.remark);
+    DateTimeRange? range = (e.startDate != null && e.endDate != null)
+        ? DateTimeRange(start: e.startDate!, end: e.endDate!)
+        : null;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('编辑赛事详情'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(labelText: '赛事名称')),
+                TextField(
+                    controller: descCtrl,
+                    decoration: const InputDecoration(labelText: '赛制简介')),
+                TextField(
+                    controller: teamCtrl,
+                    decoration: const InputDecoration(labelText: '参赛队数量'),
+                    keyboardType: TextInputType.number),
+                TextField(
+                    controller: remarkCtrl,
+                    decoration: const InputDecoration(labelText: '备注')),
+                const SizedBox(height: 16),
+                ListTile(
+                  title: Text(range == null
+                      ? '点击选择日期范围'
+                      : '${DateFormat('yyyy-MM-dd').format(range!.start)} ~ ${DateFormat('yyyy-MM-dd').format(range!.end)}'),
+                  trailing: const Icon(Icons.calendar_month_rounded),
+                  onTap: () async {
+                    final picked = await showDateRangePicker(
+                      context: context,
+                      initialDateRange: range,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setDialogState(() => range = picked);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消')),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B46C1)),
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true) {
+      final updated = e.copyWith(
+        eventName: nameCtrl.text.trim(),
+        eventDesc: drift.Value(descCtrl.text.trim()),
+        teamNum: drift.Value(int.tryParse(teamCtrl.text)),
+        remark: drift.Value(remarkCtrl.text.trim()),
+        startDate: drift.Value(range?.start),
+        endDate: drift.Value(range?.end),
+      );
+      await database.update(database.event).replace(updated);
+      setState(() {
+        // Since we passed widget.event (final), we might need to refresh state
+        // or the parent might watch the DB. EventDetailsPage takes event.
+        // It's better to navigate back or re-fetch.
+        // For now, let's assume it's fine if we rebuild.
+      });
+      if (mounted) {
+        Navigator.pop(context); // Optional: if we want to refresh completely
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (c) => EventDetailsPage(event: updated)),
+        );
+      }
+    }
   }
 
   Future<void> _reorderFolders(
@@ -435,6 +559,21 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         PopupMenuItem(
           child: const Row(
             children: [
+              Icon(Icons.copy_rounded, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text('复制文件夹', style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+          onTap: () {
+            setState(() => _copiedFolder = folder);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('已复制文件夹: ${folder.folderName}')),
+            );
+          },
+        ),
+        PopupMenuItem(
+          child: const Row(
+            children: [
               Icon(Icons.delete_rounded, color: Colors.red, size: 20),
               SizedBox(width: 8),
               Text('删除文件夹', style: TextStyle(color: Colors.red)),
@@ -554,6 +693,21 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         PopupMenuItem(
           child: const Row(
             children: [
+              Icon(Icons.copy_rounded, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text('复制赛程', style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+          onTap: () {
+            setState(() => _copiedFlow = flow);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('已复制赛程: ${flow.flowName}')),
+            );
+          },
+        ),
+        PopupMenuItem(
+          child: const Row(
+            children: [
               Icon(Icons.delete_rounded, color: Colors.red, size: 20),
               SizedBox(width: 8),
               Text('删除赛程', style: TextStyle(color: Colors.red)),
@@ -669,6 +823,66 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     await insPage('资料检证环节', 'A1', 5, sn: '资料检证环节', wt: true, hk: '4');
   }
 
+  Widget _buildAddFolderButton(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        final folders = await (database.select(database.flowFolder)
+              ..where((t) => t.eventId.equals(widget.event.id)))
+            .get();
+
+        await database.into(database.flowFolder).insertReturning(
+              FlowFolderCompanion.insert(
+                folderName: '新建文件夹',
+                eventId: widget.event.id,
+                folderPosition: folders.length + 1,
+              ),
+            );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('文件夹已创建')));
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFF59E0B).withOpacity(0.2),
+                width: 2,
+                style: BorderStyle.solid,
+              ),
+            ),
+            child: const Icon(
+              Icons.create_new_folder_rounded,
+              size: 32,
+              color: Color(0xFFF59E0B),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const SizedBox(
+            width: 80,
+            child: Text(
+              '新建文件夹',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFFD97706),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAddFlowButton(BuildContext context) {
     return InkWell(
       onTap: () async {
@@ -736,25 +950,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Widget _buildAddFolderButton(BuildContext context) {
+  Widget _buildPasteFlowButton(BuildContext context) {
     return InkWell(
       onTap: () async {
-        final folders = await (database.select(database.flowFolder)
+        if (_copiedFlow == null) return;
+        final flows = await (database.select(database.flow)
               ..where((t) => t.eventId.equals(widget.event.id)))
             .get();
-
-        await database.into(database.flowFolder).insertReturning(
-              FlowFolderCompanion.insert(
-                folderName: '新建文件夹',
-                eventId: widget.event.id,
-                folderPosition: folders.length + 1,
-              ),
-            );
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('文件夹已创建')));
-        }
+        await _duplicateFlow(_copiedFlow!, null, flows.length + 1);
+        setState(() {});
       },
       borderRadius: BorderRadius.circular(12),
       child: Column(
@@ -764,29 +968,29 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withOpacity(0.05),
+              color: Colors.blue.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFFF59E0B).withOpacity(0.2),
+                color: Colors.blue.withOpacity(0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
             ),
             child: const Icon(
-              Icons.create_new_folder_rounded,
+              Icons.paste_rounded,
               size: 32,
-              color: Color(0xFFF59E0B),
+              color: Colors.blue,
             ),
           ),
           const SizedBox(height: 8),
           const SizedBox(
             width: 80,
             child: Text(
-              '新建文件夹',
+              '粘贴赛程',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFFD97706),
+                color: Colors.blue,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -796,21 +1000,151 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
+  Widget _buildPasteFolderButton(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        if (_copiedFolder == null) return;
+        final folders = await (database.select(database.flowFolder)
+              ..where((t) => t.eventId.equals(widget.event.id)))
+            .get();
+
+        final newFolder =
+            await database.into(database.flowFolder).insertReturning(
+                  FlowFolderCompanion.insert(
+                    folderName: '${_copiedFolder!.folderName} (副本)',
+                    eventId: widget.event.id,
+                    folderPosition: folders.length + 1,
+                  ),
+                );
+
+        final flowsInFolder = await (database.select(database.flow)
+              ..where((t) => t.folderId.equals(_copiedFolder!.id)))
+            .get();
+
+        for (final flow in flowsInFolder) {
+          await _duplicateFlow(flow, newFolder.id, flow.flowPosition!);
+        }
+        setState(() {});
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.blue.withOpacity(0.2),
+                width: 2,
+                style: BorderStyle.solid,
+              ),
+            ),
+            child: const Icon(
+              Icons.paste_rounded,
+              size: 32,
+              color: Colors.blue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const SizedBox(
+            width: 80,
+            child: Text(
+              '粘贴文件夹',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _duplicateFlow(
+      FlowData flow, int? folderId, int position) async {
+    final newFlow = await database.into(database.flow).insertReturning(
+          FlowCompanion.insert(
+            flowName: drift.Value('${flow.flowName} (副本)'),
+            eventId: drift.Value(widget.event.id),
+            flowPosition: drift.Value(position),
+            folderId: drift.Value(folderId),
+            fontName: drift.Value(flow.fontName),
+            sectionFontName: drift.Value(flow.sectionFontName),
+            timerFontName: drift.Value(flow.timerFontName),
+            frontpageName: drift.Value(flow.frontpageName),
+            backgroundName: drift.Value(flow.backgroundName),
+          ),
+        );
+
+    final pages = await (database.select(database.page)
+          ..where((t) => t.flowId.equals(flow.id)))
+        .get();
+
+    for (final page in pages) {
+      final newPage = await database.into(database.page).insertReturning(
+            PageCompanion.insert(
+              pageName: drift.Value(page.pageName),
+              flowId: drift.Value(newFlow.id),
+              pagePosition: drift.Value(page.pagePosition),
+              pageTypeId: drift.Value(page.pageTypeId),
+              sectionName: drift.Value(page.sectionName),
+              bgmId: drift.Value(page.bgmId),
+              hotkeyValue: drift.Value(page.hotkeyValue),
+              sectionXpos: drift.Value(page.sectionXpos),
+              sectionYpos: drift.Value(page.sectionYpos),
+              sectionScale: drift.Value(page.sectionScale),
+              sectionFontName: drift.Value(page.sectionFontName),
+              timerFontName: drift.Value(page.timerFontName),
+              useFrontpage: drift.Value(page.useFrontpage),
+              isDefaultPage: drift.Value(page.isDefaultPage),
+            ),
+          );
+
+      // Copy timers
+      final timers = await (database.select(database.timer)
+            ..where((t) => t.pageId.equals(page.id)))
+          .get();
+      for (final timer in timers) {
+        await database.into(database.timer).insert(
+              TimerCompanion.insert(
+                pageId: drift.Value(newPage.id),
+                timerTemplateId: drift.Value(timer.timerTemplateId),
+                startTime: drift.Value(timer.startTime),
+                timerType: drift.Value(timer.timerType),
+                xpos: drift.Value(timer.xpos),
+                ypos: drift.Value(timer.ypos),
+                scale: drift.Value(timer.scale),
+              ),
+            );
+      }
+
+      // Copy images
+      final images = await (database.select(database.images)
+            ..where((t) => t.pageId.equals(page.id)))
+          .get();
+      for (final img in images) {
+        await database.into(database.images).insert(
+              ImagesCompanion.insert(
+                imageName: drift.Value(img.imageName),
+                imageType: drift.Value(img.imageType),
+                pageId: drift.Value(newPage.id),
+              ),
+            );
+      }
+    }
+  }
+
   Widget _buildSchoolsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildSectionTitle('参赛学校 (Schools)'),
-            IconButton(
-              onPressed: _showAddSchoolDialog,
-              icon: const Icon(Icons.add_circle_outline,
-                  color: Color(0xFF6B46C1)),
-            ),
-          ],
-        ),
+        _buildSectionTitle('参赛学校 (Schools)'),
         const SizedBox(height: 16),
         Container(
           width: double.infinity,
@@ -833,22 +1167,61 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 .watch(),
             builder: (context, snapshot) {
               final schools = snapshot.data ?? [];
-              if (schools.isEmpty) {
-                return const Center(
-                    child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('暂无学校信息', style: TextStyle(color: Colors.grey)),
-                ));
-              }
               return Wrap(
                 spacing: 16,
-                runSpacing: 16,
-                children: schools.map((s) => _buildSchoolCard(s)).toList(),
+                runSpacing: 24,
+                children: [
+                  ...schools.map((s) => _buildSchoolCard(s)),
+                  _buildAddSchoolButton(context),
+                ],
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAddSchoolButton(BuildContext context) {
+    return InkWell(
+      onTap: _showAddSchoolDialog,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6B46C1).withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF6B46C1).withOpacity(0.2),
+                width: 2,
+                style: BorderStyle.solid,
+              ),
+            ),
+            child: const Icon(
+              Icons.add_rounded,
+              size: 32,
+              color: Color(0xFF6B46C1),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const SizedBox(
+            width: 80,
+            child: Text(
+              '添加学校',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

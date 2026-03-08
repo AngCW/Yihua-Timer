@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   // ─────────────────────────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -67,6 +67,9 @@ class AppDatabase extends _$AppDatabase {
         if (from < 10) {
           await m.addColumn(flow, flow.schoolAId);
           await m.addColumn(flow, flow.schoolBId);
+        }
+        if (from < 11) {
+          await m.addColumn(flow, flow.positionConfig);
         }
         // ── add new `if (from < N)` blocks above this line ───────────────
       },
