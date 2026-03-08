@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'hotkey_settings_page.dart';
 import 'volume_settings_page.dart';
+import 'general_settings_page.dart';
 import 'timer_template_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFFAFAFA),
+      color: const Color(0xFFF3F4F6),
       child: Column(
         children: [
           // Header
@@ -55,23 +56,30 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 Expanded(
                   child: _buildTabButton(
-                    label: '快捷键设置',
+                    label: '通用设置',
                     index: 0,
                     isSelected: _selectedTabIndex == 0,
                   ),
                 ),
                 Expanded(
                   child: _buildTabButton(
-                    label: '音频设置',
+                    label: '快捷键设置',
                     index: 1,
                     isSelected: _selectedTabIndex == 1,
                   ),
                 ),
                 Expanded(
                   child: _buildTabButton(
-                    label: '铃声设计',
+                    label: '音频设置',
                     index: 2,
                     isSelected: _selectedTabIndex == 2,
+                  ),
+                ),
+                Expanded(
+                  child: _buildTabButton(
+                    label: '铃声设计',
+                    index: 3,
+                    isSelected: _selectedTabIndex == 3,
                   ),
                 ),
               ],
@@ -82,11 +90,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
           // Content
           Expanded(
-            child: _selectedTabIndex == 0
-                ? const HotkeySettingsPage()
-                : _selectedTabIndex == 1
-                    ? const VolumeSettingsPage()
-                    : const TimerTemplateSettingsPage(),
+            child: () {
+              switch (_selectedTabIndex) {
+                case 0:
+                  return const GeneralSettingsPage();
+                case 1:
+                  return const HotkeySettingsPage();
+                case 2:
+                  return const VolumeSettingsPage();
+                case 3:
+                default:
+                  return const TimerTemplateSettingsPage();
+              }
+            }(),
           ),
         ],
       ),
