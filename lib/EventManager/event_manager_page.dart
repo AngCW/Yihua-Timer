@@ -125,26 +125,76 @@ class _EventManagerPageState extends State<EventManagerPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(40, 40, 40, 20),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '已保存赛事',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
-                      letterSpacing: -1,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '已保存赛事',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111827),
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '查看和管理您保存的辩论赛事',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '查看和管理您保存的辩论赛事',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w400,
-                    ),
+                  const SizedBox(width: 16),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('导入功能暂未实现')),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF4F46E5),
+                          side:
+                              const BorderSide(color: Color(0xFF4F46E5), width: 1),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        icon: const Icon(Icons.file_upload_outlined, size: 18),
+                        label: const Text('导入'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('导出功能暂未实现')),
+                          );
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF4F46E5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        icon: const Icon(Icons.file_download_outlined, size: 18),
+                        label: const Text('导出'),
+                      ),
+                    ],
                   ),
                 ],
               ),

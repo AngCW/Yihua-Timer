@@ -8,7 +8,7 @@ class EventScheduleSidebar extends StatelessWidget {
     return Container(
       width: 300,
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
+        color: const Color(0xFFF9FAFB),
         border: Border(
           left: BorderSide(color: Colors.grey.shade200, width: 1),
         ),

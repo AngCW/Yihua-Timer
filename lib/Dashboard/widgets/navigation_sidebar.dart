@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class NavigationSidebar extends StatelessWidget {
@@ -15,12 +17,16 @@ class NavigationSidebar extends StatelessWidget {
     return Container(
       width: 220,
       decoration: BoxDecoration(
-        color: const Color(0xFF6B46C1),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF312E81), Color(0xFF4F46E5)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(2, 0),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(4, 0),
           ),
         ],
       ),
@@ -42,42 +48,73 @@ class NavigationSidebar extends StatelessWidget {
           
           const Divider(color: Colors.white24, height: 1, thickness: 1),
           
-          // Navigation Items
+          // Navigation Items + Exit button at bottom
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
               children: [
-                  _buildNavItem(
-                    icon: Icons.home_rounded,
-                    label: '主页',
-                    index: 0,
-                    isSelected: selectedIndex == 0,
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    children: [
+                      _buildNavItem(
+                        icon: Icons.home_rounded,
+                        label: '主页',
+                        index: 0,
+                        isSelected: selectedIndex == 0,
+                      ),
+                      _buildNavItem(
+                        icon: Icons.add_circle_outline_rounded,
+                        label: '创建赛事',
+                        index: 1,
+                        isSelected: selectedIndex == 1,
+                      ),
+                      _buildNavItem(
+                        icon: Icons.bookmark_outline_rounded,
+                        label: '已保存赛事',
+                        index: 2,
+                        isSelected: selectedIndex == 2,
+                      ),
+                      _buildNavItem(
+                        icon: Icons.timer_outlined,
+                        label: '计时器',
+                        index: 3,
+                        isSelected: selectedIndex == 3,
+                      ),
+                      _buildNavItem(
+                        icon: Icons.settings_outlined,
+                        label: '设置',
+                        index: 4,
+                        isSelected: selectedIndex == 4,
+                      ),
+                    ],
                   ),
-                  _buildNavItem(
-                    icon: Icons.add_circle_outline_rounded,
-                    label: '创建赛事',
-                    index: 1,
-                    isSelected: selectedIndex == 1,
+                ),
+                const Divider(color: Colors.white24, height: 1, thickness: 1),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => exit(0),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white70),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      icon: const Icon(Icons.exit_to_app_rounded, size: 18),
+                      label: const Text(
+                        '退出应用',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
                   ),
-                  _buildNavItem(
-                    icon: Icons.bookmark_outline_rounded,
-                    label: '已保存赛事',
-                    index: 2,
-                    isSelected: selectedIndex == 2,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.timer_outlined,
-                    label: '计时器',
-                    index: 3,
-                    isSelected: selectedIndex == 3,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.settings_outlined,
-                    label: '设置',
-                    index: 4,
-                    isSelected: selectedIndex == 4,
-                  ),
-                ],
+                ),
+              ],
             ),
           ),
         ],

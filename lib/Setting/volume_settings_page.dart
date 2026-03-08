@@ -16,7 +16,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFFAFAFA),
+      color: const Color(0xFFF3F4F6),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32.0),
         child: Column(

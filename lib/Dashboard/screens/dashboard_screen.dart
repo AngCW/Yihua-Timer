@@ -35,7 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           Expanded(
             child: Container(
-              color: const Color(0xFFFAFAFA),
+              color: const Color(0xFFF3F4F6),
               child: Column(
                 children: [
                   if (_selectedNavIndex != 1 && _selectedNavIndex != 4)

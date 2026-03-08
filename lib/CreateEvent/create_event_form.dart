@@ -51,7 +51,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
           CreateEventForm(
             onNext: (ringtoneFileName) =>
                 _navigateToTimerConfig(ringtoneFileName, false),
-            onDefaultTemplate: () => _navigateToTimerConfig(null, true),
           ),
         ],
       ),
@@ -61,12 +60,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
 class CreateEventForm extends StatefulWidget {
   final Function(String?) onNext;
-  final VoidCallback onDefaultTemplate;
 
   const CreateEventForm({
     super.key,
     required this.onNext,
-    required this.onDefaultTemplate,
   });
 
   @override
@@ -207,39 +204,13 @@ class _CreateEventFormState extends State<CreateEventForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Expanded(
-                    child: Text(
-                      '自定义赛事',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      if (_validateMandatoryFields()) {
-                        widget.onDefaultTemplate();
-                      }
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF6B46C1),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    child: const Text(
-                      '默认赛制',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
+              const Text(
+                '自定义赛事',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                ),
               ),
               ////
               const SizedBox(height: 4),
