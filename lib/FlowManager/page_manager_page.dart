@@ -9,6 +9,7 @@ import 'dart:async' as async;
 import 'dart:ui' as ui;
 import '../database/app_database.dart';
 import '../main.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class PageManagerPage extends StatefulWidget {
   final EventData event;
@@ -52,6 +53,20 @@ class _PageManagerPageState extends State<PageManagerPage> {
   bool _isLoading = true;
   late PageData _currentPage;
 
+  // Position TextEditingControllers
+  final _sectionXCtrl = TextEditingController();
+  final _sectionYCtrl = TextEditingController();
+  final _sectionScaleCtrl = TextEditingController();
+  final _t1XCtrl = TextEditingController();
+  final _t1YCtrl = TextEditingController();
+  final _t1ScaleCtrl = TextEditingController();
+  final _tlXCtrl = TextEditingController();
+  final _tlYCtrl = TextEditingController();
+  final _tlScaleCtrl = TextEditingController();
+  final _trXCtrl = TextEditingController();
+  final _trYCtrl = TextEditingController();
+  final _trScaleCtrl = TextEditingController();
+
   // Preview State
   int _previewSeconds = 0;
   int _previewSecLeft = 0;
@@ -73,10 +88,33 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
   // Single/Double Timer states
   double _t1X = 0, _t1Y = 0, _t1Scale = 1.0;
-  double _tL_X = 0, _tL_Y = 0, _tL_Scale = 1.0;
-  double _tR_X = 0, _tR_Y = 0, _tR_Scale = 1.0;
+  double _tlX = 0, _tlY = 0, _tlScale = 1.0;
+  double _trX = 0, _trY = 0, _trScale = 1.0;
+
+  void _syncPositionControllers() {
+    _sectionXCtrl.text = _sectionX.toStringAsFixed(0);
+    _sectionYCtrl.text = _sectionY.toStringAsFixed(0);
+    _sectionScaleCtrl.text = _sectionScale.toStringAsFixed(2);
+    _t1XCtrl.text = _t1X.toStringAsFixed(0);
+    _t1YCtrl.text = _t1Y.toStringAsFixed(0);
+    _t1ScaleCtrl.text = _t1Scale.toStringAsFixed(2);
+    _tlXCtrl.text = _tlX.toStringAsFixed(0);
+    _tlYCtrl.text = _tlY.toStringAsFixed(0);
+    _tlScaleCtrl.text = _tlScale.toStringAsFixed(2);
+    _trXCtrl.text = _trX.toStringAsFixed(0);
+    _trYCtrl.text = _trY.toStringAsFixed(0);
+    _trScaleCtrl.text = _trScale.toStringAsFixed(2);
+  }
 
   bool _useFrontpage = false;
+
+  // Position Data
+  PositionData? _sectionPos;
+  PositionData? _t1Pos;
+  PositionData? _tLPos;
+  PositionData? _tRPos;
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   async.StreamSubscription? _flowSub;
 
@@ -153,41 +191,56 @@ class _PageManagerPageState extends State<PageManagerPage> {
       _backgroundPath = null;
     }
 
-    if (flow.sectionFontName != null) {
-      _loadCustomFont(flow.sectionFontName!, 'section');
+    // Determine font for section
+    String? sectionFont;
+    if (_currentPage.sectionFontName?.isNotEmpty == true) {
+      sectionFont = _currentPage.sectionFontName;
+    } else if (flow.sectionFontName?.isNotEmpty == true) {
+      sectionFont = flow.sectionFontName;
+    } else if (flow.fontName?.isNotEmpty == true) {
+      sectionFont = flow.fontName;
     }
-    if (flow.timerFontName != null) {
-      _loadCustomFont(flow.timerFontName!, 'timer');
+
+    // Determine font for timer
+    String? timerFont;
+    if (_currentPage.timerFontName?.isNotEmpty == true) {
+      timerFont = _currentPage.timerFontName;
+    } else if (flow.timerFontName?.isNotEmpty == true) {
+      timerFont = flow.timerFontName;
+    } else if (flow.fontName?.isNotEmpty == true) {
+      timerFont = flow.fontName;
     }
-    if (_currentPage.sectionFontName != null) {
-      _loadCustomFont(_currentPage.sectionFontName!, 'section_page');
+
+    if (sectionFont != null) {
+      _sectionFontFamily = await _loadCustomFont(sectionFont);
     }
-    if (_currentPage.timerFontName != null) {
-      _loadCustomFont(_currentPage.timerFontName!, 'timer_page');
+    if (timerFont != null) {
+      _timerFontFamily = await _loadCustomFont(timerFont);
     }
 
     if (mounted) setState(() {});
   }
 
-  Future<void> _loadCustomFont(String fileName, String type) async {
+  Future<String?> _loadCustomFont(String fileName) async {
     final supportDir = await getApplicationSupportDirectory();
     final imagesPath = p.join(
         supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
     final file = File(p.join(imagesPath, fileName));
 
     if (await file.exists()) {
-      final fontData = await file.readAsBytes();
-      final familyID = 'Font_${type}_${widget.page.id}';
-      final fontLoader = FontLoader(familyID);
-      fontLoader.addFont(Future.value(ByteData.view(fontData.buffer)));
-      await fontLoader.load();
-      if (mounted) {
-        setState(() {
-          if (type.contains('section')) _sectionFontFamily = familyID;
-          if (type.contains('timer')) _timerFontFamily = familyID;
-        });
+      try {
+        final fontData = await file.readAsBytes();
+        final familyID =
+            'Font_${fileName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}';
+        final fontLoader = FontLoader(familyID);
+        fontLoader.addFont(Future.value(ByteData.view(fontData.buffer)));
+        await fontLoader.load();
+        return familyID;
+      } catch (e) {
+        debugPrint('Error loading font $fileName: $e');
       }
     }
+    return null;
   }
 
   Future<void> _uploadSpecificFont(String target) async {
@@ -227,13 +280,15 @@ class _PageManagerPageState extends State<PageManagerPage> {
         setState(() => _currentPage = updated);
         _loadAssetPaths(widget.flow);
 
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text('字体上传成功')));
+        }
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text('字体上传失败: $e')));
+        }
       }
     }
   }
@@ -247,6 +302,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           setState(() {
             _previewSeconds--;
           });
+          _checkPreviewDings(_singleTemplateId, _previewSeconds);
         } else {
           timer.cancel();
           setState(() {
@@ -260,6 +316,57 @@ class _PageManagerPageState extends State<PageManagerPage> {
     });
   }
 
+  Future<void> _checkPreviewDings(int? templateId, int currentSeconds) async {
+    if (templateId == null) return;
+
+    final dings = await (database.select(database.dingValue)
+          ..where((t) => t.timerTemplateId.equals(templateId)))
+        .get();
+
+    final template = await (database.select(database.timerTemplate)
+          ..where((t) => t.id.equals(templateId)))
+        .getSingleOrNull();
+
+    if (template?.dingAudioId != null) {
+      final audio = await (database.select(database.dingAudio)
+            ..where((t) => t.id.equals(template!.dingAudioId!)))
+          .getSingleOrNull();
+
+      if (audio != null) {
+        for (var d in dings) {
+          final parts = (d.dingTime ?? '0:0').split(':');
+          final m = int.tryParse(parts[0]) ?? 0;
+          final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+          final dingSec = m * 60 + s;
+
+          if (dingSec == currentSeconds) {
+            _playPreviewSound(audio.dingName, d.dingAmount ?? 1);
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> _playPreviewSound(String fileName, int amount) async {
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'ding', fileName);
+
+      if (await File(audioPath).exists()) {
+        for (int i = 0; i < amount; i++) {
+          final p = AudioPlayer();
+          p.play(DeviceFileSource(audioPath));
+          p.onPlayerComplete.listen((_) => p.dispose());
+          if (i < amount - 1) {
+            await Future.delayed(const Duration(milliseconds: 200));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error playing preview sound: $e');
+    }
+  }
+
   void _togglePreviewTimerLeft() {
     if (_isPreviewRunningLeft) {
       _previewTimerLeft?.cancel();
@@ -270,6 +377,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           setState(() {
             _previewSecLeft--;
           });
+          _checkPreviewDings(_leftTemplateId, _previewSecLeft);
         } else {
           timer.cancel();
           setState(() {
@@ -293,6 +401,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           setState(() {
             _previewSecRight--;
           });
+          _checkPreviewDings(_rightTemplateId, _previewSecRight);
         } else {
           timer.cancel();
           setState(() {
@@ -326,6 +435,18 @@ class _PageManagerPageState extends State<PageManagerPage> {
   }
 
   Future<void> _loadTimerData() async {
+    // Load Section Position
+    if (_currentPage.sectionPositionId != null) {
+      _sectionPos = await (database.select(database.position)
+            ..where((t) => t.id.equals(_currentPage.sectionPositionId!)))
+          .getSingleOrNull();
+      if (_sectionPos != null) {
+        _sectionX = _sectionPos!.xpos ?? 0;
+        _sectionY = _sectionPos!.ypos ?? 0;
+        _sectionScale = _sectionPos!.size ?? 1.0;
+      }
+    }
+
     final timers = await (database.select(database.timer)
           ..where((t) => t.pageId.equals(_currentPage.id)))
         .get();
@@ -341,9 +462,15 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
             _previewSeconds = (int.tryParse(parts[0]) ?? 0) * 60 +
                 (int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0);
-            _t1X = timer.xpos ?? 0;
-            _t1Y = timer.ypos ?? 0;
-            _t1Scale = timer.scale ?? 1.0;
+
+            _t1Pos = null;
+            if (timer.positionId != null) {
+              _loadTimerPosition(timer.positionId!, 'single');
+            } else {
+              _t1X = timer.xpos ?? 0;
+              _t1Y = timer.ypos ?? 0;
+              _t1Scale = timer.scale ?? 1.0;
+            }
           } else if (timer.timerType == 'doubleL') {
             _leftTemplateId = timer.timerTemplateId;
             final parts = (timer.startTime ?? '0:0').split(':');
@@ -352,9 +479,14 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
             _previewSecLeft = (int.tryParse(parts[0]) ?? 0) * 60 +
                 (int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0);
-            _tL_X = timer.xpos ?? 0;
-            _tL_Y = timer.ypos ?? 0;
-            _tL_Scale = timer.scale ?? 1.0;
+
+            if (timer.positionId != null) {
+              _loadTimerPosition(timer.positionId!, 'doubleL');
+            } else {
+              _tlX = timer.xpos ?? 0;
+              _tlY = timer.ypos ?? 0;
+              _tlScale = timer.scale ?? 1.0;
+            }
           } else if (timer.timerType == 'doubleR') {
             _rightTemplateId = timer.timerTemplateId;
             final parts = (timer.startTime ?? '0:0').split(':');
@@ -363,13 +495,46 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
             _previewSecRight = (int.tryParse(parts[0]) ?? 0) * 60 +
                 (int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0);
-            _tR_X = timer.xpos ?? 0;
-            _tR_Y = timer.ypos ?? 0;
-            _tR_Scale = timer.scale ?? 1.0;
+
+            if (timer.positionId != null) {
+              _loadTimerPosition(timer.positionId!, 'doubleR');
+            } else {
+              _trX = timer.xpos ?? 0;
+              _trY = timer.ypos ?? 0;
+              _trScale = timer.scale ?? 1.0;
+            }
           }
         }
         _isLoading = false;
       });
+      _syncPositionControllers();
+    }
+  }
+
+  Future<void> _loadTimerPosition(int id, String type) async {
+    final pos = await (database.select(database.position)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (pos != null && mounted) {
+      setState(() {
+        if (type == 'single') {
+          _t1Pos = pos;
+          _t1X = pos.xpos ?? 0;
+          _t1Y = pos.ypos ?? 0;
+          _t1Scale = pos.size ?? 1.0;
+        } else if (type == 'doubleL') {
+          _tLPos = pos;
+          _tlX = pos.xpos ?? 0;
+          _tlY = pos.ypos ?? 0;
+          _tlScale = pos.size ?? 1.0;
+        } else if (type == 'doubleR') {
+          _tRPos = pos;
+          _trX = pos.xpos ?? 0;
+          _trY = pos.ypos ?? 0;
+          _trScale = pos.size ?? 1.0;
+        }
+      });
+      _syncPositionControllers();
     }
   }
 
@@ -406,7 +571,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<int>(
-                          value: selectedDingAudioId,
+                          initialValue: selectedDingAudioId,
                           isExpanded: true,
                           decoration: InputDecoration(
                             filled: true,
@@ -556,9 +721,10 @@ class _PageManagerPageState extends State<PageManagerPage> {
                   await _loadData();
                   if (context.mounted) Navigator.pop(context);
                 } catch (e) {
-                  if (context.mounted)
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+                  }
                 }
               },
               style: FilledButton.styleFrom(
@@ -591,9 +757,10 @@ class _PageManagerPageState extends State<PageManagerPage> {
         await _loadData();
         onUploadComplete(id);
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text('上传失败: $e')));
+        }
       }
     }
   }
@@ -625,21 +792,53 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
     final startTime = '$min:$sec';
     double x = 0, y = 0, s = 1.0;
+    PositionData? currentPos;
+
     if (type == 'single') {
       x = _t1X;
       y = _t1Y;
       s = _t1Scale;
+      currentPos = _t1Pos;
     } else if (type == 'doubleL') {
-      x = _tL_X;
-      y = _tL_Y;
-      s = _tL_Scale;
+      x = _tlX;
+      y = _tlY;
+      s = _tlScale;
+      currentPos = _tLPos;
     } else if (type == 'doubleR') {
-      x = _tR_X;
-      y = _tR_Y;
-      s = _tR_Scale;
+      x = _trX;
+      y = _trY;
+      s = _trScale;
+      currentPos = _tRPos;
     }
 
     try {
+      int? positionId;
+      if (currentPos != null) {
+        await (database.update(database.position)
+              ..where((t) => t.id.equals(currentPos!.id)))
+            .write(PositionCompanion(
+          xpos: drift.Value(x),
+          ypos: drift.Value(y),
+          size: drift.Value(s),
+        ));
+        positionId = currentPos.id;
+      } else {
+        positionId = await database.into(database.position).insert(
+              PositionCompanion.insert(
+                xpos: drift.Value(x),
+                ypos: drift.Value(y),
+                size: drift.Value(s),
+              ),
+            );
+        // Update local state with the new position object
+        final newPos = await (database.select(database.position)
+              ..where((t) => t.id.equals(positionId!)))
+            .getSingle();
+        if (type == 'single') _t1Pos = newPos;
+        if (type == 'doubleL') _tLPos = newPos;
+        if (type == 'doubleR') _tRPos = newPos;
+      }
+
       final existing = await (database.select(database.timer)
             ..where((t) => t.pageId.equals(_currentPage.id))
             ..where((t) => t.timerType.equals(type)))
@@ -654,6 +853,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           xpos: drift.Value(x),
           ypos: drift.Value(y),
           scale: drift.Value(s),
+          positionId: drift.Value(positionId),
         ));
       } else {
         await database.into(database.timer).insert(TimerCompanion.insert(
@@ -664,15 +864,18 @@ class _PageManagerPageState extends State<PageManagerPage> {
               xpos: drift.Value(x),
               ypos: drift.Value(y),
               scale: drift.Value(s),
+              positionId: drift.Value(positionId),
             ));
       }
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('计时器已保存')));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+      }
     }
   }
 
@@ -714,6 +917,30 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
   Future<void> _saveDetails() async {
     try {
+      int? sectionPosId;
+      if (_sectionPos != null) {
+        await (database.update(database.position)
+              ..where((t) => t.id.equals(_sectionPos!.id)))
+            .write(PositionCompanion(
+          xpos: drift.Value(_sectionX),
+          ypos: drift.Value(_sectionY),
+          size: drift.Value(_sectionScale),
+        ));
+        sectionPosId = _sectionPos!.id;
+      } else {
+        sectionPosId = await database.into(database.position).insert(
+              PositionCompanion.insert(
+                xpos: drift.Value(_sectionX),
+                ypos: drift.Value(_sectionY),
+                size: drift.Value(_sectionScale),
+              ),
+            );
+        // Update local state
+        _sectionPos = await (database.select(database.position)
+              ..where((t) => t.id.equals(sectionPosId!)))
+            .getSingle();
+      }
+
       await (database.update(database.page)
             ..where((t) => t.id.equals(_currentPage.id)))
           .write(PageCompanion(
@@ -725,6 +952,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
         sectionXpos: drift.Value(_sectionX),
         sectionYpos: drift.Value(_sectionY),
         sectionScale: drift.Value(_sectionScale),
+        sectionPositionId: drift.Value(sectionPosId),
       ));
       final updated = await (database.select(database.page)
             ..where((t) => t.id.equals(_currentPage.id)))
@@ -732,13 +960,24 @@ class _PageManagerPageState extends State<PageManagerPage> {
       setState(() {
         _currentPage = updated;
       });
-      if (mounted)
+
+      if (_selectedPageType == 'A1') {
+        await _saveTimer('single');
+      } else if (_selectedPageType == 'A2') {
+        await _saveTimer('doubleL');
+        await _saveTimer('doubleR');
+      }
+
+      if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('页面信息已保存')));
+            .showSnackBar(const SnackBar(content: Text('页面基本配置及计时器已保存')));
+        _askApplyPositionToAllPages();
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+      }
     }
   }
 
@@ -746,6 +985,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
   void dispose() {
     _flowSub?.cancel();
     _previewTimer?.cancel();
+    _previewTimerLeft?.cancel();
+    _previewTimerRight?.cancel();
+    _audioPlayer.dispose();
     _pageNameController.dispose();
     _sectionNameController.dispose();
     _singleMinController.dispose();
@@ -754,7 +996,138 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _leftSecController.dispose();
     _rightMinController.dispose();
     _rightSecController.dispose();
+    _sectionXCtrl.dispose();
+    _sectionYCtrl.dispose();
+    _sectionScaleCtrl.dispose();
+    _t1XCtrl.dispose();
+    _t1YCtrl.dispose();
+    _t1ScaleCtrl.dispose();
+    _tlXCtrl.dispose();
+    _tlYCtrl.dispose();
+    _tlScaleCtrl.dispose();
+    _trXCtrl.dispose();
+    _trYCtrl.dispose();
+    _trScaleCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _askApplyPositionToAllPages() async {
+    if (!mounted) return;
+    final apply = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('应用位置到全部页面'),
+        content: const Text(
+            '是否将当前页面中 环节名称、计时器 的位置和大小配置，应用到同一赛程中的所有页面？\n\n（已有位置数据的页面将被覆盖）'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('否，仅保存此页面'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('是，应用到全部'),
+          ),
+        ],
+      ),
+    );
+    if (apply != true || !mounted) return;
+
+    try {
+      final pages = await (database.select(database.page)
+            ..where((t) => t.flowId.equals(widget.flow.id))
+            ..where((t) => t.id.isNotValue(_currentPage.id)))
+          .get();
+
+      for (final pg in pages) {
+        // Upsert section position
+        int? secPosId = pg.sectionPositionId;
+        if (secPosId != null) {
+          final existingId = secPosId;
+          await (database.update(database.position)
+                ..where((t) => t.id.equals(existingId)))
+              .write(PositionCompanion(
+            xpos: drift.Value(_sectionX),
+            ypos: drift.Value(_sectionY),
+            size: drift.Value(_sectionScale),
+          ));
+        } else {
+          secPosId = await database.into(database.position).insert(
+                PositionCompanion.insert(
+                  xpos: drift.Value(_sectionX),
+                  ypos: drift.Value(_sectionY),
+                  size: drift.Value(_sectionScale),
+                ),
+              );
+        }
+        await (database.update(database.page)..where((t) => t.id.equals(pg.id)))
+            .write(PageCompanion(
+          sectionXpos: drift.Value(_sectionX),
+          sectionYpos: drift.Value(_sectionY),
+          sectionScale: drift.Value(_sectionScale),
+          sectionPositionId: drift.Value(secPosId),
+        ));
+
+        // Upsert timer positions for matching types
+        final timers = await (database.select(database.timer)
+              ..where((t) => t.pageId.equals(pg.id)))
+            .get();
+        for (final t in timers) {
+          double tx = 0, ty = 0, ts = 1.0;
+          if (t.timerType == 'single') {
+            tx = _t1X;
+            ty = _t1Y;
+            ts = _t1Scale;
+          } else if (t.timerType == 'doubleL') {
+            tx = _tlX;
+            ty = _tlY;
+            ts = _tlScale;
+          } else if (t.timerType == 'doubleR') {
+            tx = _trX;
+            ty = _trY;
+            ts = _trScale;
+          }
+
+          int? posId = t.positionId;
+          if (posId != null) {
+            await (database.update(database.position)
+                  ..where((p) => p.id.equals(posId)))
+                .write(PositionCompanion(
+              xpos: drift.Value(tx),
+              ypos: drift.Value(ty),
+              size: drift.Value(ts),
+            ));
+          } else {
+            posId = await database.into(database.position).insert(
+                  PositionCompanion.insert(
+                    xpos: drift.Value(tx),
+                    ypos: drift.Value(ty),
+                    size: drift.Value(ts),
+                  ),
+                );
+          }
+          await (database.update(database.timer)
+                ..where((p) => p.id.equals(t.id)))
+              .write(TimerCompanion(
+            xpos: drift.Value(tx),
+            ypos: drift.Value(ty),
+            scale: drift.Value(ts),
+            positionId: drift.Value(posId),
+          ));
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('位置已应用到 ${pages.length} 个页面')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('批量应用失败: $e')));
+      }
+    }
   }
 
   @override
@@ -828,7 +1201,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              value: _selectedBgmId,
+                              initialValue: _selectedBgmId,
                               isExpanded: true,
                               decoration: InputDecoration(
                                 filled: true,
@@ -884,8 +1257,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                               selected: isSelected,
                               onSelected: (val) => setState(
                                   () => _selectedPageType = val ? type : null),
-                              selectedColor:
-                                  const Color(0xFF6B46C1).withOpacity(0.2),
+                              selectedColor: const Color(0xFF6B46C1)
+                                  .withValues(alpha: 0.2),
                               checkmarkColor: const Color(0xFF6B46C1),
                               labelStyle: TextStyle(
                                   color: isSelected
@@ -922,6 +1295,20 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         controller: _sectionNameController,
                         label: '环节名称 (Section Name)',
                         hint: '例如: 开场介绍'),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: _buildPositionControl(
+                        label: '环节名称位置 (Section Name Position)',
+                        x: _sectionX,
+                        y: _sectionY,
+                        scale: _sectionScale,
+                        onXChanged: (val) => setState(() => _sectionX = val),
+                        onYChanged: (val) => setState(() => _sectionY = val),
+                        onScaleChanged: (val) =>
+                            setState(() => _sectionScale = val),
+                      ),
+                    ),
                   ],
 
                   const SizedBox(height: 24),
@@ -933,6 +1320,19 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                 '单计时器 (Single Timer)', 'single')),
                         const Spacer(),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      child: _buildPositionControl(
+                        label: '计时器位置 (Timer Position)',
+                        x: _t1X,
+                        y: _t1Y,
+                        scale: _t1Scale,
+                        onXChanged: (val) => setState(() => _t1X = val),
+                        onYChanged: (val) => setState(() => _t1Y = val),
+                        onScaleChanged: (val) => setState(() => _t1Scale = val),
+                      ),
                     ),
                     const SizedBox(height: 24),
                   ] else if (_selectedPageType == 'A2') ...[
@@ -947,6 +1347,37 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                 '右侧计时器 (Right Timer)', 'doubleR')),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildPositionControl(
+                            label: '左侧计时器位置',
+                            x: _tlX,
+                            y: _tlY,
+                            scale: _tlScale,
+                            onXChanged: (val) => setState(() => _tlX = val),
+                            onYChanged: (val) => setState(() => _tlY = val),
+                            onScaleChanged: (val) =>
+                                setState(() => _tlScale = val),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildPositionControl(
+                            label: '右侧计时器位置',
+                            x: _trX,
+                            y: _trY,
+                            scale: _trScale,
+                            onXChanged: (val) => setState(() => _trX = val),
+                            onYChanged: (val) => setState(() => _trY = val),
+                            onScaleChanged: (val) =>
+                                setState(() => _trScale = val),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(child: _buildFontPicker('环节字体', 'section')),
@@ -956,6 +1387,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     ),
                     const SizedBox(height: 24),
                   ],
+
+                  const SizedBox(height: 32),
 
                   const SizedBox(height: 32),
                   _buildSectionTitle('页面预览 (Preview)'),
@@ -1008,14 +1441,14 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                             children: [
                                               // Section Name
                                               _buildDraggableItem(
+                                                alignment:
+                                                    _selectedPageType == 'B'
+                                                        ? Alignment.center
+                                                        : Alignment.topCenter,
                                                 x: _sectionX,
                                                 y: _sectionY,
                                                 scale: _sectionScale,
-                                                onChanged: (dx, dy, s) => setState(() {
-                                                  _sectionX = dx;
-                                                  _sectionY = dy;
-                                                  _sectionScale = s;
-                                                }),
+                                                onChanged: (dx, dy, s) {},
                                                 child: Text(
                                                   _sectionNameController
                                                           .text.isEmpty
@@ -1027,14 +1460,16 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                           .text,
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
-                                                    color: Colors.white,
+                                                    color: Colors.black,
                                                     fontSize: 48,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: _sectionFontFamily,
+                                                    fontFamily:
+                                                        _sectionFontFamily,
                                                     shadows: [
                                                       Shadow(
-                                                          color: Colors.black
-                                                              .withOpacity(0.5),
+                                                          color: Colors.white
+                                                              .withValues(
+                                                                  alpha: 0.5),
                                                           blurRadius: 15,
                                                           offset: const Offset(
                                                               0, 6))
@@ -1046,14 +1481,11 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                               // Timer A1
                                               if (_selectedPageType == 'A1')
                                                 _buildDraggableItem(
+                                                  alignment: Alignment.center,
                                                   x: _t1X,
                                                   y: _t1Y,
                                                   scale: _t1Scale,
-                                                  onChanged: (dx, dy, s) => setState(() {
-                                                    _t1X = dx;
-                                                    _t1Y = dy;
-                                                    _t1Scale = s;
-                                                  }),
+                                                  onChanged: (dx, dy, s) {},
                                                   child:
                                                       _buildPreviewTimerWidget(
                                                     time: _previewSeconds,
@@ -1073,47 +1505,54 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                 ),
 
                                               // Timer A2
-                                              if (_selectedPageType == 'A2') ...[
+                                              if (_selectedPageType ==
+                                                  'A2') ...[
                                                 _buildDraggableItem(
-                                                  x: _tL_X,
-                                                  y: _tL_Y,
-                                                  scale: _tL_Scale,
-                                                  onChanged: (dx, dy, s) => setState(() {
-                                                    _tL_X = dx;
-                                                    _tL_Y = dy;
-                                                    _tL_Scale = s;
-                                                  }),
-                                                  child: _buildPreviewTimerWidget(
+                                                  alignment: const Alignment(
+                                                      -0.5, 0.0),
+                                                  x: _tlX,
+                                                  y: _tlY,
+                                                  scale: _tlScale,
+                                                  onChanged: (dx, dy, s) {},
+                                                  child:
+                                                      _buildPreviewTimerWidget(
                                                     time: _previewSecLeft,
-                                                    isRunning: _isPreviewRunningLeft,
-                                                    onToggle: _togglePreviewTimerLeft,
+                                                    isRunning:
+                                                        _isPreviewRunningLeft,
+                                                    onToggle:
+                                                        _togglePreviewTimerLeft,
                                                     onReset: () {
-                                                      _previewTimerLeft?.cancel();
+                                                      _previewTimerLeft
+                                                          ?.cancel();
                                                       _updatePreviewSeconds();
                                                       setState(() {
-                                                        _isPreviewRunningLeft = false;
+                                                        _isPreviewRunningLeft =
+                                                            false;
                                                       });
                                                     },
                                                   ),
                                                 ),
                                                 _buildDraggableItem(
-                                                  x: _tR_X,
-                                                  y: _tR_Y,
-                                                  scale: _tR_Scale,
-                                                  onChanged: (dx, dy, s) => setState(() {
-                                                    _tR_X = dx;
-                                                    _tR_Y = dy;
-                                                    _tR_Scale = s;
-                                                  }),
-                                                  child: _buildPreviewTimerWidget(
+                                                  alignment:
+                                                      const Alignment(0.5, 0.0),
+                                                  x: _trX,
+                                                  y: _trY,
+                                                  scale: _trScale,
+                                                  onChanged: (dx, dy, s) {},
+                                                  child:
+                                                      _buildPreviewTimerWidget(
                                                     time: _previewSecRight,
-                                                    isRunning: _isPreviewRunningRight,
-                                                    onToggle: _togglePreviewTimerRight,
+                                                    isRunning:
+                                                        _isPreviewRunningRight,
+                                                    onToggle:
+                                                        _togglePreviewTimerRight,
                                                     onReset: () {
-                                                      _previewTimerRight?.cancel();
+                                                      _previewTimerRight
+                                                          ?.cancel();
                                                       _updatePreviewSeconds();
                                                       setState(() {
-                                                        _isPreviewRunningRight = false;
+                                                        _isPreviewRunningRight =
+                                                            false;
                                                       });
                                                     },
                                                   ),
@@ -1161,21 +1600,26 @@ class _PageManagerPageState extends State<PageManagerPage> {
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          _formatTime(time),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 120,
-            fontWeight: FontWeight.bold,
-            fontFamily: _timerFontFamily,
-            fontFeatures: const [ui.FontFeature.tabularFigures()],
-            shadows: [
-              Shadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10))
-            ],
+        SizedBox(
+          width: 800,
+          child: Text(
+            _formatTime(time),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 120,
+              fontWeight: FontWeight.bold,
+              fontFamily: _timerFontFamily,
+              fontFeatures: const [ui.FontFeature.tabularFigures()],
+              shadows: [
+                Shadow(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10))
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -1184,18 +1628,24 @@ class _PageManagerPageState extends State<PageManagerPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton.filled(
-              iconSize: 44, // Adjusted
+              iconSize: 120 * 0.2,
               onPressed: onToggle,
               icon: Icon(
                   isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded),
-              style: IconButton.styleFrom(backgroundColor: Colors.white12),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.black12,
+                foregroundColor: Colors.black,
+              ),
             ),
             const SizedBox(width: 16),
             IconButton.filled(
-              iconSize: 44, // Adjusted
+              iconSize: 120 * 0.2,
               onPressed: onReset,
               icon: const Icon(Icons.refresh_rounded),
-              style: IconButton.styleFrom(backgroundColor: Colors.white12),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.black12,
+                foregroundColor: Colors.black,
+              ),
             ),
           ],
         ),
@@ -1250,7 +1700,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int>(
-                  value: currentTemplateId,
+                  initialValue: currentTemplateId,
                   isExpanded: true,
                   decoration: InputDecoration(
                     filled: true,
@@ -1268,12 +1718,13 @@ class _PageManagerPageState extends State<PageManagerPage> {
                       .toList(),
                   onChanged: (val) {
                     setState(() {
-                      if (type == 'single')
+                      if (type == 'single') {
                         _singleTemplateId = val;
-                      else if (type == 'doubleL')
+                      } else if (type == 'doubleL') {
                         _leftTemplateId = val;
-                      else
+                      } else {
                         _rightTemplateId = val;
+                      }
                     });
                   },
                 ),
@@ -1390,38 +1841,22 @@ class _PageManagerPageState extends State<PageManagerPage> {
       ],
     );
   }
-}
 
-class _DingValueDraft {
-  final TextEditingController minController = TextEditingController(text: '0');
-  final TextEditingController secController = TextEditingController(text: '0');
-  final TextEditingController amountController =
-      TextEditingController(text: '1');
-}
-
-extension on _PageManagerPageState {
   Widget _buildDraggableItem({
+    Alignment alignment = Alignment.center,
     required double x,
     required double y,
     required double scale,
     required Function(double, double, double) onChanged,
     required Widget child,
   }) {
-    return Positioned(
-      left: 100 + x,
-      top: 100 + y,
-      child: GestureDetector(
-        onPanUpdate: (details) =>
-            onChanged(x + details.delta.dx, y + details.delta.dy, scale),
-        onSecondaryTap: () =>
-            onChanged(x, y, (scale + 0.1) > 3.0 ? 1.0 : scale + 0.1),
-        onDoubleTap: () => onChanged(0, 0, 1.0),
+    return Align(
+      alignment: alignment,
+      child: Transform.translate(
+        offset: Offset(x, y),
         child: Transform.scale(
           scale: scale,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.move,
-            child: child,
-          ),
+          child: child,
         ),
       ),
     );
@@ -1443,12 +1878,12 @@ extension on _PageManagerPageState {
           const SizedBox(height: 8),
           IconButton(
             onPressed: () => _uploadSpecificFont(target),
-            icon: Row(
+            icon: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.font_download_rounded, size: 20),
-                const SizedBox(width: 4),
-                const Text('上传', style: TextStyle(fontSize: 12)),
+                Icon(Icons.font_download_rounded, size: 20),
+                SizedBox(width: 4),
+                Text('上传', style: TextStyle(fontSize: 12)),
               ],
             ),
           ),
@@ -1456,4 +1891,115 @@ extension on _PageManagerPageState {
       ),
     );
   }
+
+  Widget _buildPositionControl({
+    required String label,
+    required double x,
+    required double y,
+    required double scale,
+    required ValueChanged<double> onXChanged,
+    required ValueChanged<double> onYChanged,
+    required ValueChanged<double> onScaleChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151))),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildPositionInput(
+                label: 'X POS',
+                value: x,
+                onChanged: onXChanged,
+                icon: Icons.swap_horiz_rounded,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildPositionInput(
+                label: 'Y POS',
+                value: y,
+                onChanged: onYChanged,
+                icon: Icons.swap_vert_rounded,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildPositionInput(
+                label: 'SIZE',
+                value: scale,
+                onChanged: onScaleChanged,
+                icon: Icons.zoom_in_rounded,
+                isScale: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPositionInput({
+    required String label,
+    required double value,
+    required ValueChanged<double> onChanged,
+    required IconData icon,
+    bool isScale = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Icon(icon, size: 16, color: Colors.grey.shade400),
+              Expanded(
+                child: TextField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true, signed: true),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (val) {
+                    final d = double.tryParse(val);
+                    if (d != null) onChanged(d);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DingValueDraft {
+  final TextEditingController minController = TextEditingController(text: '0');
+  final TextEditingController secController = TextEditingController(text: '0');
+  final TextEditingController amountController =
+      TextEditingController(text: '1');
 }

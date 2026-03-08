@@ -14,7 +14,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -32,6 +32,14 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(flow, flow.timerFontName);
           await m.addColumn(page, page.sectionFontName);
           await m.addColumn(page, page.timerFontName);
+        }
+        if (from < 6) {
+          await m.createTable(position);
+          await m.addColumn(images, images.positionId);
+        }
+        if (from < 7) {
+          await m.addColumn(timer, timer.positionId);
+          await m.addColumn(page, page.sectionPositionId);
         }
       },
     );

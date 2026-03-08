@@ -1,0 +1,7 @@
+Analyzing 3 items...                                            
+
+   info - Use 'isNotEmpty' instead of 'length' to test whether the collection is empty - lib\createevent\page_config_dialog.dart:100:39 - prefer_is_empty
+   info - Use 'isNotEmpty' instead of 'length' to test whether the collection is empty - lib\createevent\page_config_dialog.dart:115:39 - prefer_is_empty
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\timer\timer_runner_page.dart:613:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\timer\timer_runner_page.dart:750:33 - deprecated_member_use
+

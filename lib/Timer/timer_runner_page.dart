@@ -29,6 +29,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
   bool _isLoading = true;
   String? _imagesDirPath;
   String? _fontFamily;
+  String? _timerFontFamily;
   HotkeySettings? _hotkeySettings;
   final async.StreamController<String> _keyStreamController =
       async.StreamController<String>.broadcast();
@@ -74,16 +75,21 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
         p.join(supportDir.path, 'YiHuaTimer', 'images', '${widget.event.id}'));
     _imagesDirPath = imagesDir.path;
 
-    // Load custom font if available
-    if (widget.flow.fontName != null && widget.flow.fontName!.isNotEmpty) {
-      final fontFile = File(p.join(imagesDir.path, widget.flow.fontName!));
-      if (await fontFile.exists()) {
-        final fontLoader = FontLoader(widget.flow.fontName!);
-        fontLoader.addFont(
-            Future.value(fontFile.readAsBytesSync().buffer.asByteData()));
-        await fontLoader.load();
-        _fontFamily = widget.flow.fontName;
-      }
+    // Load flow-level fonts
+    if (widget.flow.sectionFontName != null &&
+        widget.flow.sectionFontName!.isNotEmpty) {
+      await _loadFont(widget.flow.sectionFontName!, 'flow_section');
+    } else if (widget.flow.fontName != null &&
+        widget.flow.fontName!.isNotEmpty) {
+      await _loadFont(widget.flow.fontName!, 'flow_section');
+    }
+
+    if (widget.flow.timerFontName != null &&
+        widget.flow.timerFontName!.isNotEmpty) {
+      await _loadFont(widget.flow.timerFontName!, 'flow_timer');
+    } else if (widget.flow.fontName != null &&
+        widget.flow.fontName!.isNotEmpty) {
+      await _loadFont(widget.flow.fontName!, 'flow_timer');
     }
 
     final pages = await (database.select(database.page)
@@ -96,6 +102,22 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
         _pages = pages;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadFont(String fileName, String type) async {
+    final supportDir = await getApplicationSupportDirectory();
+    final imagesDir = Directory(
+        p.join(supportDir.path, 'YiHuaTimer', 'images', '${widget.event.id}'));
+    final fontFile = File(p.join(imagesDir.path, fileName));
+    if (await fontFile.exists()) {
+      final family = 'Font_${type}_${widget.flow.id}';
+      final fontLoader = FontLoader(family);
+      fontLoader.addFont(
+          Future.value(fontFile.readAsBytesSync().buffer.asByteData()));
+      await fontLoader.load();
+      if (type.contains('section')) _fontFamily = family;
+      if (type.contains('timer')) _timerFontFamily = family;
     }
   }
 
@@ -173,6 +195,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   flow: widget.flow,
                   imagesDirPath: _imagesDirPath,
                   fontFamily: _fontFamily,
+                  flowTimerFont: _timerFontFamily,
                   hotkeys: _hotkeySettings,
                 );
               },
@@ -239,6 +262,7 @@ class _TimerPageView extends StatefulWidget {
   final FlowData flow;
   final String? imagesDirPath;
   final String? fontFamily;
+  final String? flowTimerFont;
   final HotkeySettings? hotkeys;
 
   const _TimerPageView({
@@ -249,6 +273,7 @@ class _TimerPageView extends StatefulWidget {
     required this.flow,
     this.imagesDirPath,
     this.fontFamily,
+    this.flowTimerFont,
     this.hotkeys,
   });
 
@@ -281,6 +306,13 @@ class _TimerPageViewState extends State<_TimerPageView> {
   final Map<int, List<DingValueData>> _dingValues = {};
   final Map<int, String> _timerAudioFiles = {};
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final Map<String, int> _timerIdsByType = {};
+
+  PositionData? _sectionPos;
+  final Map<String, PositionData?> _timerPos = {};
+
+  String? _pageSectionFont;
+  String? _pageTimerFont;
 
   @override
   void initState() {
@@ -398,12 +430,77 @@ class _TimerPageViewState extends State<_TimerPageView> {
           }
         }
       }
+
+      // Load positions
+      if (t.positionId != null) {
+        final pos = await (database.select(database.position)
+              ..where((p) => p.id.equals(t.positionId!)))
+            .getSingleOrNull();
+        _timerPos[t.timerType ?? ''] = pos;
+      } else {
+        // Fallback to legacy
+        _timerPos[t.timerType ?? ''] = PositionData(
+          id: -1,
+          xpos: t.xpos,
+          ypos: t.ypos,
+          size: t.scale,
+        );
+      }
+    }
+
+    // Load section name position
+    if (widget.pageData.sectionPositionId != null) {
+      _sectionPos = await (database.select(database.position)
+            ..where((p) => p.id.equals(widget.pageData.sectionPositionId!)))
+          .getSingleOrNull();
+    } else {
+      _sectionPos = PositionData(
+        id: -1,
+        xpos: widget.pageData.sectionXpos,
+        ypos: widget.pageData.sectionYpos,
+        size: widget.pageData.sectionScale,
+      );
+    }
+
+    // Load page-level fonts
+    if (widget.pageData.sectionFontName != null &&
+        widget.pageData.sectionFontName!.isNotEmpty) {
+      await _loadPageFont(widget.pageData.sectionFontName!, 'page_section');
+    }
+    if (widget.pageData.timerFontName != null &&
+        widget.pageData.timerFontName!.isNotEmpty) {
+      await _loadPageFont(widget.pageData.timerFontName!, 'page_timer');
+    }
+
+    // Map timer types to IDs for easier lookup in _checkDings
+    for (var t in timers) {
+      _timerIdsByType[t.timerType ?? ''] = t.id;
     }
 
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadPageFont(String fileName, String type) async {
+    final supportDir = await getApplicationSupportDirectory();
+    final imagesDir = Directory(p.join(
+        supportDir.path, 'YiHuaTimer', 'images', '${widget.flow.eventId}'));
+    final fontFile = File(p.join(imagesDir.path, fileName));
+    if (await fontFile.exists()) {
+      final family = 'Font_${type}_${widget.pageData.id}';
+      final fontLoader = FontLoader(family);
+      fontLoader.addFont(
+          Future.value(fontFile.readAsBytesSync().buffer.asByteData()));
+      await fontLoader.load();
+      if (mounted) {
+        setState(() {
+          if (type.contains('section')) _pageSectionFont = family;
+          if (type.contains('timer')) _pageTimerFont = family;
+        });
+      }
     }
   }
 
@@ -428,22 +525,18 @@ class _TimerPageViewState extends State<_TimerPageView> {
   }
 
   Future<void> _checkDings(String type, int currentSec) async {
-    final timers = await (database.select(database.timer)
-          ..where((t) => t.pageId.equals(widget.pageData.id))
-          ..where((t) => t.timerType.equals(type)))
-        .get();
+    final timerId = _timerIdsByType[type];
+    if (timerId == null) return;
 
-    for (var t in timers) {
-      final dings = _dingValues[t.id] ?? [];
-      for (var d in dings) {
-        final parts = (d.dingTime ?? '0:0').split(':');
-        final m = int.tryParse(parts[0]) ?? 0;
-        final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
-        final dingSec = m * 60 + s;
+    final dings = _dingValues[timerId] ?? [];
+    for (var d in dings) {
+      final parts = (d.dingTime ?? '0:0').split(':');
+      final m = int.tryParse(parts[0]) ?? 0;
+      final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+      final dingSec = m * 60 + s;
 
-        if (dingSec == currentSec) {
-          _playSound(t.id, d.dingAmount ?? 1);
-        }
+      if (dingSec == currentSec) {
+        _playSound(timerId, d.dingAmount ?? 1);
       }
     }
   }
@@ -453,14 +546,15 @@ class _TimerPageViewState extends State<_TimerPageView> {
     if (fileName == null || fileName.isEmpty) return;
 
     final supportDir = await getApplicationSupportDirectory();
-    final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'images',
-        '${widget.flow.eventId}', fileName);
+    final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'ding', fileName);
 
     if (await File(audioPath).exists()) {
       for (int i = 0; i < amount; i++) {
-        await _audioPlayer.play(DeviceFileSource(audioPath));
-        if (amount > 1) {
-          await Future.delayed(const Duration(milliseconds: 600));
+        final p = AudioPlayer();
+        p.play(DeviceFileSource(audioPath));
+        p.onPlayerComplete.listen((_) => p.dispose());
+        if (i < amount - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
         }
       }
     }
@@ -560,21 +654,30 @@ class _TimerPageViewState extends State<_TimerPageView> {
                     alignment: widget.pageData.pageTypeId == 'B'
                         ? Alignment.center
                         : Alignment.topCenter,
-                    child: Text(
-                      widget.pageData.sectionName ?? '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: widget.fontFamily,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
-                          )
-                        ],
+                    child: Transform.translate(
+                      offset: Offset(
+                          _sectionPos?.xpos ?? 0,
+                          (_sectionPos?.ypos ?? 0) +
+                              (widget.pageData.pageTypeId == 'B' ? 0 : 0)),
+                      child: Transform.scale(
+                        scale: _sectionPos?.size ?? 1.0,
+                        child: Text(
+                          widget.pageData.sectionName ?? '',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: _pageSectionFont ?? widget.fontFamily,
+                            shadows: [
+                              Shadow(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -583,29 +686,38 @@ class _TimerPageViewState extends State<_TimerPageView> {
                   if (widget.pageData.pageTypeId == 'A1')
                     Align(
                       alignment: Alignment.center,
-                      child: _buildTimerWidget(
-                        time: _secondsC,
-                        isRunning: _isRunning,
-                        onToggle: _toggleC,
-                        onReset: () {
-                          _timerC?.cancel();
-                          setState(() {
-                            _isRunning = false;
-                            _secondsC = _initSecC;
-                          });
-                        },
-                        isA2: false,
+                      child: Transform.translate(
+                        offset: Offset(_timerPos['single']?.xpos ?? 0,
+                            _timerPos['single']?.ypos ?? 0),
+                        child: Transform.scale(
+                          scale: _timerPos['single']?.size ?? 1.0,
+                          child: _buildTimerWidget(
+                            time: _secondsC,
+                            isRunning: _isRunning,
+                            onToggle: _toggleC,
+                            onReset: () {
+                              _timerC?.cancel();
+                              setState(() {
+                                _isRunning = false;
+                                _secondsC = _initSecC;
+                              });
+                            },
+                            isA2: false,
+                          ),
+                        ),
                       ),
                     ),
 
-                  // Timer A2
+                  // Timer A2 Left
                   if (widget.pageData.pageTypeId == 'A2')
                     Align(
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildTimerWidget(
+                      alignment: const Alignment(-0.5, 0.0),
+                      child: Transform.translate(
+                        offset: Offset(_timerPos['doubleL']?.xpos ?? 0,
+                            _timerPos['doubleL']?.ypos ?? 0),
+                        child: Transform.scale(
+                          scale: _timerPos['doubleL']?.size ?? 1.0,
+                          child: _buildTimerWidget(
                             time: _secL,
                             isRunning: _isRunningL,
                             onToggle: _toggleL,
@@ -618,7 +730,20 @@ class _TimerPageViewState extends State<_TimerPageView> {
                             },
                             isA2: true,
                           ),
-                          _buildTimerWidget(
+                        ),
+                      ),
+                    ),
+
+                  // Timer A2 Right
+                  if (widget.pageData.pageTypeId == 'A2')
+                    Align(
+                      alignment: const Alignment(0.5, 0.0),
+                      child: Transform.translate(
+                        offset: Offset(_timerPos['doubleR']?.xpos ?? 0,
+                            _timerPos['doubleR']?.ypos ?? 0),
+                        child: Transform.scale(
+                          scale: _timerPos['doubleR']?.size ?? 1.0,
+                          child: _buildTimerWidget(
                             time: _secR,
                             isRunning: _isRunningR,
                             onToggle: _toggleR,
@@ -632,7 +757,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
                             isA2: true,
                             isRight: true,
                           ),
-                        ],
+                        ),
                       ),
                     ),
                 ],
@@ -651,71 +776,61 @@ class _TimerPageViewState extends State<_TimerPageView> {
     required bool isA2,
     bool isRight = false,
   }) {
+    final double timerFontSize = isA2 ? 140 : 200;
+    final double controlSize = timerFontSize * 0.2;
     final controls = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton.filled(
-          iconSize: isA2 ? 48 : 64,
+          iconSize: controlSize,
           onPressed: onToggle,
           icon:
               Icon(isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded),
-          style: IconButton.styleFrom(backgroundColor: Colors.white12),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.black12,
+            foregroundColor: Colors.black,
+          ),
         ),
         const SizedBox(width: 24),
         IconButton.filled(
-          iconSize: isA2 ? 48 : 64,
+          iconSize: controlSize,
           onPressed: onReset,
           icon: const Icon(Icons.refresh_rounded),
-          style: IconButton.styleFrom(backgroundColor: Colors.white12),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.black12,
+            foregroundColor: Colors.black,
+          ),
         ),
       ],
     );
 
-    final timerText = Text(
-      _format(time),
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: isA2 ? 140 : 200,
-        fontWeight: FontWeight.bold,
-        fontFamily: widget.fontFamily,
-        fontFeatures: const [ui.FontFeature.tabularFigures()],
-        shadows: [
-          Shadow(
-            color: Colors.black.withOpacity(0.5),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          )
-        ],
+    final timerText = SizedBox(
+      width: 1000,
+      child: Text(
+        _format(time),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: isA2 ? 140 : 200,
+          fontWeight: FontWeight.bold,
+          fontFamily:
+              _pageTimerFont ?? widget.flowTimerFont ?? widget.fontFamily,
+          fontFeatures: const [ui.FontFeature.tabularFigures()],
+          shadows: [
+            Shadow(
+              color: Colors.white.withValues(alpha: 0.5),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ],
+        ),
       ),
     );
 
-    if (isA2) {
-      if (isRight) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            controls,
-            const SizedBox(width: 32),
-            timerText,
-          ],
-        );
-      } else {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            timerText,
-            const SizedBox(width: 32),
-            controls,
-          ],
-        );
-      }
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         timerText,
         const SizedBox(height: 24),

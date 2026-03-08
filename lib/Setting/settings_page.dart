@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'hotkey_settings_page.dart';
 import 'volume_settings_page.dart';
+import 'timer_template_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -38,7 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-          
+
           // Tabs
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
@@ -66,17 +67,26 @@ class _SettingsPageState extends State<SettingsPage> {
                     isSelected: _selectedTabIndex == 1,
                   ),
                 ),
+                Expanded(
+                  child: _buildTabButton(
+                    label: '铃声设计',
+                    index: 2,
+                    isSelected: _selectedTabIndex == 2,
+                  ),
+                ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Content
           Expanded(
             child: _selectedTabIndex == 0
                 ? const HotkeySettingsPage()
-                : const VolumeSettingsPage(),
+                : _selectedTabIndex == 1
+                    ? const VolumeSettingsPage()
+                    : const TimerTemplateSettingsPage(),
           ),
         ],
       ),
@@ -113,4 +123,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-

@@ -46,13 +46,19 @@ CREATE TABLE flow (
     folder_id INTEGER REFERENCES flow_folder(id)
 );
 
+CREATE TABLE position (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    xpos DOUBLE DEFAULT 0.0,
+    ypos DOUBLE DEFAULT 0.0,
+    size DOUBLE DEFAULT 1.0
+) AS PositionData;
+
 CREATE TABLE images (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     image_name VARCHAR,
     image_type VARCHAR, -- schoolA, schoolB or background
     page_id INTEGER,
-    xpos DOUBLE,
-    ypos DOUBLE
+    position_id INTEGER REFERENCES position(id)
 ) AS ImagesData;
 
 CREATE TABLE timer (
@@ -63,7 +69,8 @@ CREATE TABLE timer (
     page_id INTEGER REFERENCES page(id),
     xpos DOUBLE DEFAULT 0.0,
     ypos DOUBLE DEFAULT 0.0,
-    scale DOUBLE DEFAULT 1.0
+    scale DOUBLE DEFAULT 1.0,
+    position_id INTEGER REFERENCES position(id)
 );
 
 CREATE TABLE bgm (
@@ -85,5 +92,6 @@ CREATE TABLE page (
     section_scale DOUBLE DEFAULT 1.0,
     section_font_name VARCHAR,
     timer_font_name VARCHAR,
-    use_frontpage BOOLEAN DEFAULT FALSE
+    use_frontpage BOOLEAN DEFAULT FALSE,
+    section_position_id INTEGER REFERENCES position(id)
 );

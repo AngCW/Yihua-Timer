@@ -76,13 +76,18 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
   int _previewSecB = 0;
   String _timerCount = '两个'; // 无, 一个, 两个
 
+  double _sectionX = 0, _sectionY = 0, _sectionScale = 1.0;
+  double _timerAX = 0, _timerAY = 0, _timerAScale = 1.0;
+  double _timerBX = 0, _timerBY = 0, _timerBScale = 1.0;
+
   @override
   void initState() {
     super.initState();
     _pageNameController = TextEditingController(text: widget.pageName);
     _pageTypeController = TextEditingController(text: widget.pageType);
-    _sectionNameController = TextEditingController(text: widget.sectionName ?? '');
-    
+    _sectionNameController =
+        TextEditingController(text: widget.sectionName ?? '');
+
     // Listen to page type changes to update preview
     _pageTypeController.addListener(() {
       setState(() {});
@@ -91,9 +96,12 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
     // Parse timer A start time
     if (widget.timerAStartTime != null) {
       final parts = widget.timerAStartTime!.split(':');
-      _timerAMinController = TextEditingController(text: parts.length > 0 ? parts[0] : '4');
-      _timerASecController = TextEditingController(text: parts.length > 1 ? parts[1] : '00');
-      _previewSecA = (int.tryParse(_timerAMinController.text) ?? 4) * 60 + (int.tryParse(_timerASecController.text) ?? 0);
+      _timerAMinController =
+          TextEditingController(text: parts.isNotEmpty ? parts[0] : '4');
+      _timerASecController =
+          TextEditingController(text: parts.length > 1 ? parts[1] : '00');
+      _previewSecA = (int.tryParse(_timerAMinController.text) ?? 4) * 60 +
+          (int.tryParse(_timerASecController.text) ?? 0);
     } else {
       _timerAMinController = TextEditingController(text: '4');
       _timerASecController = TextEditingController(text: '00');
@@ -103,9 +111,12 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
     // Parse timer B start time
     if (widget.timerBStartTime != null) {
       final parts = widget.timerBStartTime!.split(':');
-      _timerBMinController = TextEditingController(text: parts.length > 0 ? parts[0] : '4');
-      _timerBSecController = TextEditingController(text: parts.length > 1 ? parts[1] : '00');
-      _previewSecB = (int.tryParse(_timerBMinController.text) ?? 4) * 60 + (int.tryParse(_timerBSecController.text) ?? 0);
+      _timerBMinController =
+          TextEditingController(text: parts.isNotEmpty ? parts[0] : '4');
+      _timerBSecController =
+          TextEditingController(text: parts.length > 1 ? parts[1] : '00');
+      _previewSecB = (int.tryParse(_timerBMinController.text) ?? 4) * 60 +
+          (int.tryParse(_timerBSecController.text) ?? 0);
     } else {
       _timerBMinController = TextEditingController(text: '4');
       _timerBSecController = TextEditingController(text: '00');
@@ -192,11 +203,22 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                       'sectionName': _sectionNameController.text,
                       'timerATemplate': _selectedTimerATemplate,
                       'timerBTemplate': _selectedTimerBTemplate,
-                      'timerAStartTime': '${_timerAMinController.text}:${_timerASecController.text}',
-                      'timerBStartTime': '${_timerBMinController.text}:${_timerBSecController.text}',
+                      'timerAStartTime':
+                          '${_timerAMinController.text}:${_timerASecController.text}',
+                      'timerBStartTime':
+                          '${_timerBMinController.text}:${_timerBSecController.text}',
                       'bgmPath': _bgmPath,
+                      'sectionX': _sectionX,
+                      'sectionY': _sectionY,
+                      'sectionScale': _sectionScale,
+                      'timerAX': _timerAX,
+                      'timerAY': _timerAY,
+                      'timerAScale': _timerAScale,
+                      'timerBX': _timerBX,
+                      'timerBY': _timerBY,
+                      'timerBScale': _timerBScale,
                     });
-                    
+
                     // Show success message
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -206,14 +228,15 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                           duration: Duration(seconds: 2),
                         ),
                       );
-                      
+
                       // Wait a bit for the message to be visible, then navigate
                       await Future.delayed(const Duration(milliseconds: 500));
-                      
+
                       // Pop all dialogs and routes until we reach the dashboard
                       if (context.mounted) {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
-                        
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
+
                         // Navigate to EventManagerPage (已保存赛事)
                         if (context.mounted) {
                           Navigator.of(context).pushReplacement(
@@ -227,7 +250,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF6B46C1),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                   ),
                   child: const Text('保存'),
                 ),
@@ -250,13 +274,27 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   // Page Type
                   _buildLabel('页面类型:'),
                   const SizedBox(height: 8),
-                  _buildTextField(_pageTypeController, '请输入页面类型 (A1, A2, B, C)'),
+                  _buildTextField(
+                      _pageTypeController, '请输入页面类型 (A1, A2, B, C)'),
                   const SizedBox(height: 24),
 
                   // Section Name
                   _buildLabel('阶段标题:'),
                   const SizedBox(height: 8),
                   _buildTextField(_sectionNameController, '例如: 正方三辩 反方三辩 对辩环节'),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    child: _buildPositionRow(
+                      '阶段标题位置',
+                      _sectionX,
+                      _sectionY,
+                      _sectionScale,
+                      (val) => setState(() => _sectionX = val),
+                      (val) => setState(() => _sectionY = val),
+                      (val) => setState(() => _sectionScale = val),
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // Timer Count Toggle
@@ -268,11 +306,50 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   // Timer - show based on selection
                   if (_timerCount == '一个') ...[
                     _buildTimerBox('计时器(中间)', true),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      child: _buildPositionRow(
+                        '计时器位置',
+                        _timerAX,
+                        _timerAY,
+                        _timerAScale,
+                        (val) => setState(() => _timerAX = val),
+                        (val) => setState(() => _timerAY = val),
+                        (val) => setState(() => _timerAScale = val),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                   ] else if (_timerCount == '两个') ...[
                     _buildTimerBox('计时器A (左边)', true),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      child: _buildPositionRow(
+                        '计时器A位置',
+                        _timerAX,
+                        _timerAY,
+                        _timerAScale,
+                        (val) => setState(() => _timerAX = val),
+                        (val) => setState(() => _timerAY = val),
+                        (val) => setState(() => _timerAScale = val),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     _buildTimerBox('计时器B (右边)', false),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      child: _buildPositionRow(
+                        '计时器B位置',
+                        _timerBX,
+                        _timerBY,
+                        _timerBScale,
+                        (val) => setState(() => _timerBX = val),
+                        (val) => setState(() => _timerBY = val),
+                        (val) => setState(() => _timerBScale = val),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                   ],
 
@@ -281,6 +358,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   const SizedBox(height: 8),
                   _buildBgmUploadField(),
                   const SizedBox(height: 24),
+
+                  // Position Section removed and moved above
 
                   // Preview
                   _buildLabel('preview:'),
@@ -327,7 +406,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
@@ -354,7 +434,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
           decoration: BoxDecoration(
             color: isSelected ? const Color(0xFF6B46C1) : Colors.white,
             border: Border.all(
-              color: isSelected ? const Color(0xFF6B46C1) : Colors.grey.shade300,
+              color:
+                  isSelected ? const Color(0xFF6B46C1) : Colors.grey.shade300,
               width: 2,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -375,9 +456,12 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
   }
 
   Widget _buildTimerBox(String title, bool isTimerA) {
-    final minController = isTimerA ? _timerAMinController : _timerBMinController;
-    final secController = isTimerA ? _timerASecController : _timerBSecController;
-    final template = isTimerA ? _selectedTimerATemplate : _selectedTimerBTemplate;
+    final minController =
+        isTimerA ? _timerAMinController : _timerBMinController;
+    final secController =
+        isTimerA ? _timerASecController : _timerBSecController;
+    final template =
+        isTimerA ? _selectedTimerATemplate : _selectedTimerBTemplate;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -408,14 +492,15 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: template,
+            initialValue: template,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.shade50,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             items: ['default', 'template1', 'template2']
                 .map((t) => DropdownMenuItem<String>(
@@ -458,7 +543,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -482,7 +568,8 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -523,7 +610,9 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
                   ? _bgmPath!.split(Platform.pathSeparator).last
                   : '(一样可以drag and drop)',
               style: TextStyle(
-                color: _bgmPath != null ? Colors.grey.shade800 : Colors.grey.shade600,
+                color: _bgmPath != null
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade600,
                 fontSize: 14,
               ),
             ),
@@ -543,38 +632,46 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
       ),
       child: Stack(
         children: [
-          // Section Name - top center for A1/A2, center for B
+          // Section Name
           if (pageType != 'C')
             Align(
-              alignment: pageType == 'B' ? Alignment.center : Alignment.topCenter,
-              child: Padding(
-                padding: EdgeInsets.only(top: pageType == 'B' ? 0 : 50),
-                child: Text(
-                  _sectionNameController.text.isEmpty
-                      ? '阶段标题预览'
-                      : _sectionNameController.text,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: pageType == 'B' ? 36 : 28,
-                    fontWeight: FontWeight.bold,
+              alignment:
+                  pageType == 'B' ? Alignment.center : Alignment.topCenter,
+              child: Transform.translate(
+                offset:
+                    Offset(_sectionX, _sectionY + (pageType == 'B' ? 0 : 50)),
+                child: Transform.scale(
+                  scale: _sectionScale,
+                  child: Text(
+                    _sectionNameController.text.isEmpty
+                        ? '阶段标题预览'
+                        : _sectionNameController.text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: pageType == 'B' ? 36 : 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
 
-          // Timer A - center if 一个, left if 两个
+          // Timer A
           if (_timerCount == '一个')
             Align(
               alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 100),
-                child: Text(
-                  _formatTime(_previewSecA),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 56,
-                    fontWeight: FontWeight.bold,
+              child: Transform.translate(
+                offset: Offset(_timerAX, _timerAY - 50),
+                child: Transform.scale(
+                  scale: _timerAScale,
+                  child: Text(
+                    _formatTime(_previewSecA),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -582,30 +679,40 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
 
           // Timer A - left side (if 两个)
           if (_timerCount == '两个')
-            Positioned(
-              left: 80,
-              bottom: 100,
-              child: Text(
-                _formatTime(_previewSecA),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 56,
-                  fontWeight: FontWeight.bold,
+            Align(
+              alignment: const Alignment(-0.6, 0.4),
+              child: Transform.translate(
+                offset: Offset(_timerAX, _timerAY),
+                child: Transform.scale(
+                  scale: _timerAScale,
+                  child: Text(
+                    _formatTime(_previewSecA),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
 
           // Timer B - right side (if 两个)
           if (_timerCount == '两个')
-            Positioned(
-              right: 80,
-              bottom: 100,
-              child: Text(
-                _formatTime(_previewSecB),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 56,
-                  fontWeight: FontWeight.bold,
+            Align(
+              alignment: const Alignment(0.6, 0.4),
+              child: Transform.translate(
+                offset: Offset(_timerBX, _timerBY),
+                child: Transform.scale(
+                  scale: _timerBScale,
+                  child: Text(
+                    _formatTime(_previewSecB),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -613,5 +720,76 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
       ),
     );
   }
-}
 
+  Widget _buildPositionRow(
+    String label,
+    double x,
+    double y,
+    double scale,
+    ValueChanged<double> onX,
+    ValueChanged<double> onY,
+    ValueChanged<double> onScale,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _buildMiniPosInput('X', x, onX),
+            const SizedBox(width: 8),
+            _buildMiniPosInput('Y', y, onY),
+            const SizedBox(width: 8),
+            _buildMiniPosInput('Size', scale, onScale, isScale: true),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMiniPosInput(
+      String label, double value, ValueChanged<double> onChanged,
+      {bool isScale = false}) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 36,
+            child: TextField(
+              keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true, signed: true),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Colors.black),
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: BorderSide(color: Colors.grey.shade300)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: BorderSide(color: Colors.grey.shade300)),
+              ),
+              controller: TextEditingController(
+                  text: value.toStringAsFixed(isScale ? 2 : 0))
+                ..selection = TextSelection.fromPosition(TextPosition(
+                    offset: value.toStringAsFixed(isScale ? 2 : 0).length)),
+              onSubmitted: (val) {
+                final d = double.tryParse(val);
+                if (d != null) onChanged(d);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
