@@ -30,6 +30,7 @@ class PageManagerPage extends StatefulWidget {
 class _PageManagerPageState extends State<PageManagerPage> {
   final _pageNameController = TextEditingController();
   final _sectionNameController = TextEditingController();
+  final _hotkeyController = TextEditingController();
 
   List<BgmData> _bgmList = [];
   List<TimerTemplateData> _templateList = [];
@@ -124,6 +125,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _currentPage = widget.page;
     _pageNameController.text = _currentPage.pageName ?? '';
     _sectionNameController.text = _currentPage.sectionName ?? '';
+    _hotkeyController.text = _currentPage.hotkeyValue ?? '';
     _selectedBgmId = _currentPage.bgmId;
     _selectedPageType = _currentPage.pageTypeId;
     _useFrontpage = _currentPage.useFrontpage ?? false;
@@ -352,19 +354,25 @@ class _PageManagerPageState extends State<PageManagerPage> {
       final supportDir = await getApplicationSupportDirectory();
       final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'ding', fileName);
 
-      if (await File(audioPath).exists()) {
-        for (int i = 0; i < amount; i++) {
-          final p = AudioPlayer();
-          p.play(DeviceFileSource(audioPath));
-          p.onPlayerComplete.listen((_) => p.dispose());
-          if (i < amount - 1) {
-            await Future.delayed(const Duration(milliseconds: 200));
-          }
-        }
+      if (!await File(audioPath).exists()) return;
+
+      // Play the first ding immediately.
+      _spawnPreviewPlay(audioPath);
+
+      // Schedule any additional dings at 200ms intervals, detached.
+      for (int i = 1; i < amount; i++) {
+        Future.delayed(Duration(milliseconds: 200 * i),
+            () => _spawnPreviewPlay(audioPath));
       }
     } catch (e) {
       debugPrint('Error playing preview sound: $e');
     }
+  }
+
+  void _spawnPreviewPlay(String audioPath) {
+    final player = AudioPlayer();
+    player.play(DeviceFileSource(audioPath));
+    player.onPlayerComplete.listen((_) => player.dispose());
   }
 
   void _togglePreviewTimerLeft() {
@@ -953,6 +961,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
         sectionYpos: drift.Value(_sectionY),
         sectionScale: drift.Value(_sectionScale),
         sectionPositionId: drift.Value(sectionPosId),
+        hotkeyValue: drift.Value(_hotkeyController.text.trim().isEmpty
+            ? null
+            : _hotkeyController.text.trim()),
       ));
       final updated = await (database.select(database.page)
             ..where((t) => t.id.equals(_currentPage.id)))
@@ -990,6 +1001,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _audioPlayer.dispose();
     _pageNameController.dispose();
     _sectionNameController.dispose();
+    _hotkeyController.dispose();
     _singleMinController.dispose();
     _singleSecController.dispose();
     _leftMinController.dispose();
@@ -1164,6 +1176,20 @@ class _PageManagerPageState extends State<PageManagerPage> {
                       label: '页面名称 (Page Name)',
                       hint: '例如: 第一页'),
                   const SizedBox(height: 16),
+
+                  // Hotkey — only for default pages
+                  if (_currentPage.isDefaultPage == true) ...[
+                    _buildTextField(
+                      controller: _hotkeyController,
+                      label: '快捷键 (Hotkey)',
+                      hint: '例如: 1',
+                    ),
+                    const SizedBox(height: 4),
+                    Text('该快捷键用于计时器运行时直接跳转到此页面。',
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade500)),
+                    const SizedBox(height: 16),
+                  ],
 
                   // BGM Selection
                   Column(

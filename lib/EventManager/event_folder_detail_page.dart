@@ -283,6 +283,44 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
     }
   }
 
+  Future<void> _createDefaultPages(int flowId) async {
+    final templates = await database.select(database.timerTemplate).get();
+    final tid = templates.isNotEmpty ? templates.first.id : null;
+
+    Future<void> insPage(String n, String pt, int p,
+        {bool uf = false,
+        String? sn,
+        bool wt = false,
+        bool isDefault = true,
+        String? hk}) async {
+      final pg = await database.into(database.page).insertReturning(
+            PageCompanion.insert(
+              pageName: drift.Value(n),
+              flowId: drift.Value(flowId),
+              pagePosition: drift.Value(p),
+              pageTypeId: drift.Value(pt),
+              useFrontpage: drift.Value(uf),
+              sectionName: drift.Value(sn),
+              isDefaultPage: drift.Value(isDefault),
+              hotkeyValue: drift.Value(hk),
+            ),
+          );
+      if (wt && tid != null) {
+        await database.into(database.timer).insert(TimerCompanion.insert(
+            pageId: drift.Value(pg.id),
+            timerTemplateId: drift.Value(tid),
+            timerType: const drift.Value('single'),
+            startTime: const drift.Value('2:0')));
+      }
+    }
+
+    await insPage('主页', 'C', 1, uf: true, isDefault: false);
+    await insPage('断线缓冲计时环节', 'A1', 2, sn: '断线缓冲计时环节', wt: true, hk: '1');
+    await insPage('断线缓冲标题页面', 'B', 3, sn: '断线缓冲标题页面', hk: '2');
+    await insPage('立场捍卫环节', 'A1', 4, sn: '立场捍卫环节', wt: true, hk: '3');
+    await insPage('资料检证环节', 'A1', 5, sn: '资料检证环节', wt: true, hk: '4');
+  }
+
   Widget _buildAddFlowButton(BuildContext context) {
     return InkWell(
       onTap: () async {
@@ -298,6 +336,8 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
                 flowPosition: drift.Value(flows.length + 1),
               ),
             );
+
+        await _createDefaultPages(newFlow.id);
 
         if (context.mounted) {
           Navigator.push(

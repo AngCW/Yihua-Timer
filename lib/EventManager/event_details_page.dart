@@ -5,6 +5,10 @@ import '../FlowManager/flow_manager_page.dart';
 import 'event_folder_detail_page.dart';
 import '../main.dart';
 import 'package:drift/drift.dart' as drift;
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final EventData event;
@@ -63,6 +67,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               ),
             ),
 
+            _buildSchoolsSection(),
             const SizedBox(height: 40),
 
             // Event Flow Section (Rectangle defining the flow)
@@ -626,6 +631,44 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
+  Future<void> _createDefaultPages(int flowId) async {
+    final templates = await database.select(database.timerTemplate).get();
+    final tid = templates.isNotEmpty ? templates.first.id : null;
+
+    Future<void> insPage(String n, String pt, int p,
+        {bool uf = false,
+        String? sn,
+        bool wt = false,
+        bool isDefault = true,
+        String? hk}) async {
+      final pg = await database.into(database.page).insertReturning(
+            PageCompanion.insert(
+              pageName: drift.Value(n),
+              flowId: drift.Value(flowId),
+              pagePosition: drift.Value(p),
+              pageTypeId: drift.Value(pt),
+              useFrontpage: drift.Value(uf),
+              sectionName: drift.Value(sn),
+              isDefaultPage: drift.Value(isDefault),
+              hotkeyValue: drift.Value(hk),
+            ),
+          );
+      if (wt && tid != null) {
+        await database.into(database.timer).insert(TimerCompanion.insert(
+            pageId: drift.Value(pg.id),
+            timerTemplateId: drift.Value(tid),
+            timerType: const drift.Value('single'),
+            startTime: const drift.Value('2:0')));
+      }
+    }
+
+    await insPage('主页', 'C', 1, uf: true, isDefault: false);
+    await insPage('断线缓冲计时环节', 'A1', 2, sn: '断线缓冲计时环节', wt: true, hk: '1');
+    await insPage('断线缓冲标题页面', 'B', 3, sn: '断线缓冲标题页面', hk: '2');
+    await insPage('立场捍卫环节', 'A1', 4, sn: '立场捍卫环节', wt: true, hk: '3');
+    await insPage('资料检证环节', 'A1', 5, sn: '资料检证环节', wt: true, hk: '4');
+  }
+
   Widget _buildAddFlowButton(BuildContext context) {
     return InkWell(
       onTap: () async {
@@ -640,6 +683,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 flowPosition: drift.Value(flows.length + 1),
               ),
             );
+
+        await _createDefaultPages(newFlow.id);
 
         if (context.mounted) {
           Navigator.push(
@@ -747,6 +792,297 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSchoolsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle('参赛学校 (Schools)'),
+            IconButton(
+              onPressed: _showAddSchoolDialog,
+              icon: const Icon(Icons.add_circle_outline,
+                  color: Color(0xFF6B46C1)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: StreamBuilder<List<SchoolData>>(
+            stream: (database.select(database.school)
+                  ..where((t) => t.eventId.equals(widget.event.id)))
+                .watch(),
+            builder: (context, snapshot) {
+              final schools = snapshot.data ?? [];
+              if (schools.isEmpty) {
+                return const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('暂无学校信息', style: TextStyle(color: Colors.grey)),
+                ));
+              }
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: schools.map((s) => _buildSchoolCard(s)).toList(),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSchoolCard(SchoolData school) {
+    return FutureBuilder<ImagesData?>(
+      future: school.logoImageId != null
+          ? (database.select(database.images)
+                ..where((t) => t.id.equals(school.logoImageId!)))
+              .getSingleOrNull()
+          : Future.value(null),
+      builder: (context, imgSnapshot) {
+        final img = imgSnapshot.data;
+        return Container(
+          width: 120,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.01),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: img != null
+                    ? FutureBuilder<Directory>(
+                        future: getApplicationSupportDirectory(),
+                        builder: (context, dirSnapshot) {
+                          if (!dirSnapshot.hasData) {
+                            return const SizedBox.shrink();
+                          }
+                          final path = p.join(
+                            dirSnapshot.data!.path,
+                            'YiHuaTimer',
+                            'schools',
+                            widget.event.id.toString(),
+                            img.imageName!,
+                          );
+                          final file = File(path);
+                          if (!file.existsSync()) {
+                            return const Icon(Icons.broken_image_rounded,
+                                color: Colors.grey, size: 32);
+                          }
+                          return ClipOval(
+                            child: Image.file(file, fit: BoxFit.cover),
+                          );
+                        },
+                      )
+                    : const Icon(Icons.school_rounded,
+                        color: Colors.grey, size: 32),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                school.schoolName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showAddSchoolDialog() async {
+    final nameCtrl = TextEditingController();
+    File? pickedLogo;
+    String? pickedLogoName;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('添加学校 (Add School)'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: '学校名称',
+                  hintText: '输入学校全称',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text('学校 Logo',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final result =
+                      await FilePicker.platform.pickFiles(type: FileType.image);
+                  if (result != null && result.files.single.path != null) {
+                    setDialogState(() {
+                      pickedLogo = File(result.files.single.path!);
+                      pickedLogoName = result.files.single.name;
+                    });
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: pickedLogo != null
+                      ? Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(pickedLogo!, fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle),
+                                child: const Icon(Icons.edit,
+                                    color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_photo_alternate_rounded,
+                                color: Colors.grey, size: 32),
+                            SizedBox(height: 4),
+                            Text('上传 Logo',
+                                style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                ),
+              ),
+              if (pickedLogoName != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(pickedLogoName!,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      overflow: TextOverflow.ellipsis),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameCtrl.text.trim();
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('请输入学校名称')));
+                  return;
+                }
+
+                try {
+                  int? imgId;
+                  if (pickedLogo != null) {
+                    final supportDir = await getApplicationSupportDirectory();
+                    final schoolDir = Directory(p.join(supportDir.path,
+                        'YiHuaTimer', 'schools', widget.event.id.toString()));
+                    if (!await schoolDir.exists()) {
+                      await schoolDir.create(recursive: true);
+                    }
+
+                    final fileName =
+                        'logo_${DateTime.now().millisecondsSinceEpoch}${p.extension(pickedLogo!.path)}';
+                    final targetPath = p.join(schoolDir.path, fileName);
+                    await pickedLogo!.copy(targetPath);
+
+                    imgId = await database.into(database.images).insert(
+                          ImagesCompanion.insert(
+                            imageName: drift.Value(fileName),
+                            imageType: const drift.Value('schoolLogo'),
+                          ),
+                        );
+                  }
+
+                  await database.into(database.school).insert(
+                        SchoolCompanion.insert(
+                          schoolName: name,
+                          eventId: widget.event.id,
+                          logoImageId: drift.Value(imgId),
+                        ),
+                      );
+
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(const SnackBar(content: Text('学校已添加')));
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B46C1),
+                  foregroundColor: Colors.white),
+              child: const Text('添加学校'),
+            ),
+          ],
+        ),
       ),
     );
   }

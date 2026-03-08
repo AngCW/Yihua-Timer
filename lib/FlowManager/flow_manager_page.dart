@@ -269,6 +269,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
             // Flow Info Section
             _buildSectionTitle('赛程设置 (Flow Settings)'),
             const SizedBox(height: 16),
+            _buildSchoolSelectionSection(),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
@@ -326,7 +328,61 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
 
             const SizedBox(height: 40),
 
-            // Pages Selection
+            // ── Default Pages Box ─────────────────────────────────────────
+            _buildSectionTitle('快捷跳转页面 (Default Shortcut Pages)'),
+            const SizedBox(height: 8),
+            Text(
+              '这些页面在每个赛程创建时自动生成，支持独立快捷键，供应急切换使用。',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDF4FF),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFF6B46C1).withOpacity(0.3), width: 2),
+              ),
+              child: _currentFlow == null
+                  ? const Center(child: Text('请先创建赛程'))
+                  : StreamBuilder<List<PageData>>(
+                      stream: (database.select(database.page)
+                            ..where((t) => t.flowId.equals(_currentFlow!.id))
+                            ..where((t) => t.isDefaultPage.equals(true))
+                            ..orderBy([
+                              (t) =>
+                                  drift.OrderingTerm(expression: t.pagePosition)
+                            ]))
+                          .watch(),
+                      builder: (context, snapshot) {
+                        final pages = snapshot.data ?? [];
+                        if (pages.isEmpty) {
+                          return const Text(
+                            '暂无默认页面（重新创建赛程将自动生成）',
+                            style: TextStyle(color: Colors.grey),
+                          );
+                        }
+                        return SizedBox(
+                          height: 130,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: pages
+                                .map((pg) => Padding(
+                                      padding: const EdgeInsets.only(right: 16),
+                                      child: _buildDefaultPageBox(context, pg),
+                                    ))
+                                .toList(),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // ── Main Pages Box ────────────────────────────────────────────
             _buildSectionTitle('页面管理 (Page Management)'),
             const SizedBox(height: 16),
             Container(
@@ -342,6 +398,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                   : StreamBuilder<List<PageData>>(
                       stream: (database.select(database.page)
                             ..where((t) => t.flowId.equals(_currentFlow!.id))
+                            ..where((t) => t.isDefaultPage.equals(false))
                             ..orderBy([
                               (t) =>
                                   drift.OrderingTerm(expression: t.pagePosition)
@@ -425,6 +482,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
         setState(() {
           _currentFlow = newFlow;
         });
+        // Create 5 default pages for every new flow
+        await _createDefaultPages(newFlow.id);
       } else {
         await (database.update(database.flow)
               ..where((t) => t.id.equals(_currentFlow!.id)))
@@ -444,6 +503,88 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
         );
       }
     }
+  }
+
+  /// Insert the 5 mandatory default pages for a brand-new flow.
+  Future<void> _createDefaultPages(int flowId) async {
+    // Find the first available timer template (may be null)
+    final templates = await database.select(database.timerTemplate).get();
+    final firstTemplateId = templates.isNotEmpty ? templates.first.id : null;
+
+    // Helper to insert a page and optionally a timer
+    Future<void> insertPage({
+      required String name,
+      required String pageType,
+      required int position,
+      bool useFrontpage = false,
+      String? sectionName,
+      bool withTimer = false,
+      bool isDefault = true,
+      String? hotkey,
+    }) async {
+      final pg = await database.into(database.page).insertReturning(
+            PageCompanion.insert(
+              pageName: drift.Value(name),
+              flowId: drift.Value(flowId),
+              pagePosition: drift.Value(position),
+              pageTypeId: drift.Value(pageType),
+              useFrontpage: drift.Value(useFrontpage),
+              sectionName: drift.Value(sectionName),
+              isDefaultPage: drift.Value(isDefault),
+              hotkeyValue: drift.Value(hotkey),
+            ),
+          );
+
+      if (withTimer && firstTemplateId != null) {
+        await database.into(database.timer).insert(
+              TimerCompanion.insert(
+                pageId: drift.Value(pg.id),
+                timerTemplateId: drift.Value(firstTemplateId),
+                timerType: const drift.Value('single'),
+                startTime: const drift.Value('2:0'), // 2 minutes
+              ),
+            );
+      }
+    }
+
+    await insertPage(
+      name: '主页',
+      pageType: 'C',
+      position: 1,
+      useFrontpage: true,
+      isDefault: false, // 主页 belongs to the main flow box
+    );
+    await insertPage(
+      name: '断线缓冲计时环节',
+      pageType: 'A1',
+      position: 2,
+      sectionName: '断线缓冲计时环节',
+      withTimer: true,
+      hotkey: '1',
+    );
+    await insertPage(
+      name: '断线缓冲标题页面',
+      pageType: 'B',
+      position: 3,
+      sectionName: '断线缓冲标题页面',
+      hotkey: '2',
+    );
+    await insertPage(
+      name: '立场捍卫环节',
+      pageType: 'A1',
+      position: 4,
+      sectionName: '立场捍卫环节',
+      withTimer: true,
+      hotkey: '3',
+    );
+    await insertPage(
+      name: '资料检证环节',
+      pageType: 'A1',
+      position: 5,
+      sectionName: '资料检证环节',
+      withTimer: true,
+      hotkey: '4',
+    );
   }
 
   Widget _buildSectionTitle(String title) {
@@ -534,6 +675,84 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Default-page tile: purple border, keyboard shortcut badge, navigates to PageManagerPage.
+  Widget _buildDefaultPageBox(BuildContext context, PageData page) {
+    final hotkey =
+        (page.hotkeyValue ?? '').isNotEmpty ? page.hotkeyValue! : null;
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PageManagerPage(
+              event: widget.event,
+              flow: _currentFlow!,
+              page: page,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3E8FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF6B46C1),
+                    width: 2,
+                  ),
+                ),
+                child: _buildMiniPreview(page),
+              ),
+              if (hotkey != null)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6B46C1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      hotkey,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 80,
+            child: Text(
+              page.pageName ?? '未命名',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF6B46C1),
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -756,6 +975,247 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSchoolSelectionSection() {
+    if (_currentFlow == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '参赛学校 (Participating Schools)',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+        const SizedBox(height: 12),
+        StreamBuilder<List<SchoolData>>(
+          stream: (database.select(database.school)
+                ..where((t) => t.eventId.equals(widget.event.id)))
+              .watch(),
+          builder: (context, snapshot) {
+            final schools = snapshot.data ?? [];
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildSchoolDropdown(
+                    label: '正方学校 (School A)',
+                    value: _currentFlow?.schoolAId,
+                    schools: schools,
+                    onChanged: (val) => _updateFlowSchool(val, isA: true),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSchoolDropdown(
+                    label: '反方学校 (School B)',
+                    value: _currentFlow?.schoolBId,
+                    schools: schools,
+                    onChanged: (val) => _updateFlowSchool(val, isA: false),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                IconButton.filled(
+                  onPressed: _showAddSchoolDialog,
+                  style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFF6B46C1)),
+                  icon: const Icon(Icons.add_rounded),
+                  tooltip: '添加新学校',
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSchoolDropdown({
+    required String label,
+    required int? value,
+    required List<SchoolData> schools,
+    required ValueChanged<int?> onChanged,
+  }) {
+    // Determine if the current value is actually present in the schools list.
+    // This prevents the assertion error when the stream is loading or out of sync.
+    final bool valueExists = schools.any((s) => s.id == value);
+    final int? effectiveValue = valueExists ? value : null;
+
+    return DropdownButtonFormField<int>(
+      value: effectiveValue,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      items: [
+        const DropdownMenuItem<int>(
+          value: null,
+          child: Text('未选择'),
+        ),
+        ...schools.map((s) => DropdownMenuItem<int>(
+              value: s.id,
+              child: Row(
+                children: [
+                  _buildSchoolLogoSmall(s),
+                  const SizedBox(width: 8),
+                  Text(s.schoolName),
+                ],
+              ),
+            )),
+      ],
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildSchoolLogoSmall(SchoolData school) {
+    return FutureBuilder<ImagesData?>(
+      future: school.logoImageId != null
+          ? (database.select(database.images)
+                ..where((t) => t.id.equals(school.logoImageId!)))
+              .getSingleOrNull()
+          : Future.value(null),
+      builder: (context, snapshot) {
+        final img = snapshot.data;
+        return Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            shape: BoxShape.circle,
+          ),
+          child: img != null
+              ? FutureBuilder<Directory>(
+                  future: getApplicationSupportDirectory(),
+                  builder: (context, dirSnap) {
+                    if (!dirSnap.hasData) return const SizedBox.shrink();
+                    final path = p.join(dirSnap.data!.path, 'YiHuaTimer',
+                        'schools', widget.event.id.toString(), img.imageName!);
+                    if (!File(path).existsSync()) {
+                      return const Icon(Icons.school, size: 14);
+                    }
+                    return ClipOval(
+                        child: Image.file(File(path), fit: BoxFit.cover));
+                  },
+                )
+              : const Icon(Icons.school, size: 14, color: Colors.grey),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateFlowSchool(int? schoolId, {required bool isA}) async {
+    if (_currentFlow == null) return;
+    final companion = isA
+        ? FlowCompanion(schoolAId: drift.Value(schoolId))
+        : FlowCompanion(schoolBId: drift.Value(schoolId));
+
+    await (database.update(database.flow)
+          ..where((t) => t.id.equals(_currentFlow!.id)))
+        .write(companion);
+
+    final updated = await (database.select(database.flow)
+          ..where((t) => t.id.equals(_currentFlow!.id)))
+        .getSingle();
+
+    setState(() {
+      _currentFlow = updated;
+    });
+  }
+
+  Future<void> _showAddSchoolDialog() async {
+    final nameCtrl = TextEditingController();
+    File? pickedLogo;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('添加学校 (Add School)'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: '学校名称'),
+              ),
+              const SizedBox(height: 20),
+              InkWell(
+                onTap: () async {
+                  final res =
+                      await FilePicker.platform.pickFiles(type: FileType.image);
+                  if (res != null && res.files.single.path != null) {
+                    setDialogState(
+                        () => pickedLogo = File(res.files.single.path!));
+                  }
+                },
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: pickedLogo != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(pickedLogo!, fit: BoxFit.cover))
+                      : const Icon(Icons.add_photo_alternate,
+                          color: Colors.grey),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('取消')),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameCtrl.text.trim();
+                if (name.isEmpty) return;
+
+                int? imgId;
+                if (pickedLogo != null) {
+                  final supportDir = await getApplicationSupportDirectory();
+                  final schoolDir = Directory(p.join(supportDir.path,
+                      'YiHuaTimer', 'schools', widget.event.id.toString()));
+                  if (!await schoolDir.exists())
+                    await schoolDir.create(recursive: true);
+
+                  final ext = p.extension(pickedLogo!.path);
+                  final fName =
+                      'logo_${DateTime.now().millisecondsSinceEpoch}$ext';
+                  await pickedLogo!.copy(p.join(schoolDir.path, fName));
+
+                  imgId = await database.into(database.images).insert(
+                      ImagesCompanion.insert(
+                          imageName: drift.Value(fName),
+                          imageType: const drift.Value('schoolLogo')));
+                }
+
+                await database.into(database.school).insert(
+                    SchoolCompanion.insert(
+                        schoolName: name,
+                        eventId: widget.event.id,
+                        logoImageId: drift.Value(imgId)));
+
+                if (mounted) Navigator.pop(context);
+              },
+              child: const Text('添加'),
+            ),
+          ],
+        ),
       ),
     );
   }

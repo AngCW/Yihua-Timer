@@ -43,7 +43,9 @@ CREATE TABLE flow (
     background_name VARCHAR,
     event_id INTEGER,
     flow_position INTEGER,
-    folder_id INTEGER REFERENCES flow_folder(id)
+    folder_id INTEGER REFERENCES flow_folder(id),
+    school_a_id INTEGER REFERENCES school(id),
+    school_b_id INTEGER REFERENCES school(id)
 );
 
 CREATE TABLE position (
@@ -93,5 +95,13 @@ CREATE TABLE page (
     section_font_name VARCHAR,
     timer_font_name VARCHAR,
     use_frontpage BOOLEAN DEFAULT FALSE,
-    section_position_id INTEGER REFERENCES position(id)
+    section_position_id INTEGER REFERENCES position(id),
+    is_default_page BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE school (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    school_name VARCHAR NOT NULL,
+    event_id INTEGER NOT NULL REFERENCES event(id),
+    logo_image_id INTEGER REFERENCES images(id)
+) AS SchoolData;

@@ -1348,555 +1348,6 @@ class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
   }
 }
 
-class Flow extends Table with TableInfo<Flow, FlowData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Flow(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
-  static const VerificationMeta _flowNameMeta =
-      const VerificationMeta('flowName');
-  late final GeneratedColumn<String> flowName = GeneratedColumn<String>(
-      'flow_name', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _fontNameMeta =
-      const VerificationMeta('fontName');
-  late final GeneratedColumn<String> fontName = GeneratedColumn<String>(
-      'font_name', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _sectionFontNameMeta =
-      const VerificationMeta('sectionFontName');
-  late final GeneratedColumn<String> sectionFontName = GeneratedColumn<String>(
-      'section_font_name', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _timerFontNameMeta =
-      const VerificationMeta('timerFontName');
-  late final GeneratedColumn<String> timerFontName = GeneratedColumn<String>(
-      'timer_font_name', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _frontpageNameMeta =
-      const VerificationMeta('frontpageName');
-  late final GeneratedColumn<String> frontpageName = GeneratedColumn<String>(
-      'frontpage_name', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _backgroundNameMeta =
-      const VerificationMeta('backgroundName');
-  late final GeneratedColumn<String> backgroundName = GeneratedColumn<String>(
-      'background_name', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _eventIdMeta =
-      const VerificationMeta('eventId');
-  late final GeneratedColumn<int> eventId = GeneratedColumn<int>(
-      'event_id', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _flowPositionMeta =
-      const VerificationMeta('flowPosition');
-  late final GeneratedColumn<int> flowPosition = GeneratedColumn<int>(
-      'flow_position', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const VerificationMeta _folderIdMeta =
-      const VerificationMeta('folderId');
-  late final GeneratedColumn<int> folderId = GeneratedColumn<int>(
-      'folder_id', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: 'REFERENCES flow_folder(id)');
-  @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        flowName,
-        fontName,
-        sectionFontName,
-        timerFontName,
-        frontpageName,
-        backgroundName,
-        eventId,
-        flowPosition,
-        folderId
-      ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'flow';
-  @override
-  VerificationContext validateIntegrity(Insertable<FlowData> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('flow_name')) {
-      context.handle(_flowNameMeta,
-          flowName.isAcceptableOrUnknown(data['flow_name']!, _flowNameMeta));
-    }
-    if (data.containsKey('font_name')) {
-      context.handle(_fontNameMeta,
-          fontName.isAcceptableOrUnknown(data['font_name']!, _fontNameMeta));
-    }
-    if (data.containsKey('section_font_name')) {
-      context.handle(
-          _sectionFontNameMeta,
-          sectionFontName.isAcceptableOrUnknown(
-              data['section_font_name']!, _sectionFontNameMeta));
-    }
-    if (data.containsKey('timer_font_name')) {
-      context.handle(
-          _timerFontNameMeta,
-          timerFontName.isAcceptableOrUnknown(
-              data['timer_font_name']!, _timerFontNameMeta));
-    }
-    if (data.containsKey('frontpage_name')) {
-      context.handle(
-          _frontpageNameMeta,
-          frontpageName.isAcceptableOrUnknown(
-              data['frontpage_name']!, _frontpageNameMeta));
-    }
-    if (data.containsKey('background_name')) {
-      context.handle(
-          _backgroundNameMeta,
-          backgroundName.isAcceptableOrUnknown(
-              data['background_name']!, _backgroundNameMeta));
-    }
-    if (data.containsKey('event_id')) {
-      context.handle(_eventIdMeta,
-          eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta));
-    }
-    if (data.containsKey('flow_position')) {
-      context.handle(
-          _flowPositionMeta,
-          flowPosition.isAcceptableOrUnknown(
-              data['flow_position']!, _flowPositionMeta));
-    }
-    if (data.containsKey('folder_id')) {
-      context.handle(_folderIdMeta,
-          folderId.isAcceptableOrUnknown(data['folder_id']!, _folderIdMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  FlowData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return FlowData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      flowName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}flow_name']),
-      fontName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}font_name']),
-      sectionFontName: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}section_font_name']),
-      timerFontName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}timer_font_name']),
-      frontpageName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}frontpage_name']),
-      backgroundName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}background_name']),
-      eventId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}event_id']),
-      flowPosition: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}flow_position']),
-      folderId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}folder_id']),
-    );
-  }
-
-  @override
-  Flow createAlias(String alias) {
-    return Flow(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class FlowData extends DataClass implements Insertable<FlowData> {
-  final int id;
-  final String? flowName;
-  final String? fontName;
-  final String? sectionFontName;
-  final String? timerFontName;
-  final String? frontpageName;
-  final String? backgroundName;
-  final int? eventId;
-  final int? flowPosition;
-  final int? folderId;
-  const FlowData(
-      {required this.id,
-      this.flowName,
-      this.fontName,
-      this.sectionFontName,
-      this.timerFontName,
-      this.frontpageName,
-      this.backgroundName,
-      this.eventId,
-      this.flowPosition,
-      this.folderId});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    if (!nullToAbsent || flowName != null) {
-      map['flow_name'] = Variable<String>(flowName);
-    }
-    if (!nullToAbsent || fontName != null) {
-      map['font_name'] = Variable<String>(fontName);
-    }
-    if (!nullToAbsent || sectionFontName != null) {
-      map['section_font_name'] = Variable<String>(sectionFontName);
-    }
-    if (!nullToAbsent || timerFontName != null) {
-      map['timer_font_name'] = Variable<String>(timerFontName);
-    }
-    if (!nullToAbsent || frontpageName != null) {
-      map['frontpage_name'] = Variable<String>(frontpageName);
-    }
-    if (!nullToAbsent || backgroundName != null) {
-      map['background_name'] = Variable<String>(backgroundName);
-    }
-    if (!nullToAbsent || eventId != null) {
-      map['event_id'] = Variable<int>(eventId);
-    }
-    if (!nullToAbsent || flowPosition != null) {
-      map['flow_position'] = Variable<int>(flowPosition);
-    }
-    if (!nullToAbsent || folderId != null) {
-      map['folder_id'] = Variable<int>(folderId);
-    }
-    return map;
-  }
-
-  FlowCompanion toCompanion(bool nullToAbsent) {
-    return FlowCompanion(
-      id: Value(id),
-      flowName: flowName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(flowName),
-      fontName: fontName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(fontName),
-      sectionFontName: sectionFontName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(sectionFontName),
-      timerFontName: timerFontName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(timerFontName),
-      frontpageName: frontpageName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(frontpageName),
-      backgroundName: backgroundName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(backgroundName),
-      eventId: eventId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(eventId),
-      flowPosition: flowPosition == null && nullToAbsent
-          ? const Value.absent()
-          : Value(flowPosition),
-      folderId: folderId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(folderId),
-    );
-  }
-
-  factory FlowData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return FlowData(
-      id: serializer.fromJson<int>(json['id']),
-      flowName: serializer.fromJson<String?>(json['flow_name']),
-      fontName: serializer.fromJson<String?>(json['font_name']),
-      sectionFontName: serializer.fromJson<String?>(json['section_font_name']),
-      timerFontName: serializer.fromJson<String?>(json['timer_font_name']),
-      frontpageName: serializer.fromJson<String?>(json['frontpage_name']),
-      backgroundName: serializer.fromJson<String?>(json['background_name']),
-      eventId: serializer.fromJson<int?>(json['event_id']),
-      flowPosition: serializer.fromJson<int?>(json['flow_position']),
-      folderId: serializer.fromJson<int?>(json['folder_id']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'flow_name': serializer.toJson<String?>(flowName),
-      'font_name': serializer.toJson<String?>(fontName),
-      'section_font_name': serializer.toJson<String?>(sectionFontName),
-      'timer_font_name': serializer.toJson<String?>(timerFontName),
-      'frontpage_name': serializer.toJson<String?>(frontpageName),
-      'background_name': serializer.toJson<String?>(backgroundName),
-      'event_id': serializer.toJson<int?>(eventId),
-      'flow_position': serializer.toJson<int?>(flowPosition),
-      'folder_id': serializer.toJson<int?>(folderId),
-    };
-  }
-
-  FlowData copyWith(
-          {int? id,
-          Value<String?> flowName = const Value.absent(),
-          Value<String?> fontName = const Value.absent(),
-          Value<String?> sectionFontName = const Value.absent(),
-          Value<String?> timerFontName = const Value.absent(),
-          Value<String?> frontpageName = const Value.absent(),
-          Value<String?> backgroundName = const Value.absent(),
-          Value<int?> eventId = const Value.absent(),
-          Value<int?> flowPosition = const Value.absent(),
-          Value<int?> folderId = const Value.absent()}) =>
-      FlowData(
-        id: id ?? this.id,
-        flowName: flowName.present ? flowName.value : this.flowName,
-        fontName: fontName.present ? fontName.value : this.fontName,
-        sectionFontName: sectionFontName.present
-            ? sectionFontName.value
-            : this.sectionFontName,
-        timerFontName:
-            timerFontName.present ? timerFontName.value : this.timerFontName,
-        frontpageName:
-            frontpageName.present ? frontpageName.value : this.frontpageName,
-        backgroundName:
-            backgroundName.present ? backgroundName.value : this.backgroundName,
-        eventId: eventId.present ? eventId.value : this.eventId,
-        flowPosition:
-            flowPosition.present ? flowPosition.value : this.flowPosition,
-        folderId: folderId.present ? folderId.value : this.folderId,
-      );
-  FlowData copyWithCompanion(FlowCompanion data) {
-    return FlowData(
-      id: data.id.present ? data.id.value : this.id,
-      flowName: data.flowName.present ? data.flowName.value : this.flowName,
-      fontName: data.fontName.present ? data.fontName.value : this.fontName,
-      sectionFontName: data.sectionFontName.present
-          ? data.sectionFontName.value
-          : this.sectionFontName,
-      timerFontName: data.timerFontName.present
-          ? data.timerFontName.value
-          : this.timerFontName,
-      frontpageName: data.frontpageName.present
-          ? data.frontpageName.value
-          : this.frontpageName,
-      backgroundName: data.backgroundName.present
-          ? data.backgroundName.value
-          : this.backgroundName,
-      eventId: data.eventId.present ? data.eventId.value : this.eventId,
-      flowPosition: data.flowPosition.present
-          ? data.flowPosition.value
-          : this.flowPosition,
-      folderId: data.folderId.present ? data.folderId.value : this.folderId,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('FlowData(')
-          ..write('id: $id, ')
-          ..write('flowName: $flowName, ')
-          ..write('fontName: $fontName, ')
-          ..write('sectionFontName: $sectionFontName, ')
-          ..write('timerFontName: $timerFontName, ')
-          ..write('frontpageName: $frontpageName, ')
-          ..write('backgroundName: $backgroundName, ')
-          ..write('eventId: $eventId, ')
-          ..write('flowPosition: $flowPosition, ')
-          ..write('folderId: $folderId')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-      id,
-      flowName,
-      fontName,
-      sectionFontName,
-      timerFontName,
-      frontpageName,
-      backgroundName,
-      eventId,
-      flowPosition,
-      folderId);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is FlowData &&
-          other.id == this.id &&
-          other.flowName == this.flowName &&
-          other.fontName == this.fontName &&
-          other.sectionFontName == this.sectionFontName &&
-          other.timerFontName == this.timerFontName &&
-          other.frontpageName == this.frontpageName &&
-          other.backgroundName == this.backgroundName &&
-          other.eventId == this.eventId &&
-          other.flowPosition == this.flowPosition &&
-          other.folderId == this.folderId);
-}
-
-class FlowCompanion extends UpdateCompanion<FlowData> {
-  final Value<int> id;
-  final Value<String?> flowName;
-  final Value<String?> fontName;
-  final Value<String?> sectionFontName;
-  final Value<String?> timerFontName;
-  final Value<String?> frontpageName;
-  final Value<String?> backgroundName;
-  final Value<int?> eventId;
-  final Value<int?> flowPosition;
-  final Value<int?> folderId;
-  const FlowCompanion({
-    this.id = const Value.absent(),
-    this.flowName = const Value.absent(),
-    this.fontName = const Value.absent(),
-    this.sectionFontName = const Value.absent(),
-    this.timerFontName = const Value.absent(),
-    this.frontpageName = const Value.absent(),
-    this.backgroundName = const Value.absent(),
-    this.eventId = const Value.absent(),
-    this.flowPosition = const Value.absent(),
-    this.folderId = const Value.absent(),
-  });
-  FlowCompanion.insert({
-    this.id = const Value.absent(),
-    this.flowName = const Value.absent(),
-    this.fontName = const Value.absent(),
-    this.sectionFontName = const Value.absent(),
-    this.timerFontName = const Value.absent(),
-    this.frontpageName = const Value.absent(),
-    this.backgroundName = const Value.absent(),
-    this.eventId = const Value.absent(),
-    this.flowPosition = const Value.absent(),
-    this.folderId = const Value.absent(),
-  });
-  static Insertable<FlowData> custom({
-    Expression<int>? id,
-    Expression<String>? flowName,
-    Expression<String>? fontName,
-    Expression<String>? sectionFontName,
-    Expression<String>? timerFontName,
-    Expression<String>? frontpageName,
-    Expression<String>? backgroundName,
-    Expression<int>? eventId,
-    Expression<int>? flowPosition,
-    Expression<int>? folderId,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (flowName != null) 'flow_name': flowName,
-      if (fontName != null) 'font_name': fontName,
-      if (sectionFontName != null) 'section_font_name': sectionFontName,
-      if (timerFontName != null) 'timer_font_name': timerFontName,
-      if (frontpageName != null) 'frontpage_name': frontpageName,
-      if (backgroundName != null) 'background_name': backgroundName,
-      if (eventId != null) 'event_id': eventId,
-      if (flowPosition != null) 'flow_position': flowPosition,
-      if (folderId != null) 'folder_id': folderId,
-    });
-  }
-
-  FlowCompanion copyWith(
-      {Value<int>? id,
-      Value<String?>? flowName,
-      Value<String?>? fontName,
-      Value<String?>? sectionFontName,
-      Value<String?>? timerFontName,
-      Value<String?>? frontpageName,
-      Value<String?>? backgroundName,
-      Value<int?>? eventId,
-      Value<int?>? flowPosition,
-      Value<int?>? folderId}) {
-    return FlowCompanion(
-      id: id ?? this.id,
-      flowName: flowName ?? this.flowName,
-      fontName: fontName ?? this.fontName,
-      sectionFontName: sectionFontName ?? this.sectionFontName,
-      timerFontName: timerFontName ?? this.timerFontName,
-      frontpageName: frontpageName ?? this.frontpageName,
-      backgroundName: backgroundName ?? this.backgroundName,
-      eventId: eventId ?? this.eventId,
-      flowPosition: flowPosition ?? this.flowPosition,
-      folderId: folderId ?? this.folderId,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (flowName.present) {
-      map['flow_name'] = Variable<String>(flowName.value);
-    }
-    if (fontName.present) {
-      map['font_name'] = Variable<String>(fontName.value);
-    }
-    if (sectionFontName.present) {
-      map['section_font_name'] = Variable<String>(sectionFontName.value);
-    }
-    if (timerFontName.present) {
-      map['timer_font_name'] = Variable<String>(timerFontName.value);
-    }
-    if (frontpageName.present) {
-      map['frontpage_name'] = Variable<String>(frontpageName.value);
-    }
-    if (backgroundName.present) {
-      map['background_name'] = Variable<String>(backgroundName.value);
-    }
-    if (eventId.present) {
-      map['event_id'] = Variable<int>(eventId.value);
-    }
-    if (flowPosition.present) {
-      map['flow_position'] = Variable<int>(flowPosition.value);
-    }
-    if (folderId.present) {
-      map['folder_id'] = Variable<int>(folderId.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('FlowCompanion(')
-          ..write('id: $id, ')
-          ..write('flowName: $flowName, ')
-          ..write('fontName: $fontName, ')
-          ..write('sectionFontName: $sectionFontName, ')
-          ..write('timerFontName: $timerFontName, ')
-          ..write('frontpageName: $frontpageName, ')
-          ..write('backgroundName: $backgroundName, ')
-          ..write('eventId: $eventId, ')
-          ..write('flowPosition: $flowPosition, ')
-          ..write('folderId: $folderId')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class Position extends Table with TableInfo<Position, PositionData> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -2466,6 +1917,912 @@ class ImagesCompanion extends UpdateCompanion<ImagesData> {
   }
 }
 
+class School extends Table with TableInfo<School, SchoolData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  School(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+  static const VerificationMeta _schoolNameMeta =
+      const VerificationMeta('schoolName');
+  late final GeneratedColumn<String> schoolName = GeneratedColumn<String>(
+      'school_name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  static const VerificationMeta _eventIdMeta =
+      const VerificationMeta('eventId');
+  late final GeneratedColumn<int> eventId = GeneratedColumn<int>(
+      'event_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES event(id)');
+  static const VerificationMeta _logoImageIdMeta =
+      const VerificationMeta('logoImageId');
+  late final GeneratedColumn<int> logoImageId = GeneratedColumn<int>(
+      'logo_image_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES images(id)');
+  @override
+  List<GeneratedColumn> get $columns => [id, schoolName, eventId, logoImageId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'school';
+  @override
+  VerificationContext validateIntegrity(Insertable<SchoolData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('school_name')) {
+      context.handle(
+          _schoolNameMeta,
+          schoolName.isAcceptableOrUnknown(
+              data['school_name']!, _schoolNameMeta));
+    } else if (isInserting) {
+      context.missing(_schoolNameMeta);
+    }
+    if (data.containsKey('event_id')) {
+      context.handle(_eventIdMeta,
+          eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta));
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('logo_image_id')) {
+      context.handle(
+          _logoImageIdMeta,
+          logoImageId.isAcceptableOrUnknown(
+              data['logo_image_id']!, _logoImageIdMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SchoolData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SchoolData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      schoolName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}school_name'])!,
+      eventId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}event_id'])!,
+      logoImageId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}logo_image_id']),
+    );
+  }
+
+  @override
+  School createAlias(String alias) {
+    return School(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class SchoolData extends DataClass implements Insertable<SchoolData> {
+  final int id;
+  final String schoolName;
+  final int eventId;
+  final int? logoImageId;
+  const SchoolData(
+      {required this.id,
+      required this.schoolName,
+      required this.eventId,
+      this.logoImageId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['school_name'] = Variable<String>(schoolName);
+    map['event_id'] = Variable<int>(eventId);
+    if (!nullToAbsent || logoImageId != null) {
+      map['logo_image_id'] = Variable<int>(logoImageId);
+    }
+    return map;
+  }
+
+  SchoolCompanion toCompanion(bool nullToAbsent) {
+    return SchoolCompanion(
+      id: Value(id),
+      schoolName: Value(schoolName),
+      eventId: Value(eventId),
+      logoImageId: logoImageId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(logoImageId),
+    );
+  }
+
+  factory SchoolData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SchoolData(
+      id: serializer.fromJson<int>(json['id']),
+      schoolName: serializer.fromJson<String>(json['school_name']),
+      eventId: serializer.fromJson<int>(json['event_id']),
+      logoImageId: serializer.fromJson<int?>(json['logo_image_id']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'school_name': serializer.toJson<String>(schoolName),
+      'event_id': serializer.toJson<int>(eventId),
+      'logo_image_id': serializer.toJson<int?>(logoImageId),
+    };
+  }
+
+  SchoolData copyWith(
+          {int? id,
+          String? schoolName,
+          int? eventId,
+          Value<int?> logoImageId = const Value.absent()}) =>
+      SchoolData(
+        id: id ?? this.id,
+        schoolName: schoolName ?? this.schoolName,
+        eventId: eventId ?? this.eventId,
+        logoImageId: logoImageId.present ? logoImageId.value : this.logoImageId,
+      );
+  SchoolData copyWithCompanion(SchoolCompanion data) {
+    return SchoolData(
+      id: data.id.present ? data.id.value : this.id,
+      schoolName:
+          data.schoolName.present ? data.schoolName.value : this.schoolName,
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      logoImageId:
+          data.logoImageId.present ? data.logoImageId.value : this.logoImageId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchoolData(')
+          ..write('id: $id, ')
+          ..write('schoolName: $schoolName, ')
+          ..write('eventId: $eventId, ')
+          ..write('logoImageId: $logoImageId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, schoolName, eventId, logoImageId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SchoolData &&
+          other.id == this.id &&
+          other.schoolName == this.schoolName &&
+          other.eventId == this.eventId &&
+          other.logoImageId == this.logoImageId);
+}
+
+class SchoolCompanion extends UpdateCompanion<SchoolData> {
+  final Value<int> id;
+  final Value<String> schoolName;
+  final Value<int> eventId;
+  final Value<int?> logoImageId;
+  const SchoolCompanion({
+    this.id = const Value.absent(),
+    this.schoolName = const Value.absent(),
+    this.eventId = const Value.absent(),
+    this.logoImageId = const Value.absent(),
+  });
+  SchoolCompanion.insert({
+    this.id = const Value.absent(),
+    required String schoolName,
+    required int eventId,
+    this.logoImageId = const Value.absent(),
+  })  : schoolName = Value(schoolName),
+        eventId = Value(eventId);
+  static Insertable<SchoolData> custom({
+    Expression<int>? id,
+    Expression<String>? schoolName,
+    Expression<int>? eventId,
+    Expression<int>? logoImageId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (schoolName != null) 'school_name': schoolName,
+      if (eventId != null) 'event_id': eventId,
+      if (logoImageId != null) 'logo_image_id': logoImageId,
+    });
+  }
+
+  SchoolCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? schoolName,
+      Value<int>? eventId,
+      Value<int?>? logoImageId}) {
+    return SchoolCompanion(
+      id: id ?? this.id,
+      schoolName: schoolName ?? this.schoolName,
+      eventId: eventId ?? this.eventId,
+      logoImageId: logoImageId ?? this.logoImageId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (schoolName.present) {
+      map['school_name'] = Variable<String>(schoolName.value);
+    }
+    if (eventId.present) {
+      map['event_id'] = Variable<int>(eventId.value);
+    }
+    if (logoImageId.present) {
+      map['logo_image_id'] = Variable<int>(logoImageId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchoolCompanion(')
+          ..write('id: $id, ')
+          ..write('schoolName: $schoolName, ')
+          ..write('eventId: $eventId, ')
+          ..write('logoImageId: $logoImageId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class Flow extends Table with TableInfo<Flow, FlowData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Flow(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+  static const VerificationMeta _flowNameMeta =
+      const VerificationMeta('flowName');
+  late final GeneratedColumn<String> flowName = GeneratedColumn<String>(
+      'flow_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _fontNameMeta =
+      const VerificationMeta('fontName');
+  late final GeneratedColumn<String> fontName = GeneratedColumn<String>(
+      'font_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _sectionFontNameMeta =
+      const VerificationMeta('sectionFontName');
+  late final GeneratedColumn<String> sectionFontName = GeneratedColumn<String>(
+      'section_font_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _timerFontNameMeta =
+      const VerificationMeta('timerFontName');
+  late final GeneratedColumn<String> timerFontName = GeneratedColumn<String>(
+      'timer_font_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _frontpageNameMeta =
+      const VerificationMeta('frontpageName');
+  late final GeneratedColumn<String> frontpageName = GeneratedColumn<String>(
+      'frontpage_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _backgroundNameMeta =
+      const VerificationMeta('backgroundName');
+  late final GeneratedColumn<String> backgroundName = GeneratedColumn<String>(
+      'background_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _eventIdMeta =
+      const VerificationMeta('eventId');
+  late final GeneratedColumn<int> eventId = GeneratedColumn<int>(
+      'event_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _flowPositionMeta =
+      const VerificationMeta('flowPosition');
+  late final GeneratedColumn<int> flowPosition = GeneratedColumn<int>(
+      'flow_position', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _folderIdMeta =
+      const VerificationMeta('folderId');
+  late final GeneratedColumn<int> folderId = GeneratedColumn<int>(
+      'folder_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES flow_folder(id)');
+  static const VerificationMeta _schoolAIdMeta =
+      const VerificationMeta('schoolAId');
+  late final GeneratedColumn<int> schoolAId = GeneratedColumn<int>(
+      'school_a_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES school(id)');
+  static const VerificationMeta _schoolBIdMeta =
+      const VerificationMeta('schoolBId');
+  late final GeneratedColumn<int> schoolBId = GeneratedColumn<int>(
+      'school_b_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES school(id)');
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        flowName,
+        fontName,
+        sectionFontName,
+        timerFontName,
+        frontpageName,
+        backgroundName,
+        eventId,
+        flowPosition,
+        folderId,
+        schoolAId,
+        schoolBId
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flow';
+  @override
+  VerificationContext validateIntegrity(Insertable<FlowData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('flow_name')) {
+      context.handle(_flowNameMeta,
+          flowName.isAcceptableOrUnknown(data['flow_name']!, _flowNameMeta));
+    }
+    if (data.containsKey('font_name')) {
+      context.handle(_fontNameMeta,
+          fontName.isAcceptableOrUnknown(data['font_name']!, _fontNameMeta));
+    }
+    if (data.containsKey('section_font_name')) {
+      context.handle(
+          _sectionFontNameMeta,
+          sectionFontName.isAcceptableOrUnknown(
+              data['section_font_name']!, _sectionFontNameMeta));
+    }
+    if (data.containsKey('timer_font_name')) {
+      context.handle(
+          _timerFontNameMeta,
+          timerFontName.isAcceptableOrUnknown(
+              data['timer_font_name']!, _timerFontNameMeta));
+    }
+    if (data.containsKey('frontpage_name')) {
+      context.handle(
+          _frontpageNameMeta,
+          frontpageName.isAcceptableOrUnknown(
+              data['frontpage_name']!, _frontpageNameMeta));
+    }
+    if (data.containsKey('background_name')) {
+      context.handle(
+          _backgroundNameMeta,
+          backgroundName.isAcceptableOrUnknown(
+              data['background_name']!, _backgroundNameMeta));
+    }
+    if (data.containsKey('event_id')) {
+      context.handle(_eventIdMeta,
+          eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta));
+    }
+    if (data.containsKey('flow_position')) {
+      context.handle(
+          _flowPositionMeta,
+          flowPosition.isAcceptableOrUnknown(
+              data['flow_position']!, _flowPositionMeta));
+    }
+    if (data.containsKey('folder_id')) {
+      context.handle(_folderIdMeta,
+          folderId.isAcceptableOrUnknown(data['folder_id']!, _folderIdMeta));
+    }
+    if (data.containsKey('school_a_id')) {
+      context.handle(
+          _schoolAIdMeta,
+          schoolAId.isAcceptableOrUnknown(
+              data['school_a_id']!, _schoolAIdMeta));
+    }
+    if (data.containsKey('school_b_id')) {
+      context.handle(
+          _schoolBIdMeta,
+          schoolBId.isAcceptableOrUnknown(
+              data['school_b_id']!, _schoolBIdMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FlowData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FlowData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      flowName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}flow_name']),
+      fontName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}font_name']),
+      sectionFontName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}section_font_name']),
+      timerFontName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}timer_font_name']),
+      frontpageName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}frontpage_name']),
+      backgroundName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}background_name']),
+      eventId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}event_id']),
+      flowPosition: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}flow_position']),
+      folderId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}folder_id']),
+      schoolAId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}school_a_id']),
+      schoolBId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}school_b_id']),
+    );
+  }
+
+  @override
+  Flow createAlias(String alias) {
+    return Flow(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class FlowData extends DataClass implements Insertable<FlowData> {
+  final int id;
+  final String? flowName;
+  final String? fontName;
+  final String? sectionFontName;
+  final String? timerFontName;
+  final String? frontpageName;
+  final String? backgroundName;
+  final int? eventId;
+  final int? flowPosition;
+  final int? folderId;
+  final int? schoolAId;
+  final int? schoolBId;
+  const FlowData(
+      {required this.id,
+      this.flowName,
+      this.fontName,
+      this.sectionFontName,
+      this.timerFontName,
+      this.frontpageName,
+      this.backgroundName,
+      this.eventId,
+      this.flowPosition,
+      this.folderId,
+      this.schoolAId,
+      this.schoolBId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || flowName != null) {
+      map['flow_name'] = Variable<String>(flowName);
+    }
+    if (!nullToAbsent || fontName != null) {
+      map['font_name'] = Variable<String>(fontName);
+    }
+    if (!nullToAbsent || sectionFontName != null) {
+      map['section_font_name'] = Variable<String>(sectionFontName);
+    }
+    if (!nullToAbsent || timerFontName != null) {
+      map['timer_font_name'] = Variable<String>(timerFontName);
+    }
+    if (!nullToAbsent || frontpageName != null) {
+      map['frontpage_name'] = Variable<String>(frontpageName);
+    }
+    if (!nullToAbsent || backgroundName != null) {
+      map['background_name'] = Variable<String>(backgroundName);
+    }
+    if (!nullToAbsent || eventId != null) {
+      map['event_id'] = Variable<int>(eventId);
+    }
+    if (!nullToAbsent || flowPosition != null) {
+      map['flow_position'] = Variable<int>(flowPosition);
+    }
+    if (!nullToAbsent || folderId != null) {
+      map['folder_id'] = Variable<int>(folderId);
+    }
+    if (!nullToAbsent || schoolAId != null) {
+      map['school_a_id'] = Variable<int>(schoolAId);
+    }
+    if (!nullToAbsent || schoolBId != null) {
+      map['school_b_id'] = Variable<int>(schoolBId);
+    }
+    return map;
+  }
+
+  FlowCompanion toCompanion(bool nullToAbsent) {
+    return FlowCompanion(
+      id: Value(id),
+      flowName: flowName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(flowName),
+      fontName: fontName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fontName),
+      sectionFontName: sectionFontName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sectionFontName),
+      timerFontName: timerFontName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerFontName),
+      frontpageName: frontpageName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(frontpageName),
+      backgroundName: backgroundName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(backgroundName),
+      eventId: eventId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(eventId),
+      flowPosition: flowPosition == null && nullToAbsent
+          ? const Value.absent()
+          : Value(flowPosition),
+      folderId: folderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(folderId),
+      schoolAId: schoolAId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(schoolAId),
+      schoolBId: schoolBId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(schoolBId),
+    );
+  }
+
+  factory FlowData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FlowData(
+      id: serializer.fromJson<int>(json['id']),
+      flowName: serializer.fromJson<String?>(json['flow_name']),
+      fontName: serializer.fromJson<String?>(json['font_name']),
+      sectionFontName: serializer.fromJson<String?>(json['section_font_name']),
+      timerFontName: serializer.fromJson<String?>(json['timer_font_name']),
+      frontpageName: serializer.fromJson<String?>(json['frontpage_name']),
+      backgroundName: serializer.fromJson<String?>(json['background_name']),
+      eventId: serializer.fromJson<int?>(json['event_id']),
+      flowPosition: serializer.fromJson<int?>(json['flow_position']),
+      folderId: serializer.fromJson<int?>(json['folder_id']),
+      schoolAId: serializer.fromJson<int?>(json['school_a_id']),
+      schoolBId: serializer.fromJson<int?>(json['school_b_id']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'flow_name': serializer.toJson<String?>(flowName),
+      'font_name': serializer.toJson<String?>(fontName),
+      'section_font_name': serializer.toJson<String?>(sectionFontName),
+      'timer_font_name': serializer.toJson<String?>(timerFontName),
+      'frontpage_name': serializer.toJson<String?>(frontpageName),
+      'background_name': serializer.toJson<String?>(backgroundName),
+      'event_id': serializer.toJson<int?>(eventId),
+      'flow_position': serializer.toJson<int?>(flowPosition),
+      'folder_id': serializer.toJson<int?>(folderId),
+      'school_a_id': serializer.toJson<int?>(schoolAId),
+      'school_b_id': serializer.toJson<int?>(schoolBId),
+    };
+  }
+
+  FlowData copyWith(
+          {int? id,
+          Value<String?> flowName = const Value.absent(),
+          Value<String?> fontName = const Value.absent(),
+          Value<String?> sectionFontName = const Value.absent(),
+          Value<String?> timerFontName = const Value.absent(),
+          Value<String?> frontpageName = const Value.absent(),
+          Value<String?> backgroundName = const Value.absent(),
+          Value<int?> eventId = const Value.absent(),
+          Value<int?> flowPosition = const Value.absent(),
+          Value<int?> folderId = const Value.absent(),
+          Value<int?> schoolAId = const Value.absent(),
+          Value<int?> schoolBId = const Value.absent()}) =>
+      FlowData(
+        id: id ?? this.id,
+        flowName: flowName.present ? flowName.value : this.flowName,
+        fontName: fontName.present ? fontName.value : this.fontName,
+        sectionFontName: sectionFontName.present
+            ? sectionFontName.value
+            : this.sectionFontName,
+        timerFontName:
+            timerFontName.present ? timerFontName.value : this.timerFontName,
+        frontpageName:
+            frontpageName.present ? frontpageName.value : this.frontpageName,
+        backgroundName:
+            backgroundName.present ? backgroundName.value : this.backgroundName,
+        eventId: eventId.present ? eventId.value : this.eventId,
+        flowPosition:
+            flowPosition.present ? flowPosition.value : this.flowPosition,
+        folderId: folderId.present ? folderId.value : this.folderId,
+        schoolAId: schoolAId.present ? schoolAId.value : this.schoolAId,
+        schoolBId: schoolBId.present ? schoolBId.value : this.schoolBId,
+      );
+  FlowData copyWithCompanion(FlowCompanion data) {
+    return FlowData(
+      id: data.id.present ? data.id.value : this.id,
+      flowName: data.flowName.present ? data.flowName.value : this.flowName,
+      fontName: data.fontName.present ? data.fontName.value : this.fontName,
+      sectionFontName: data.sectionFontName.present
+          ? data.sectionFontName.value
+          : this.sectionFontName,
+      timerFontName: data.timerFontName.present
+          ? data.timerFontName.value
+          : this.timerFontName,
+      frontpageName: data.frontpageName.present
+          ? data.frontpageName.value
+          : this.frontpageName,
+      backgroundName: data.backgroundName.present
+          ? data.backgroundName.value
+          : this.backgroundName,
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      flowPosition: data.flowPosition.present
+          ? data.flowPosition.value
+          : this.flowPosition,
+      folderId: data.folderId.present ? data.folderId.value : this.folderId,
+      schoolAId: data.schoolAId.present ? data.schoolAId.value : this.schoolAId,
+      schoolBId: data.schoolBId.present ? data.schoolBId.value : this.schoolBId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlowData(')
+          ..write('id: $id, ')
+          ..write('flowName: $flowName, ')
+          ..write('fontName: $fontName, ')
+          ..write('sectionFontName: $sectionFontName, ')
+          ..write('timerFontName: $timerFontName, ')
+          ..write('frontpageName: $frontpageName, ')
+          ..write('backgroundName: $backgroundName, ')
+          ..write('eventId: $eventId, ')
+          ..write('flowPosition: $flowPosition, ')
+          ..write('folderId: $folderId, ')
+          ..write('schoolAId: $schoolAId, ')
+          ..write('schoolBId: $schoolBId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      flowName,
+      fontName,
+      sectionFontName,
+      timerFontName,
+      frontpageName,
+      backgroundName,
+      eventId,
+      flowPosition,
+      folderId,
+      schoolAId,
+      schoolBId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FlowData &&
+          other.id == this.id &&
+          other.flowName == this.flowName &&
+          other.fontName == this.fontName &&
+          other.sectionFontName == this.sectionFontName &&
+          other.timerFontName == this.timerFontName &&
+          other.frontpageName == this.frontpageName &&
+          other.backgroundName == this.backgroundName &&
+          other.eventId == this.eventId &&
+          other.flowPosition == this.flowPosition &&
+          other.folderId == this.folderId &&
+          other.schoolAId == this.schoolAId &&
+          other.schoolBId == this.schoolBId);
+}
+
+class FlowCompanion extends UpdateCompanion<FlowData> {
+  final Value<int> id;
+  final Value<String?> flowName;
+  final Value<String?> fontName;
+  final Value<String?> sectionFontName;
+  final Value<String?> timerFontName;
+  final Value<String?> frontpageName;
+  final Value<String?> backgroundName;
+  final Value<int?> eventId;
+  final Value<int?> flowPosition;
+  final Value<int?> folderId;
+  final Value<int?> schoolAId;
+  final Value<int?> schoolBId;
+  const FlowCompanion({
+    this.id = const Value.absent(),
+    this.flowName = const Value.absent(),
+    this.fontName = const Value.absent(),
+    this.sectionFontName = const Value.absent(),
+    this.timerFontName = const Value.absent(),
+    this.frontpageName = const Value.absent(),
+    this.backgroundName = const Value.absent(),
+    this.eventId = const Value.absent(),
+    this.flowPosition = const Value.absent(),
+    this.folderId = const Value.absent(),
+    this.schoolAId = const Value.absent(),
+    this.schoolBId = const Value.absent(),
+  });
+  FlowCompanion.insert({
+    this.id = const Value.absent(),
+    this.flowName = const Value.absent(),
+    this.fontName = const Value.absent(),
+    this.sectionFontName = const Value.absent(),
+    this.timerFontName = const Value.absent(),
+    this.frontpageName = const Value.absent(),
+    this.backgroundName = const Value.absent(),
+    this.eventId = const Value.absent(),
+    this.flowPosition = const Value.absent(),
+    this.folderId = const Value.absent(),
+    this.schoolAId = const Value.absent(),
+    this.schoolBId = const Value.absent(),
+  });
+  static Insertable<FlowData> custom({
+    Expression<int>? id,
+    Expression<String>? flowName,
+    Expression<String>? fontName,
+    Expression<String>? sectionFontName,
+    Expression<String>? timerFontName,
+    Expression<String>? frontpageName,
+    Expression<String>? backgroundName,
+    Expression<int>? eventId,
+    Expression<int>? flowPosition,
+    Expression<int>? folderId,
+    Expression<int>? schoolAId,
+    Expression<int>? schoolBId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (flowName != null) 'flow_name': flowName,
+      if (fontName != null) 'font_name': fontName,
+      if (sectionFontName != null) 'section_font_name': sectionFontName,
+      if (timerFontName != null) 'timer_font_name': timerFontName,
+      if (frontpageName != null) 'frontpage_name': frontpageName,
+      if (backgroundName != null) 'background_name': backgroundName,
+      if (eventId != null) 'event_id': eventId,
+      if (flowPosition != null) 'flow_position': flowPosition,
+      if (folderId != null) 'folder_id': folderId,
+      if (schoolAId != null) 'school_a_id': schoolAId,
+      if (schoolBId != null) 'school_b_id': schoolBId,
+    });
+  }
+
+  FlowCompanion copyWith(
+      {Value<int>? id,
+      Value<String?>? flowName,
+      Value<String?>? fontName,
+      Value<String?>? sectionFontName,
+      Value<String?>? timerFontName,
+      Value<String?>? frontpageName,
+      Value<String?>? backgroundName,
+      Value<int?>? eventId,
+      Value<int?>? flowPosition,
+      Value<int?>? folderId,
+      Value<int?>? schoolAId,
+      Value<int?>? schoolBId}) {
+    return FlowCompanion(
+      id: id ?? this.id,
+      flowName: flowName ?? this.flowName,
+      fontName: fontName ?? this.fontName,
+      sectionFontName: sectionFontName ?? this.sectionFontName,
+      timerFontName: timerFontName ?? this.timerFontName,
+      frontpageName: frontpageName ?? this.frontpageName,
+      backgroundName: backgroundName ?? this.backgroundName,
+      eventId: eventId ?? this.eventId,
+      flowPosition: flowPosition ?? this.flowPosition,
+      folderId: folderId ?? this.folderId,
+      schoolAId: schoolAId ?? this.schoolAId,
+      schoolBId: schoolBId ?? this.schoolBId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (flowName.present) {
+      map['flow_name'] = Variable<String>(flowName.value);
+    }
+    if (fontName.present) {
+      map['font_name'] = Variable<String>(fontName.value);
+    }
+    if (sectionFontName.present) {
+      map['section_font_name'] = Variable<String>(sectionFontName.value);
+    }
+    if (timerFontName.present) {
+      map['timer_font_name'] = Variable<String>(timerFontName.value);
+    }
+    if (frontpageName.present) {
+      map['frontpage_name'] = Variable<String>(frontpageName.value);
+    }
+    if (backgroundName.present) {
+      map['background_name'] = Variable<String>(backgroundName.value);
+    }
+    if (eventId.present) {
+      map['event_id'] = Variable<int>(eventId.value);
+    }
+    if (flowPosition.present) {
+      map['flow_position'] = Variable<int>(flowPosition.value);
+    }
+    if (folderId.present) {
+      map['folder_id'] = Variable<int>(folderId.value);
+    }
+    if (schoolAId.present) {
+      map['school_a_id'] = Variable<int>(schoolAId.value);
+    }
+    if (schoolBId.present) {
+      map['school_b_id'] = Variable<int>(schoolBId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlowCompanion(')
+          ..write('id: $id, ')
+          ..write('flowName: $flowName, ')
+          ..write('fontName: $fontName, ')
+          ..write('sectionFontName: $sectionFontName, ')
+          ..write('timerFontName: $timerFontName, ')
+          ..write('frontpageName: $frontpageName, ')
+          ..write('backgroundName: $backgroundName, ')
+          ..write('eventId: $eventId, ')
+          ..write('flowPosition: $flowPosition, ')
+          ..write('folderId: $folderId, ')
+          ..write('schoolAId: $schoolAId, ')
+          ..write('schoolBId: $schoolBId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class Bgm extends Table with TableInfo<Bgm, BgmData> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -2759,6 +3116,14 @@ class Page extends Table with TableInfo<Page, PageData> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'REFERENCES position(id)');
+  static const VerificationMeta _isDefaultPageMeta =
+      const VerificationMeta('isDefaultPage');
+  late final GeneratedColumn<bool> isDefaultPage = GeneratedColumn<bool>(
+      'is_default_page', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      $customConstraints: 'DEFAULT FALSE',
+      defaultValue: const CustomExpression('FALSE'));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2775,7 +3140,8 @@ class Page extends Table with TableInfo<Page, PageData> {
         sectionFontName,
         timerFontName,
         useFrontpage,
-        sectionPositionId
+        sectionPositionId,
+        isDefaultPage
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2868,6 +3234,12 @@ class Page extends Table with TableInfo<Page, PageData> {
           sectionPositionId.isAcceptableOrUnknown(
               data['section_position_id']!, _sectionPositionIdMeta));
     }
+    if (data.containsKey('is_default_page')) {
+      context.handle(
+          _isDefaultPageMeta,
+          isDefaultPage.isAcceptableOrUnknown(
+              data['is_default_page']!, _isDefaultPageMeta));
+    }
     return context;
   }
 
@@ -2907,6 +3279,8 @@ class Page extends Table with TableInfo<Page, PageData> {
           .read(DriftSqlType.bool, data['${effectivePrefix}use_frontpage']),
       sectionPositionId: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}section_position_id']),
+      isDefaultPage: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_default_page']),
     );
   }
 
@@ -2937,6 +3311,7 @@ class PageData extends DataClass implements Insertable<PageData> {
   final String? timerFontName;
   final bool? useFrontpage;
   final int? sectionPositionId;
+  final bool? isDefaultPage;
   const PageData(
       {required this.id,
       this.pageName,
@@ -2952,7 +3327,8 @@ class PageData extends DataClass implements Insertable<PageData> {
       this.sectionFontName,
       this.timerFontName,
       this.useFrontpage,
-      this.sectionPositionId});
+      this.sectionPositionId,
+      this.isDefaultPage});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2998,6 +3374,9 @@ class PageData extends DataClass implements Insertable<PageData> {
     }
     if (!nullToAbsent || sectionPositionId != null) {
       map['section_position_id'] = Variable<int>(sectionPositionId);
+    }
+    if (!nullToAbsent || isDefaultPage != null) {
+      map['is_default_page'] = Variable<bool>(isDefaultPage);
     }
     return map;
   }
@@ -3045,6 +3424,9 @@ class PageData extends DataClass implements Insertable<PageData> {
       sectionPositionId: sectionPositionId == null && nullToAbsent
           ? const Value.absent()
           : Value(sectionPositionId),
+      isDefaultPage: isDefaultPage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isDefaultPage),
     );
   }
 
@@ -3067,6 +3449,7 @@ class PageData extends DataClass implements Insertable<PageData> {
       timerFontName: serializer.fromJson<String?>(json['timer_font_name']),
       useFrontpage: serializer.fromJson<bool?>(json['use_frontpage']),
       sectionPositionId: serializer.fromJson<int?>(json['section_position_id']),
+      isDefaultPage: serializer.fromJson<bool?>(json['is_default_page']),
     );
   }
   @override
@@ -3088,6 +3471,7 @@ class PageData extends DataClass implements Insertable<PageData> {
       'timer_font_name': serializer.toJson<String?>(timerFontName),
       'use_frontpage': serializer.toJson<bool?>(useFrontpage),
       'section_position_id': serializer.toJson<int?>(sectionPositionId),
+      'is_default_page': serializer.toJson<bool?>(isDefaultPage),
     };
   }
 
@@ -3106,7 +3490,8 @@ class PageData extends DataClass implements Insertable<PageData> {
           Value<String?> sectionFontName = const Value.absent(),
           Value<String?> timerFontName = const Value.absent(),
           Value<bool?> useFrontpage = const Value.absent(),
-          Value<int?> sectionPositionId = const Value.absent()}) =>
+          Value<int?> sectionPositionId = const Value.absent(),
+          Value<bool?> isDefaultPage = const Value.absent()}) =>
       PageData(
         id: id ?? this.id,
         pageName: pageName.present ? pageName.value : this.pageName,
@@ -3131,6 +3516,8 @@ class PageData extends DataClass implements Insertable<PageData> {
         sectionPositionId: sectionPositionId.present
             ? sectionPositionId.value
             : this.sectionPositionId,
+        isDefaultPage:
+            isDefaultPage.present ? isDefaultPage.value : this.isDefaultPage,
       );
   PageData copyWithCompanion(PageCompanion data) {
     return PageData(
@@ -3166,6 +3553,9 @@ class PageData extends DataClass implements Insertable<PageData> {
       sectionPositionId: data.sectionPositionId.present
           ? data.sectionPositionId.value
           : this.sectionPositionId,
+      isDefaultPage: data.isDefaultPage.present
+          ? data.isDefaultPage.value
+          : this.isDefaultPage,
     );
   }
 
@@ -3186,7 +3576,8 @@ class PageData extends DataClass implements Insertable<PageData> {
           ..write('sectionFontName: $sectionFontName, ')
           ..write('timerFontName: $timerFontName, ')
           ..write('useFrontpage: $useFrontpage, ')
-          ..write('sectionPositionId: $sectionPositionId')
+          ..write('sectionPositionId: $sectionPositionId, ')
+          ..write('isDefaultPage: $isDefaultPage')
           ..write(')'))
         .toString();
   }
@@ -3207,7 +3598,8 @@ class PageData extends DataClass implements Insertable<PageData> {
       sectionFontName,
       timerFontName,
       useFrontpage,
-      sectionPositionId);
+      sectionPositionId,
+      isDefaultPage);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3226,7 +3618,8 @@ class PageData extends DataClass implements Insertable<PageData> {
           other.sectionFontName == this.sectionFontName &&
           other.timerFontName == this.timerFontName &&
           other.useFrontpage == this.useFrontpage &&
-          other.sectionPositionId == this.sectionPositionId);
+          other.sectionPositionId == this.sectionPositionId &&
+          other.isDefaultPage == this.isDefaultPage);
 }
 
 class PageCompanion extends UpdateCompanion<PageData> {
@@ -3245,6 +3638,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
   final Value<String?> timerFontName;
   final Value<bool?> useFrontpage;
   final Value<int?> sectionPositionId;
+  final Value<bool?> isDefaultPage;
   const PageCompanion({
     this.id = const Value.absent(),
     this.pageName = const Value.absent(),
@@ -3261,6 +3655,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.timerFontName = const Value.absent(),
     this.useFrontpage = const Value.absent(),
     this.sectionPositionId = const Value.absent(),
+    this.isDefaultPage = const Value.absent(),
   });
   PageCompanion.insert({
     this.id = const Value.absent(),
@@ -3278,6 +3673,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.timerFontName = const Value.absent(),
     this.useFrontpage = const Value.absent(),
     this.sectionPositionId = const Value.absent(),
+    this.isDefaultPage = const Value.absent(),
   });
   static Insertable<PageData> custom({
     Expression<int>? id,
@@ -3295,6 +3691,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
     Expression<String>? timerFontName,
     Expression<bool>? useFrontpage,
     Expression<int>? sectionPositionId,
+    Expression<bool>? isDefaultPage,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3312,6 +3709,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
       if (timerFontName != null) 'timer_font_name': timerFontName,
       if (useFrontpage != null) 'use_frontpage': useFrontpage,
       if (sectionPositionId != null) 'section_position_id': sectionPositionId,
+      if (isDefaultPage != null) 'is_default_page': isDefaultPage,
     });
   }
 
@@ -3330,7 +3728,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
       Value<String?>? sectionFontName,
       Value<String?>? timerFontName,
       Value<bool?>? useFrontpage,
-      Value<int?>? sectionPositionId}) {
+      Value<int?>? sectionPositionId,
+      Value<bool?>? isDefaultPage}) {
     return PageCompanion(
       id: id ?? this.id,
       pageName: pageName ?? this.pageName,
@@ -3347,6 +3746,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
       timerFontName: timerFontName ?? this.timerFontName,
       useFrontpage: useFrontpage ?? this.useFrontpage,
       sectionPositionId: sectionPositionId ?? this.sectionPositionId,
+      isDefaultPage: isDefaultPage ?? this.isDefaultPage,
     );
   }
 
@@ -3398,6 +3798,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     if (sectionPositionId.present) {
       map['section_position_id'] = Variable<int>(sectionPositionId.value);
     }
+    if (isDefaultPage.present) {
+      map['is_default_page'] = Variable<bool>(isDefaultPage.value);
+    }
     return map;
   }
 
@@ -3418,7 +3821,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
           ..write('sectionFontName: $sectionFontName, ')
           ..write('timerFontName: $timerFontName, ')
           ..write('useFrontpage: $useFrontpage, ')
-          ..write('sectionPositionId: $sectionPositionId')
+          ..write('sectionPositionId: $sectionPositionId, ')
+          ..write('isDefaultPage: $isDefaultPage')
           ..write(')'))
         .toString();
   }
@@ -3910,9 +4314,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final TimerTemplate timerTemplate = TimerTemplate(this);
   late final DingValue dingValue = DingValue(this);
   late final FlowFolder flowFolder = FlowFolder(this);
-  late final Flow flow = Flow(this);
   late final Position position = Position(this);
   late final Images images = Images(this);
+  late final School school = School(this);
+  late final Flow flow = Flow(this);
   late final Bgm bgm = Bgm(this);
   late final Page page = Page(this);
   late final Timer timer = Timer(this);
@@ -3926,9 +4331,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         timerTemplate,
         dingValue,
         flowFolder,
-        flow,
         position,
         images,
+        school,
+        flow,
         bgm,
         page,
         timer
@@ -3953,6 +4359,25 @@ typedef $EventUpdateCompanionBuilder = EventCompanion Function({
   Value<int?> teamNum,
   Value<String?> remark,
 });
+
+final class $EventReferences
+    extends BaseReferences<_$AppDatabase, Event, EventData> {
+  $EventReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<School, List<SchoolData>> _schoolRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.school,
+          aliasName: $_aliasNameGenerator(db.event.id, db.school.eventId));
+
+  $SchoolProcessedTableManager get schoolRefs {
+    final manager = $SchoolTableManager($_db, $_db.school)
+        .filter((f) => f.eventId.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_schoolRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
 
 class $EventFilterComposer extends Composer<_$AppDatabase, Event> {
   $EventFilterComposer({
@@ -3982,6 +4407,27 @@ class $EventFilterComposer extends Composer<_$AppDatabase, Event> {
 
   ColumnFilters<String> get remark => $composableBuilder(
       column: $table.remark, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> schoolRefs(
+      Expression<bool> Function($SchoolFilterComposer f) f) {
+    final $SchoolFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.eventId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolFilterComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $EventOrderingComposer extends Composer<_$AppDatabase, Event> {
@@ -4042,6 +4488,27 @@ class $EventAnnotationComposer extends Composer<_$AppDatabase, Event> {
 
   GeneratedColumn<String> get remark =>
       $composableBuilder(column: $table.remark, builder: (column) => column);
+
+  Expression<T> schoolRefs<T extends Object>(
+      Expression<T> Function($SchoolAnnotationComposer a) f) {
+    final $SchoolAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.eventId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolAnnotationComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $EventTableManager extends RootTableManager<
@@ -4053,9 +4520,9 @@ class $EventTableManager extends RootTableManager<
     $EventAnnotationComposer,
     $EventCreateCompanionBuilder,
     $EventUpdateCompanionBuilder,
-    (EventData, BaseReferences<_$AppDatabase, Event, EventData>),
+    (EventData, $EventReferences),
     EventData,
-    PrefetchHooks Function()> {
+    PrefetchHooks Function({bool schoolRefs})> {
   $EventTableManager(_$AppDatabase db, Event table)
       : super(TableManagerState(
           db: db,
@@ -4103,9 +4570,29 @@ class $EventTableManager extends RootTableManager<
             remark: remark,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (e.readTable(table), $EventReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({schoolRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (schoolRefs) db.school],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (schoolRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $EventReferences._schoolRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $EventReferences(db, table, p0).schoolRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.eventId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
@@ -4118,9 +4605,9 @@ typedef $EventProcessedTableManager = ProcessedTableManager<
     $EventAnnotationComposer,
     $EventCreateCompanionBuilder,
     $EventUpdateCompanionBuilder,
-    (EventData, BaseReferences<_$AppDatabase, Event, EventData>),
+    (EventData, $EventReferences),
     EventData,
-    PrefetchHooks Function()>;
+    PrefetchHooks Function({bool schoolRefs})>;
 typedef $DingAudioCreateCompanionBuilder = DingAudioCompanion Function({
   Value<int> id,
   required String dingName,
@@ -5171,345 +5658,6 @@ typedef $FlowFolderProcessedTableManager = ProcessedTableManager<
     (FlowFolderData, $FlowFolderReferences),
     FlowFolderData,
     PrefetchHooks Function({bool flowRefs})>;
-typedef $FlowCreateCompanionBuilder = FlowCompanion Function({
-  Value<int> id,
-  Value<String?> flowName,
-  Value<String?> fontName,
-  Value<String?> sectionFontName,
-  Value<String?> timerFontName,
-  Value<String?> frontpageName,
-  Value<String?> backgroundName,
-  Value<int?> eventId,
-  Value<int?> flowPosition,
-  Value<int?> folderId,
-});
-typedef $FlowUpdateCompanionBuilder = FlowCompanion Function({
-  Value<int> id,
-  Value<String?> flowName,
-  Value<String?> fontName,
-  Value<String?> sectionFontName,
-  Value<String?> timerFontName,
-  Value<String?> frontpageName,
-  Value<String?> backgroundName,
-  Value<int?> eventId,
-  Value<int?> flowPosition,
-  Value<int?> folderId,
-});
-
-final class $FlowReferences
-    extends BaseReferences<_$AppDatabase, Flow, FlowData> {
-  $FlowReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static FlowFolder _folderIdTable(_$AppDatabase db) => db.flowFolder
-      .createAlias($_aliasNameGenerator(db.flow.folderId, db.flowFolder.id));
-
-  $FlowFolderProcessedTableManager? get folderId {
-    if ($_item.folderId == null) return null;
-    final manager = $FlowFolderTableManager($_db, $_db.flowFolder)
-        .filter((f) => f.id($_item.folderId!));
-    final item = $_typedResult.readTableOrNull(_folderIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-}
-
-class $FlowFilterComposer extends Composer<_$AppDatabase, Flow> {
-  $FlowFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get flowName => $composableBuilder(
-      column: $table.flowName, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get fontName => $composableBuilder(
-      column: $table.fontName, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get sectionFontName => $composableBuilder(
-      column: $table.sectionFontName,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get timerFontName => $composableBuilder(
-      column: $table.timerFontName, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get frontpageName => $composableBuilder(
-      column: $table.frontpageName, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get backgroundName => $composableBuilder(
-      column: $table.backgroundName,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get eventId => $composableBuilder(
-      column: $table.eventId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get flowPosition => $composableBuilder(
-      column: $table.flowPosition, builder: (column) => ColumnFilters(column));
-
-  $FlowFolderFilterComposer get folderId {
-    final $FlowFolderFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.folderId,
-        referencedTable: $db.flowFolder,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $FlowFolderFilterComposer(
-              $db: $db,
-              $table: $db.flowFolder,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $FlowOrderingComposer extends Composer<_$AppDatabase, Flow> {
-  $FlowOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get flowName => $composableBuilder(
-      column: $table.flowName, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get fontName => $composableBuilder(
-      column: $table.fontName, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get sectionFontName => $composableBuilder(
-      column: $table.sectionFontName,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get timerFontName => $composableBuilder(
-      column: $table.timerFontName,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get frontpageName => $composableBuilder(
-      column: $table.frontpageName,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get backgroundName => $composableBuilder(
-      column: $table.backgroundName,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get eventId => $composableBuilder(
-      column: $table.eventId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get flowPosition => $composableBuilder(
-      column: $table.flowPosition,
-      builder: (column) => ColumnOrderings(column));
-
-  $FlowFolderOrderingComposer get folderId {
-    final $FlowFolderOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.folderId,
-        referencedTable: $db.flowFolder,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $FlowFolderOrderingComposer(
-              $db: $db,
-              $table: $db.flowFolder,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $FlowAnnotationComposer extends Composer<_$AppDatabase, Flow> {
-  $FlowAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get flowName =>
-      $composableBuilder(column: $table.flowName, builder: (column) => column);
-
-  GeneratedColumn<String> get fontName =>
-      $composableBuilder(column: $table.fontName, builder: (column) => column);
-
-  GeneratedColumn<String> get sectionFontName => $composableBuilder(
-      column: $table.sectionFontName, builder: (column) => column);
-
-  GeneratedColumn<String> get timerFontName => $composableBuilder(
-      column: $table.timerFontName, builder: (column) => column);
-
-  GeneratedColumn<String> get frontpageName => $composableBuilder(
-      column: $table.frontpageName, builder: (column) => column);
-
-  GeneratedColumn<String> get backgroundName => $composableBuilder(
-      column: $table.backgroundName, builder: (column) => column);
-
-  GeneratedColumn<int> get eventId =>
-      $composableBuilder(column: $table.eventId, builder: (column) => column);
-
-  GeneratedColumn<int> get flowPosition => $composableBuilder(
-      column: $table.flowPosition, builder: (column) => column);
-
-  $FlowFolderAnnotationComposer get folderId {
-    final $FlowFolderAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.folderId,
-        referencedTable: $db.flowFolder,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $FlowFolderAnnotationComposer(
-              $db: $db,
-              $table: $db.flowFolder,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $FlowTableManager extends RootTableManager<
-    _$AppDatabase,
-    Flow,
-    FlowData,
-    $FlowFilterComposer,
-    $FlowOrderingComposer,
-    $FlowAnnotationComposer,
-    $FlowCreateCompanionBuilder,
-    $FlowUpdateCompanionBuilder,
-    (FlowData, $FlowReferences),
-    FlowData,
-    PrefetchHooks Function({bool folderId})> {
-  $FlowTableManager(_$AppDatabase db, Flow table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $FlowFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $FlowOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $FlowAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> flowName = const Value.absent(),
-            Value<String?> fontName = const Value.absent(),
-            Value<String?> sectionFontName = const Value.absent(),
-            Value<String?> timerFontName = const Value.absent(),
-            Value<String?> frontpageName = const Value.absent(),
-            Value<String?> backgroundName = const Value.absent(),
-            Value<int?> eventId = const Value.absent(),
-            Value<int?> flowPosition = const Value.absent(),
-            Value<int?> folderId = const Value.absent(),
-          }) =>
-              FlowCompanion(
-            id: id,
-            flowName: flowName,
-            fontName: fontName,
-            sectionFontName: sectionFontName,
-            timerFontName: timerFontName,
-            frontpageName: frontpageName,
-            backgroundName: backgroundName,
-            eventId: eventId,
-            flowPosition: flowPosition,
-            folderId: folderId,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> flowName = const Value.absent(),
-            Value<String?> fontName = const Value.absent(),
-            Value<String?> sectionFontName = const Value.absent(),
-            Value<String?> timerFontName = const Value.absent(),
-            Value<String?> frontpageName = const Value.absent(),
-            Value<String?> backgroundName = const Value.absent(),
-            Value<int?> eventId = const Value.absent(),
-            Value<int?> flowPosition = const Value.absent(),
-            Value<int?> folderId = const Value.absent(),
-          }) =>
-              FlowCompanion.insert(
-            id: id,
-            flowName: flowName,
-            fontName: fontName,
-            sectionFontName: sectionFontName,
-            timerFontName: timerFontName,
-            frontpageName: frontpageName,
-            backgroundName: backgroundName,
-            eventId: eventId,
-            flowPosition: flowPosition,
-            folderId: folderId,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), $FlowReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: ({folderId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (folderId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.folderId,
-                    referencedTable: $FlowReferences._folderIdTable(db),
-                    referencedColumn: $FlowReferences._folderIdTable(db).id,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ));
-}
-
-typedef $FlowProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    Flow,
-    FlowData,
-    $FlowFilterComposer,
-    $FlowOrderingComposer,
-    $FlowAnnotationComposer,
-    $FlowCreateCompanionBuilder,
-    $FlowUpdateCompanionBuilder,
-    (FlowData, $FlowReferences),
-    FlowData,
-    PrefetchHooks Function({bool folderId})>;
 typedef $PositionCreateCompanionBuilder = PositionCompanion Function({
   Value<int> id,
   Value<double?> xpos,
@@ -5905,6 +6053,20 @@ final class $ImagesReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
   }
+
+  static MultiTypedResultKey<School, List<SchoolData>> _schoolRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.school,
+          aliasName: $_aliasNameGenerator(db.images.id, db.school.logoImageId));
+
+  $SchoolProcessedTableManager get schoolRefs {
+    final manager = $SchoolTableManager($_db, $_db.school)
+        .filter((f) => f.logoImageId.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_schoolRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $ImagesFilterComposer extends Composer<_$AppDatabase, Images> {
@@ -5945,6 +6107,27 @@ class $ImagesFilterComposer extends Composer<_$AppDatabase, Images> {
                   $removeJoinBuilderFromRootComposer,
             ));
     return composer;
+  }
+
+  Expression<bool> schoolRefs(
+      Expression<bool> Function($SchoolFilterComposer f) f) {
+    final $SchoolFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.logoImageId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolFilterComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
   }
 }
 
@@ -6028,6 +6211,27 @@ class $ImagesAnnotationComposer extends Composer<_$AppDatabase, Images> {
             ));
     return composer;
   }
+
+  Expression<T> schoolRefs<T extends Object>(
+      Expression<T> Function($SchoolAnnotationComposer a) f) {
+    final $SchoolAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.logoImageId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolAnnotationComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $ImagesTableManager extends RootTableManager<
@@ -6041,7 +6245,7 @@ class $ImagesTableManager extends RootTableManager<
     $ImagesUpdateCompanionBuilder,
     (ImagesData, $ImagesReferences),
     ImagesData,
-    PrefetchHooks Function({bool positionId})> {
+    PrefetchHooks Function({bool positionId, bool schoolRefs})> {
   $ImagesTableManager(_$AppDatabase db, Images table)
       : super(TableManagerState(
           db: db,
@@ -6083,10 +6287,10 @@ class $ImagesTableManager extends RootTableManager<
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $ImagesReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({positionId = false}) {
+          prefetchHooksCallback: ({positionId = false, schoolRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [],
+              explicitlyWatchedTables: [if (schoolRefs) db.school],
               addJoins: <
                   T extends TableManagerState<
                       dynamic,
@@ -6112,7 +6316,18 @@ class $ImagesTableManager extends RootTableManager<
                 return state;
               },
               getPrefetchedDataCallback: (items) async {
-                return [];
+                return [
+                  if (schoolRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $ImagesReferences._schoolRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $ImagesReferences(db, table, p0).schoolRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.logoImageId == item.id),
+                        typedResults: items)
+                ];
               },
             );
           },
@@ -6130,7 +6345,836 @@ typedef $ImagesProcessedTableManager = ProcessedTableManager<
     $ImagesUpdateCompanionBuilder,
     (ImagesData, $ImagesReferences),
     ImagesData,
-    PrefetchHooks Function({bool positionId})>;
+    PrefetchHooks Function({bool positionId, bool schoolRefs})>;
+typedef $SchoolCreateCompanionBuilder = SchoolCompanion Function({
+  Value<int> id,
+  required String schoolName,
+  required int eventId,
+  Value<int?> logoImageId,
+});
+typedef $SchoolUpdateCompanionBuilder = SchoolCompanion Function({
+  Value<int> id,
+  Value<String> schoolName,
+  Value<int> eventId,
+  Value<int?> logoImageId,
+});
+
+final class $SchoolReferences
+    extends BaseReferences<_$AppDatabase, School, SchoolData> {
+  $SchoolReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static Event _eventIdTable(_$AppDatabase db) => db.event
+      .createAlias($_aliasNameGenerator(db.school.eventId, db.event.id));
+
+  $EventProcessedTableManager? get eventId {
+    if ($_item.eventId == null) return null;
+    final manager = $EventTableManager($_db, $_db.event)
+        .filter((f) => f.id($_item.eventId!));
+    final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static Images _logoImageIdTable(_$AppDatabase db) => db.images
+      .createAlias($_aliasNameGenerator(db.school.logoImageId, db.images.id));
+
+  $ImagesProcessedTableManager? get logoImageId {
+    if ($_item.logoImageId == null) return null;
+    final manager = $ImagesTableManager($_db, $_db.images)
+        .filter((f) => f.id($_item.logoImageId!));
+    final item = $_typedResult.readTableOrNull(_logoImageIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $SchoolFilterComposer extends Composer<_$AppDatabase, School> {
+  $SchoolFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get schoolName => $composableBuilder(
+      column: $table.schoolName, builder: (column) => ColumnFilters(column));
+
+  $EventFilterComposer get eventId {
+    final $EventFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.eventId,
+        referencedTable: $db.event,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $EventFilterComposer(
+              $db: $db,
+              $table: $db.event,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $ImagesFilterComposer get logoImageId {
+    final $ImagesFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.logoImageId,
+        referencedTable: $db.images,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $ImagesFilterComposer(
+              $db: $db,
+              $table: $db.images,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $SchoolOrderingComposer extends Composer<_$AppDatabase, School> {
+  $SchoolOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get schoolName => $composableBuilder(
+      column: $table.schoolName, builder: (column) => ColumnOrderings(column));
+
+  $EventOrderingComposer get eventId {
+    final $EventOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.eventId,
+        referencedTable: $db.event,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $EventOrderingComposer(
+              $db: $db,
+              $table: $db.event,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $ImagesOrderingComposer get logoImageId {
+    final $ImagesOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.logoImageId,
+        referencedTable: $db.images,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $ImagesOrderingComposer(
+              $db: $db,
+              $table: $db.images,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $SchoolAnnotationComposer extends Composer<_$AppDatabase, School> {
+  $SchoolAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get schoolName => $composableBuilder(
+      column: $table.schoolName, builder: (column) => column);
+
+  $EventAnnotationComposer get eventId {
+    final $EventAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.eventId,
+        referencedTable: $db.event,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $EventAnnotationComposer(
+              $db: $db,
+              $table: $db.event,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $ImagesAnnotationComposer get logoImageId {
+    final $ImagesAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.logoImageId,
+        referencedTable: $db.images,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $ImagesAnnotationComposer(
+              $db: $db,
+              $table: $db.images,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $SchoolTableManager extends RootTableManager<
+    _$AppDatabase,
+    School,
+    SchoolData,
+    $SchoolFilterComposer,
+    $SchoolOrderingComposer,
+    $SchoolAnnotationComposer,
+    $SchoolCreateCompanionBuilder,
+    $SchoolUpdateCompanionBuilder,
+    (SchoolData, $SchoolReferences),
+    SchoolData,
+    PrefetchHooks Function({bool eventId, bool logoImageId})> {
+  $SchoolTableManager(_$AppDatabase db, School table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $SchoolFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $SchoolOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $SchoolAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> schoolName = const Value.absent(),
+            Value<int> eventId = const Value.absent(),
+            Value<int?> logoImageId = const Value.absent(),
+          }) =>
+              SchoolCompanion(
+            id: id,
+            schoolName: schoolName,
+            eventId: eventId,
+            logoImageId: logoImageId,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String schoolName,
+            required int eventId,
+            Value<int?> logoImageId = const Value.absent(),
+          }) =>
+              SchoolCompanion.insert(
+            id: id,
+            schoolName: schoolName,
+            eventId: eventId,
+            logoImageId: logoImageId,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), $SchoolReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({eventId = false, logoImageId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (eventId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.eventId,
+                    referencedTable: $SchoolReferences._eventIdTable(db),
+                    referencedColumn: $SchoolReferences._eventIdTable(db).id,
+                  ) as T;
+                }
+                if (logoImageId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.logoImageId,
+                    referencedTable: $SchoolReferences._logoImageIdTable(db),
+                    referencedColumn:
+                        $SchoolReferences._logoImageIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $SchoolProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    School,
+    SchoolData,
+    $SchoolFilterComposer,
+    $SchoolOrderingComposer,
+    $SchoolAnnotationComposer,
+    $SchoolCreateCompanionBuilder,
+    $SchoolUpdateCompanionBuilder,
+    (SchoolData, $SchoolReferences),
+    SchoolData,
+    PrefetchHooks Function({bool eventId, bool logoImageId})>;
+typedef $FlowCreateCompanionBuilder = FlowCompanion Function({
+  Value<int> id,
+  Value<String?> flowName,
+  Value<String?> fontName,
+  Value<String?> sectionFontName,
+  Value<String?> timerFontName,
+  Value<String?> frontpageName,
+  Value<String?> backgroundName,
+  Value<int?> eventId,
+  Value<int?> flowPosition,
+  Value<int?> folderId,
+  Value<int?> schoolAId,
+  Value<int?> schoolBId,
+});
+typedef $FlowUpdateCompanionBuilder = FlowCompanion Function({
+  Value<int> id,
+  Value<String?> flowName,
+  Value<String?> fontName,
+  Value<String?> sectionFontName,
+  Value<String?> timerFontName,
+  Value<String?> frontpageName,
+  Value<String?> backgroundName,
+  Value<int?> eventId,
+  Value<int?> flowPosition,
+  Value<int?> folderId,
+  Value<int?> schoolAId,
+  Value<int?> schoolBId,
+});
+
+final class $FlowReferences
+    extends BaseReferences<_$AppDatabase, Flow, FlowData> {
+  $FlowReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static FlowFolder _folderIdTable(_$AppDatabase db) => db.flowFolder
+      .createAlias($_aliasNameGenerator(db.flow.folderId, db.flowFolder.id));
+
+  $FlowFolderProcessedTableManager? get folderId {
+    if ($_item.folderId == null) return null;
+    final manager = $FlowFolderTableManager($_db, $_db.flowFolder)
+        .filter((f) => f.id($_item.folderId!));
+    final item = $_typedResult.readTableOrNull(_folderIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static School _schoolAIdTable(_$AppDatabase db) => db.school
+      .createAlias($_aliasNameGenerator(db.flow.schoolAId, db.school.id));
+
+  $SchoolProcessedTableManager? get schoolAId {
+    if ($_item.schoolAId == null) return null;
+    final manager = $SchoolTableManager($_db, $_db.school)
+        .filter((f) => f.id($_item.schoolAId!));
+    final item = $_typedResult.readTableOrNull(_schoolAIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static School _schoolBIdTable(_$AppDatabase db) => db.school
+      .createAlias($_aliasNameGenerator(db.flow.schoolBId, db.school.id));
+
+  $SchoolProcessedTableManager? get schoolBId {
+    if ($_item.schoolBId == null) return null;
+    final manager = $SchoolTableManager($_db, $_db.school)
+        .filter((f) => f.id($_item.schoolBId!));
+    final item = $_typedResult.readTableOrNull(_schoolBIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $FlowFilterComposer extends Composer<_$AppDatabase, Flow> {
+  $FlowFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get flowName => $composableBuilder(
+      column: $table.flowName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fontName => $composableBuilder(
+      column: $table.fontName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sectionFontName => $composableBuilder(
+      column: $table.sectionFontName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get timerFontName => $composableBuilder(
+      column: $table.timerFontName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get frontpageName => $composableBuilder(
+      column: $table.frontpageName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get backgroundName => $composableBuilder(
+      column: $table.backgroundName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get eventId => $composableBuilder(
+      column: $table.eventId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get flowPosition => $composableBuilder(
+      column: $table.flowPosition, builder: (column) => ColumnFilters(column));
+
+  $FlowFolderFilterComposer get folderId {
+    final $FlowFolderFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.folderId,
+        referencedTable: $db.flowFolder,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $FlowFolderFilterComposer(
+              $db: $db,
+              $table: $db.flowFolder,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $SchoolFilterComposer get schoolAId {
+    final $SchoolFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolAId,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolFilterComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $SchoolFilterComposer get schoolBId {
+    final $SchoolFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolBId,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolFilterComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $FlowOrderingComposer extends Composer<_$AppDatabase, Flow> {
+  $FlowOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get flowName => $composableBuilder(
+      column: $table.flowName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fontName => $composableBuilder(
+      column: $table.fontName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sectionFontName => $composableBuilder(
+      column: $table.sectionFontName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get timerFontName => $composableBuilder(
+      column: $table.timerFontName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get frontpageName => $composableBuilder(
+      column: $table.frontpageName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get backgroundName => $composableBuilder(
+      column: $table.backgroundName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get eventId => $composableBuilder(
+      column: $table.eventId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get flowPosition => $composableBuilder(
+      column: $table.flowPosition,
+      builder: (column) => ColumnOrderings(column));
+
+  $FlowFolderOrderingComposer get folderId {
+    final $FlowFolderOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.folderId,
+        referencedTable: $db.flowFolder,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $FlowFolderOrderingComposer(
+              $db: $db,
+              $table: $db.flowFolder,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $SchoolOrderingComposer get schoolAId {
+    final $SchoolOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolAId,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolOrderingComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $SchoolOrderingComposer get schoolBId {
+    final $SchoolOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolBId,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolOrderingComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $FlowAnnotationComposer extends Composer<_$AppDatabase, Flow> {
+  $FlowAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get flowName =>
+      $composableBuilder(column: $table.flowName, builder: (column) => column);
+
+  GeneratedColumn<String> get fontName =>
+      $composableBuilder(column: $table.fontName, builder: (column) => column);
+
+  GeneratedColumn<String> get sectionFontName => $composableBuilder(
+      column: $table.sectionFontName, builder: (column) => column);
+
+  GeneratedColumn<String> get timerFontName => $composableBuilder(
+      column: $table.timerFontName, builder: (column) => column);
+
+  GeneratedColumn<String> get frontpageName => $composableBuilder(
+      column: $table.frontpageName, builder: (column) => column);
+
+  GeneratedColumn<String> get backgroundName => $composableBuilder(
+      column: $table.backgroundName, builder: (column) => column);
+
+  GeneratedColumn<int> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<int> get flowPosition => $composableBuilder(
+      column: $table.flowPosition, builder: (column) => column);
+
+  $FlowFolderAnnotationComposer get folderId {
+    final $FlowFolderAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.folderId,
+        referencedTable: $db.flowFolder,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $FlowFolderAnnotationComposer(
+              $db: $db,
+              $table: $db.flowFolder,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $SchoolAnnotationComposer get schoolAId {
+    final $SchoolAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolAId,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolAnnotationComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $SchoolAnnotationComposer get schoolBId {
+    final $SchoolAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.schoolBId,
+        referencedTable: $db.school,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $SchoolAnnotationComposer(
+              $db: $db,
+              $table: $db.school,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $FlowTableManager extends RootTableManager<
+    _$AppDatabase,
+    Flow,
+    FlowData,
+    $FlowFilterComposer,
+    $FlowOrderingComposer,
+    $FlowAnnotationComposer,
+    $FlowCreateCompanionBuilder,
+    $FlowUpdateCompanionBuilder,
+    (FlowData, $FlowReferences),
+    FlowData,
+    PrefetchHooks Function({bool folderId, bool schoolAId, bool schoolBId})> {
+  $FlowTableManager(_$AppDatabase db, Flow table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $FlowFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $FlowOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $FlowAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> flowName = const Value.absent(),
+            Value<String?> fontName = const Value.absent(),
+            Value<String?> sectionFontName = const Value.absent(),
+            Value<String?> timerFontName = const Value.absent(),
+            Value<String?> frontpageName = const Value.absent(),
+            Value<String?> backgroundName = const Value.absent(),
+            Value<int?> eventId = const Value.absent(),
+            Value<int?> flowPosition = const Value.absent(),
+            Value<int?> folderId = const Value.absent(),
+            Value<int?> schoolAId = const Value.absent(),
+            Value<int?> schoolBId = const Value.absent(),
+          }) =>
+              FlowCompanion(
+            id: id,
+            flowName: flowName,
+            fontName: fontName,
+            sectionFontName: sectionFontName,
+            timerFontName: timerFontName,
+            frontpageName: frontpageName,
+            backgroundName: backgroundName,
+            eventId: eventId,
+            flowPosition: flowPosition,
+            folderId: folderId,
+            schoolAId: schoolAId,
+            schoolBId: schoolBId,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> flowName = const Value.absent(),
+            Value<String?> fontName = const Value.absent(),
+            Value<String?> sectionFontName = const Value.absent(),
+            Value<String?> timerFontName = const Value.absent(),
+            Value<String?> frontpageName = const Value.absent(),
+            Value<String?> backgroundName = const Value.absent(),
+            Value<int?> eventId = const Value.absent(),
+            Value<int?> flowPosition = const Value.absent(),
+            Value<int?> folderId = const Value.absent(),
+            Value<int?> schoolAId = const Value.absent(),
+            Value<int?> schoolBId = const Value.absent(),
+          }) =>
+              FlowCompanion.insert(
+            id: id,
+            flowName: flowName,
+            fontName: fontName,
+            sectionFontName: sectionFontName,
+            timerFontName: timerFontName,
+            frontpageName: frontpageName,
+            backgroundName: backgroundName,
+            eventId: eventId,
+            flowPosition: flowPosition,
+            folderId: folderId,
+            schoolAId: schoolAId,
+            schoolBId: schoolBId,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), $FlowReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: (
+              {folderId = false, schoolAId = false, schoolBId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (folderId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.folderId,
+                    referencedTable: $FlowReferences._folderIdTable(db),
+                    referencedColumn: $FlowReferences._folderIdTable(db).id,
+                  ) as T;
+                }
+                if (schoolAId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.schoolAId,
+                    referencedTable: $FlowReferences._schoolAIdTable(db),
+                    referencedColumn: $FlowReferences._schoolAIdTable(db).id,
+                  ) as T;
+                }
+                if (schoolBId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.schoolBId,
+                    referencedTable: $FlowReferences._schoolBIdTable(db),
+                    referencedColumn: $FlowReferences._schoolBIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $FlowProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    Flow,
+    FlowData,
+    $FlowFilterComposer,
+    $FlowOrderingComposer,
+    $FlowAnnotationComposer,
+    $FlowCreateCompanionBuilder,
+    $FlowUpdateCompanionBuilder,
+    (FlowData, $FlowReferences),
+    FlowData,
+    PrefetchHooks Function({bool folderId, bool schoolAId, bool schoolBId})>;
 typedef $BgmCreateCompanionBuilder = BgmCompanion Function({
   Value<int> id,
   required String bgmName,
@@ -6338,6 +7382,7 @@ typedef $PageCreateCompanionBuilder = PageCompanion Function({
   Value<String?> timerFontName,
   Value<bool?> useFrontpage,
   Value<int?> sectionPositionId,
+  Value<bool?> isDefaultPage,
 });
 typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int> id,
@@ -6355,6 +7400,7 @@ typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<String?> timerFontName,
   Value<bool?> useFrontpage,
   Value<int?> sectionPositionId,
+  Value<bool?> isDefaultPage,
 });
 
 final class $PageReferences
@@ -6450,6 +7496,9 @@ class $PageFilterComposer extends Composer<_$AppDatabase, Page> {
 
   ColumnFilters<bool> get useFrontpage => $composableBuilder(
       column: $table.useFrontpage, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDefaultPage => $composableBuilder(
+      column: $table.isDefaultPage, builder: (column) => ColumnFilters(column));
 
   $BgmFilterComposer get bgmId {
     final $BgmFilterComposer composer = $composerBuilder(
@@ -6565,6 +7614,10 @@ class $PageOrderingComposer extends Composer<_$AppDatabase, Page> {
       column: $table.useFrontpage,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isDefaultPage => $composableBuilder(
+      column: $table.isDefaultPage,
+      builder: (column) => ColumnOrderings(column));
+
   $BgmOrderingComposer get bgmId {
     final $BgmOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -6652,6 +7705,9 @@ class $PageAnnotationComposer extends Composer<_$AppDatabase, Page> {
 
   GeneratedColumn<bool> get useFrontpage => $composableBuilder(
       column: $table.useFrontpage, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefaultPage => $composableBuilder(
+      column: $table.isDefaultPage, builder: (column) => column);
 
   $BgmAnnotationComposer get bgmId {
     final $BgmAnnotationComposer composer = $composerBuilder(
@@ -6754,6 +7810,7 @@ class $PageTableManager extends RootTableManager<
             Value<String?> timerFontName = const Value.absent(),
             Value<bool?> useFrontpage = const Value.absent(),
             Value<int?> sectionPositionId = const Value.absent(),
+            Value<bool?> isDefaultPage = const Value.absent(),
           }) =>
               PageCompanion(
             id: id,
@@ -6771,6 +7828,7 @@ class $PageTableManager extends RootTableManager<
             timerFontName: timerFontName,
             useFrontpage: useFrontpage,
             sectionPositionId: sectionPositionId,
+            isDefaultPage: isDefaultPage,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -6788,6 +7846,7 @@ class $PageTableManager extends RootTableManager<
             Value<String?> timerFontName = const Value.absent(),
             Value<bool?> useFrontpage = const Value.absent(),
             Value<int?> sectionPositionId = const Value.absent(),
+            Value<bool?> isDefaultPage = const Value.absent(),
           }) =>
               PageCompanion.insert(
             id: id,
@@ -6805,6 +7864,7 @@ class $PageTableManager extends RootTableManager<
             timerFontName: timerFontName,
             useFrontpage: useFrontpage,
             sectionPositionId: sectionPositionId,
+            isDefaultPage: isDefaultPage,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $PageReferences(db, table, e)))
@@ -7359,10 +8419,11 @@ class $AppDatabaseManager {
       $DingValueTableManager(_db, _db.dingValue);
   $FlowFolderTableManager get flowFolder =>
       $FlowFolderTableManager(_db, _db.flowFolder);
-  $FlowTableManager get flow => $FlowTableManager(_db, _db.flow);
   $PositionTableManager get position =>
       $PositionTableManager(_db, _db.position);
   $ImagesTableManager get images => $ImagesTableManager(_db, _db.images);
+  $SchoolTableManager get school => $SchoolTableManager(_db, _db.school);
+  $FlowTableManager get flow => $FlowTableManager(_db, _db.flow);
   $BgmTableManager get bgm => $BgmTableManager(_db, _db.bgm);
   $PageTableManager get page => $PageTableManager(_db, _db.page);
   $TimerTableManager get timer => $TimerTableManager(_db, _db.timer);

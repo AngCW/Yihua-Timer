@@ -26,6 +26,10 @@ class TimerRunnerPage extends StatefulWidget {
 class _TimerRunnerPageState extends State<TimerRunnerPage> {
   final PageController _pageController = PageController();
   List<PageData> _pages = [];
+  List<PageData> _extraPages = [];
+  PageData? _activeExtraPage;
+  // Session-wide timer state: timerId -> currentSeconds
+  final Map<int, int> _sessionTimerSeconds = {};
   bool _isLoading = true;
   String? _imagesDirPath;
   String? _fontFamily;
@@ -92,17 +96,31 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
       await _loadFont(widget.flow.fontName!, 'flow_timer');
     }
 
-    final pages = await (database.select(database.page)
+    final allPages = await (database.select(database.page)
           ..where((t) => t.flowId.equals(widget.flow.id))
           ..orderBy([(t) => drift.OrderingTerm(expression: t.pagePosition)]))
         .get();
 
     if (mounted) {
       setState(() {
-        _pages = pages;
+        _pages = allPages.where((p) => p.isDefaultPage == false).toList();
+        _extraPages = allPages.where((p) => p.isDefaultPage == true).toList();
         _isLoading = false;
       });
     }
+  }
+
+  bool _isKnownHotkey(String key) {
+    if (_hotkeySettings == null) return false;
+    final k = key.toUpperCase();
+    final h = _hotkeySettings!;
+    return k == h.pageA1StartStop.key.toUpperCase() ||
+        k == h.pageA1Reset.key.toUpperCase() ||
+        k == h.pageA2LeftStartStop.key.toUpperCase() ||
+        k == h.pageA2LeftReset.key.toUpperCase() ||
+        k == h.pageA2RightStartStop.key.toUpperCase() ||
+        k == h.pageA2RightReset.key.toUpperCase() ||
+        k == h.pageA2Swap.key.toUpperCase();
   }
 
   Future<void> _loadFont(String fileName, String type) async {
@@ -155,30 +173,64 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
       body: Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
-          if (event is KeyDownEvent && _hotkeySettings != null) {
-            final key =
-                event.logicalKey.keyLabel.toUpperCase().replaceAll('KEY ', '');
+          if (event is! KeyDownEvent || _hotkeySettings == null) {
+            return KeyEventResult.ignored;
+          }
 
-            if (key == _hotkeySettings!.previousPage.key.toUpperCase()) {
-              _pageController.previousPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-              return KeyEventResult.handled;
-            } else if (key == _hotkeySettings!.nextPage.key.toUpperCase()) {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-              return KeyEventResult.handled;
-            } else if (key == 'ESCAPE') {
-              Navigator.pop(context);
-              return KeyEventResult.handled;
+          final logicalKey = event.logicalKey;
+          // Use keyLabel for alphanumeric keys, but check logicalKey for special keys
+          String keyStr =
+              logicalKey.keyLabel.toUpperCase().replaceAll('KEY ', '');
+
+          if (logicalKey == LogicalKeyboardKey.space) keyStr = 'SPACE';
+          if (logicalKey == LogicalKeyboardKey.escape) keyStr = 'ESCAPE';
+
+          // Safeguard: Always ignore system/typing keys that shouldn't be hotkeys
+          if (logicalKey == LogicalKeyboardKey.backspace ||
+              logicalKey == LogicalKeyboardKey.enter ||
+              logicalKey == LogicalKeyboardKey.tab) {
+            return KeyEventResult.ignored;
+          }
+
+          // 1. Navigation & System Keys
+          if (keyStr == _hotkeySettings!.previousPage.key.toUpperCase()) {
+            _pageController.previousPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+            return KeyEventResult.handled;
+          }
+          if (keyStr == _hotkeySettings!.nextPage.key.toUpperCase()) {
+            _pageController.nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+            return KeyEventResult.handled;
+          }
+          if (logicalKey == LogicalKeyboardKey.escape) {
+            if (_activeExtraPage != null) {
+              setState(() => _activeExtraPage = null);
             } else {
-              _keyStreamController.add(key);
+              Navigator.pop(context);
+            }
+            return KeyEventResult.handled;
+          }
+
+          // 2. Extra Page Switching
+          for (var ep in _extraPages) {
+            if (ep.hotkeyValue != null &&
+                ep.hotkeyValue!.toUpperCase() == keyStr) {
+              setState(() => _activeExtraPage = ep);
               return KeyEventResult.handled;
             }
           }
+
+          // 3. Timer Hotkeys (send through stream)
+          if (_isKnownHotkey(keyStr)) {
+            _keyStreamController.add(keyStr);
+            return KeyEventResult.handled;
+          }
+
           return KeyEventResult.ignored;
         },
         child: Stack(
@@ -197,9 +249,29 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   fontFamily: _fontFamily,
                   flowTimerFont: _timerFontFamily,
                   hotkeys: _hotkeySettings,
+                  sessionTimerSeconds: _sessionTimerSeconds,
+                  isActive: _activeExtraPage ==
+                      null, // Main page only active if no extra page
                 );
               },
             ),
+            if (_activeExtraPage != null)
+              Positioned.fill(
+                child: _TimerPageView(
+                  key: ValueKey('extra_${_activeExtraPage!.id}'),
+                  pageData: _activeExtraPage!,
+                  pageIndex: -999, // Special index for extra pages
+                  pageController: _pageController,
+                  keyStream: _keyStreamController.stream,
+                  flow: widget.flow,
+                  imagesDirPath: _imagesDirPath,
+                  fontFamily: _fontFamily,
+                  flowTimerFont: _timerFontFamily,
+                  hotkeys: _hotkeySettings,
+                  sessionTimerSeconds: _sessionTimerSeconds,
+                  isActive: true, // Extra page is active if shown
+                ),
+              ),
             // Navigation controls overlay
             Positioned(
               bottom: 24,
@@ -264,13 +336,18 @@ class _TimerPageView extends StatefulWidget {
   final String? fontFamily;
   final String? flowTimerFont;
   final HotkeySettings? hotkeys;
+  final Map<int, int> sessionTimerSeconds;
+  final bool isActive;
 
   const _TimerPageView({
+    super.key,
     required this.pageData,
     required this.pageIndex,
     required this.pageController,
     required this.keyStream,
     required this.flow,
+    required this.sessionTimerSeconds,
+    required this.isActive,
     this.imagesDirPath,
     this.fontFamily,
     this.flowTimerFont,
@@ -322,15 +399,17 @@ class _TimerPageViewState extends State<_TimerPageView> {
   }
 
   void _onKey(String key) {
-    if (!mounted) return;
+    if (!mounted || !widget.isActive) return;
 
-    // Check if this page is active
-    if (widget.pageController.hasClients) {
-      final currentPage = widget.pageController.page?.round() ??
-          widget.pageController.initialPage;
-      if (currentPage != widget.pageIndex) return;
-    } else {
-      if (widget.pageIndex != 0) return;
+    // Check if this page is active in the PageView
+    if (widget.pageIndex != -999) {
+      if (widget.pageController.hasClients) {
+        final currentPage = widget.pageController.page?.round() ??
+            widget.pageController.initialPage;
+        if (currentPage != widget.pageIndex) return;
+      } else {
+        if (widget.pageIndex != 0) return;
+      }
     }
 
     if (widget.hotkeys == null) return;
@@ -343,6 +422,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
         setState(() {
           _isRunning = false;
           _secondsC = _initSecC;
+          final tid = _timerIdsByType['single'];
+          if (tid != null) widget.sessionTimerSeconds[tid] = _secondsC;
         });
       }
     } else if (widget.pageData.pageTypeId == 'A2') {
@@ -353,6 +434,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
         setState(() {
           _isRunningL = false;
           _secL = _initSecL;
+          final tid = _timerIdsByType['doubleL'];
+          if (tid != null) widget.sessionTimerSeconds[tid] = _secL;
         });
       } else if (key ==
           widget.hotkeys!.pageA2RightStartStop.key.toUpperCase()) {
@@ -362,6 +445,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
         setState(() {
           _isRunningR = false;
           _secR = _initSecR;
+          final tid = _timerIdsByType['doubleR'];
+          if (tid != null) widget.sessionTimerSeconds[tid] = _secR;
         });
       } else if (key == widget.hotkeys!.pageA2Swap.key.toUpperCase()) {
         if (_isRunningL) {
@@ -397,17 +482,22 @@ class _TimerPageViewState extends State<_TimerPageView> {
       final parts = (t.startTime ?? '0:0').split(':');
       final m = int.tryParse(parts[0]) ?? 0;
       final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
-      final totalSec = m * 60 + s;
+      final initSec = m * 60 + s;
+      int currentSec = initSec;
+
+      if (widget.sessionTimerSeconds.containsKey(t.id)) {
+        currentSec = widget.sessionTimerSeconds[t.id]!;
+      }
 
       if (t.timerType == 'single') {
-        _initSecC = totalSec;
-        _secondsC = totalSec;
+        _initSecC = initSec;
+        _secondsC = currentSec;
       } else if (t.timerType == 'doubleL') {
-        _initSecL = totalSec;
-        _secL = totalSec;
+        _initSecL = initSec;
+        _secL = currentSec;
       } else if (t.timerType == 'doubleR') {
-        _initSecR = totalSec;
-        _secR = totalSec;
+        _initSecR = initSec;
+        _secR = currentSec;
       }
 
       if (t.timerTemplateId != null) {
@@ -513,7 +603,11 @@ class _TimerPageViewState extends State<_TimerPageView> {
         setState(() => _isRunning = true);
         _timerC = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secondsC > 0) {
-            setState(() => _secondsC--);
+            setState(() {
+              _secondsC--;
+              final tid = _timerIdsByType['single'];
+              if (tid != null) widget.sessionTimerSeconds[tid] = _secondsC;
+            });
             _checkDings('single', _secondsC);
           } else {
             timer.cancel();
@@ -548,16 +642,24 @@ class _TimerPageViewState extends State<_TimerPageView> {
     final supportDir = await getApplicationSupportDirectory();
     final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'ding', fileName);
 
-    if (await File(audioPath).exists()) {
-      for (int i = 0; i < amount; i++) {
-        final p = AudioPlayer();
-        p.play(DeviceFileSource(audioPath));
-        p.onPlayerComplete.listen((_) => p.dispose());
-        if (i < amount - 1) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
-      }
+    if (!await File(audioPath).exists()) return;
+
+    // Play the first ding immediately (no delay).
+    _spawnPlay(audioPath);
+
+    // Schedule any additional dings at 200ms intervals, detached so the
+    // timer loop is never blocked.
+    for (int i = 1; i < amount; i++) {
+      Future.delayed(
+          Duration(milliseconds: 200 * i), () => _spawnPlay(audioPath));
     }
+  }
+
+  /// Creates a short-lived AudioPlayer, plays once, then disposes itself.
+  void _spawnPlay(String audioPath) {
+    final player = AudioPlayer();
+    player.play(DeviceFileSource(audioPath));
+    player.onPlayerComplete.listen((_) => player.dispose());
   }
 
   void _toggleL() {
@@ -569,7 +671,11 @@ class _TimerPageViewState extends State<_TimerPageView> {
         setState(() => _isRunningL = true);
         _timerL = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secL > 0) {
-            setState(() => _secL--);
+            setState(() {
+              _secL--;
+              final tid = _timerIdsByType['doubleL'];
+              if (tid != null) widget.sessionTimerSeconds[tid] = _secL;
+            });
             _checkDings('doubleL', _secL);
           } else {
             timer.cancel();
@@ -589,7 +695,11 @@ class _TimerPageViewState extends State<_TimerPageView> {
         setState(() => _isRunningR = true);
         _timerR = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secR > 0) {
-            setState(() => _secR--);
+            setState(() {
+              _secR--;
+              final tid = _timerIdsByType['doubleR'];
+              if (tid != null) widget.sessionTimerSeconds[tid] = _secR;
+            });
             _checkDings('doubleR', _secR);
           } else {
             timer.cancel();
@@ -700,6 +810,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
                               setState(() {
                                 _isRunning = false;
                                 _secondsC = _initSecC;
+                                final tid = _timerIdsByType['single'];
+                                if (tid != null)
+                                  widget.sessionTimerSeconds[tid] = _secondsC;
                               });
                             },
                             isA2: false,
@@ -726,6 +839,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
                               setState(() {
                                 _isRunningL = false;
                                 _secL = _initSecL;
+                                final tid = _timerIdsByType['doubleL'];
+                                if (tid != null)
+                                  widget.sessionTimerSeconds[tid] = _secL;
                               });
                             },
                             isA2: true,
@@ -752,6 +868,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
                               setState(() {
                                 _isRunningR = false;
                                 _secR = _initSecR;
+                                final tid = _timerIdsByType['doubleR'];
+                                if (tid != null)
+                                  widget.sessionTimerSeconds[tid] = _secR;
                               });
                             },
                             isA2: true,
