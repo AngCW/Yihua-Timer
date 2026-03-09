@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   // ─────────────────────────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
@@ -73,6 +73,15 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 12) {
           await m.addColumn(page, page.showSchools);
+        }
+        if (from < 13) {
+          await m.addColumn(page, page.inheritTimerFromId);
+        }
+        if (from < 14) {
+          await m.addColumn(flow, flow.sectionFontColor);
+          await m.addColumn(flow, flow.timerFontColor);
+          await m.addColumn(page, page.sectionFontColor);
+          await m.addColumn(page, page.timerFontColor);
         }
         // ── add new `if (from < N)` blocks above this line ───────────────
       },

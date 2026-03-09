@@ -291,6 +291,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   sessionTimerSeconds: _sessionTimerSeconds,
                   isActive: _activeExtraPage ==
                       null, // Main page only active if no extra page
+                  allPages: _pages,
                 );
               },
             ),
@@ -309,6 +310,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   hotkeys: _hotkeySettings,
                   sessionTimerSeconds: _sessionTimerSeconds,
                   isActive: true, // Extra page is active if shown
+                  allPages: _pages,
                 ),
               ),
             // Navigation controls overlay
@@ -375,6 +377,7 @@ class _TimerPageView extends StatefulWidget {
   final String? fontFamily;
   final String? flowTimerFont;
   final HotkeySettings? hotkeys;
+  final List<PageData> allPages;
   final Map<int, int> sessionTimerSeconds;
   final bool isActive;
 
@@ -387,6 +390,7 @@ class _TimerPageView extends StatefulWidget {
     required this.flow,
     required this.sessionTimerSeconds,
     required this.isActive,
+    required this.allPages,
     this.imagesDirPath,
     this.fontFamily,
     this.flowTimerFont,
@@ -534,6 +538,19 @@ class _TimerPageViewState extends State<_TimerPageView> {
 
       if (widget.sessionTimerSeconds.containsKey(t.id)) {
         currentSec = widget.sessionTimerSeconds[t.id]!;
+      } else if (widget.pageData.inheritTimerFromId != null) {
+        final parentTimers = await (database.select(database.timer)
+              ..where(
+                  (pt) => pt.pageId.equals(widget.pageData.inheritTimerFromId!))
+              ..where((pt) => pt.timerType.equals(t.timerType!)))
+            .get();
+        if (parentTimers.isNotEmpty) {
+          final parentVal = widget.sessionTimerSeconds[parentTimers.first.id];
+          if (parentVal != null) {
+            currentSec = parentVal;
+            widget.sessionTimerSeconds[t.id] = currentSec;
+          }
+        }
       }
 
       if (t.timerType == 'single') {
@@ -821,6 +838,18 @@ class _TimerPageViewState extends State<_TimerPageView> {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  Color _resolveColor(String? pageColor, String? flowColor, Color fallback) {
+    String? hex = pageColor ?? flowColor;
+    if (hex != null && hex.isNotEmpty) {
+      try {
+        return Color(int.parse(hex.replaceFirst('#', '0xFF')));
+      } catch (_) {
+        return fallback;
+      }
+    }
+    return fallback;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -857,156 +886,185 @@ class _TimerPageViewState extends State<_TimerPageView> {
           // Overlay for readability
           Container(color: Colors.black26),
 
-          // Content
-          if (widget.pageData.pageTypeId != 'C')
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 100, horizontal: 100),
-              child: Stack(
-                children: [
-                  // Section Name
-                  Align(
-                    alignment: widget.pageData.pageTypeId == 'B'
-                        ? Alignment.center
-                        : Alignment.topCenter,
-                    child: Transform.translate(
-                      offset: Offset(
-                          _sectionPos?.xpos ?? 0,
-                          (_sectionPos?.ypos ?? 0) +
-                              (widget.pageData.pageTypeId == 'B' ? 0 : 0)),
-                      child: Transform.scale(
-                        scale: _sectionPos?.size ?? 1.0,
-                        child: Text(
-                          widget.pageData.sectionName ?? '',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: _pageSectionFont ?? widget.fontFamily,
-                            shadows: [
-                              Shadow(
-                                color: Colors.white.withOpacity(0.5),
-                                blurRadius: 15,
-                                offset: const Offset(0, 6),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+          // Scale the content from the application's native screen bounds
+          LayoutBuilder(builder: (context, constraints) {
+            final screenSize = MediaQuery.of(context).size;
+            return FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                width: screenSize.width,
+                height: screenSize.height,
+                child: Stack(
+                  children: [
+                    // Content
+                    if (widget.pageData.pageTypeId != 'C')
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 100, horizontal: 100),
+                        child: Stack(
+                          children: [
+                            // Section Name
+                            Align(
+                              alignment: widget.pageData.pageTypeId == 'B'
+                                  ? Alignment.center
+                                  : Alignment.topCenter,
+                              child: Transform.translate(
+                                offset: Offset(
+                                    _sectionPos?.xpos ?? 0,
+                                    (_sectionPos?.ypos ?? 0) +
+                                        (widget.pageData.pageTypeId == 'B'
+                                            ? 0
+                                            : 0)),
+                                child: Transform.scale(
+                                  scale: _sectionPos?.size ?? 1.0,
+                                  child: Text(
+                                    widget.pageData.sectionName ?? '',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: _resolveColor(
+                                          widget.pageData.sectionFontColor,
+                                          widget.flow.sectionFontColor,
+                                          Colors.black),
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily:
+                                          _pageSectionFont ?? widget.fontFamily,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.white.withOpacity(0.5),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 6),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
 
-                  // Timer A1
-                  if (widget.pageData.pageTypeId == 'A1')
-                    Align(
-                      alignment: Alignment.center,
-                      child: Transform.translate(
-                        offset: Offset(_timerPos['single']?.xpos ?? 0,
-                            _timerPos['single']?.ypos ?? 0),
-                        child: Transform.scale(
-                          scale: _timerPos['single']?.size ?? 1.0,
-                          child: _buildTimerWidget(
-                            time: _secondsC,
-                            isRunning: _isRunning,
-                            onToggle: _toggleC,
-                            onReset: () {
-                              _timerC?.cancel();
-                              setState(() {
-                                _isRunning = false;
-                                _secondsC = _initSecC;
-                                final tid = _timerIdsByType['single'];
-                                if (tid != null)
-                                  widget.sessionTimerSeconds[tid] = _secondsC;
-                              });
-                            },
-                            isA2: false,
-                          ),
-                        ),
-                      ),
-                    ),
+                            // Timer A1
+                            if (widget.pageData.pageTypeId == 'A1')
+                              Align(
+                                alignment: Alignment.center,
+                                child: Transform.translate(
+                                  offset: Offset(_timerPos['single']?.xpos ?? 0,
+                                      _timerPos['single']?.ypos ?? 0),
+                                  child: Transform.scale(
+                                    scale: _timerPos['single']?.size ?? 1.0,
+                                    child: _buildTimerWidget(
+                                      time: _secondsC,
+                                      isRunning: _isRunning,
+                                      onToggle: _toggleC,
+                                      onReset: () {
+                                        _timerC?.cancel();
+                                        setState(() {
+                                          _isRunning = false;
+                                          _secondsC = _initSecC;
+                                          final tid = _timerIdsByType['single'];
+                                          if (tid != null)
+                                            widget.sessionTimerSeconds[tid] =
+                                                _secondsC;
+                                        });
+                                      },
+                                      isA2: false,
+                                    ),
+                                  ),
+                                ),
+                              ),
 
-                  // Timer A2 Left
-                  if (widget.pageData.pageTypeId == 'A2')
-                    Align(
-                      alignment: const Alignment(-0.5, 0.0),
-                      child: Transform.translate(
-                        offset: Offset(_timerPos['doubleL']?.xpos ?? 0,
-                            _timerPos['doubleL']?.ypos ?? 0),
-                        child: Transform.scale(
-                          scale: _timerPos['doubleL']?.size ?? 1.0,
-                          child: _buildTimerWidget(
-                            time: _secL,
-                            isRunning: _isRunningL,
-                            onToggle: _toggleL,
-                            onReset: () {
-                              _timerL?.cancel();
-                              setState(() {
-                                _isRunningL = false;
-                                _secL = _initSecL;
-                                final tid = _timerIdsByType['doubleL'];
-                                if (tid != null)
-                                  widget.sessionTimerSeconds[tid] = _secL;
-                              });
-                            },
-                            isA2: true,
-                          ),
-                        ),
-                      ),
-                    ),
+                            // Timer A2 Left
+                            if (widget.pageData.pageTypeId == 'A2')
+                              Align(
+                                alignment: const Alignment(-0.5, 0.0),
+                                child: Transform.translate(
+                                  offset: Offset(
+                                      _timerPos['doubleL']?.xpos ?? 0,
+                                      _timerPos['doubleL']?.ypos ?? 0),
+                                  child: Transform.scale(
+                                    scale: _timerPos['doubleL']?.size ?? 1.0,
+                                    child: _buildTimerWidget(
+                                      time: _secL,
+                                      isRunning: _isRunningL,
+                                      onToggle: _toggleL,
+                                      onReset: () {
+                                        _timerL?.cancel();
+                                        setState(() {
+                                          _isRunningL = false;
+                                          _secL = _initSecL;
+                                          final tid =
+                                              _timerIdsByType['doubleL'];
+                                          if (tid != null)
+                                            widget.sessionTimerSeconds[tid] =
+                                                _secL;
+                                        });
+                                      },
+                                      isA2: true,
+                                    ),
+                                  ),
+                                ),
+                              ),
 
-                  // Timer A2 Right
-                  if (widget.pageData.pageTypeId == 'A2')
-                    Align(
-                      alignment: const Alignment(0.5, 0.0),
-                      child: Transform.translate(
-                        offset: Offset(_timerPos['doubleR']?.xpos ?? 0,
-                            _timerPos['doubleR']?.ypos ?? 0),
-                        child: Transform.scale(
-                          scale: _timerPos['doubleR']?.size ?? 1.0,
-                          child: _buildTimerWidget(
-                            time: _secR,
-                            isRunning: _isRunningR,
-                            onToggle: _toggleR,
-                            onReset: () {
-                              _timerR?.cancel();
-                              setState(() {
-                                _isRunningR = false;
-                                _secR = _initSecR;
-                                final tid = _timerIdsByType['doubleR'];
-                                if (tid != null)
-                                  widget.sessionTimerSeconds[tid] = _secR;
-                              });
-                            },
-                            isA2: true,
-                            isRight: true,
-                          ),
+                            // Timer A2 Right
+                            if (widget.pageData.pageTypeId == 'A2')
+                              Align(
+                                alignment: const Alignment(0.5, 0.0),
+                                child: Transform.translate(
+                                  offset: Offset(
+                                      _timerPos['doubleR']?.xpos ?? 0,
+                                      _timerPos['doubleR']?.ypos ?? 0),
+                                  child: Transform.scale(
+                                    scale: _timerPos['doubleR']?.size ?? 1.0,
+                                    child: _buildTimerWidget(
+                                      time: _secR,
+                                      isRunning: _isRunningR,
+                                      onToggle: _toggleR,
+                                      onReset: () {
+                                        _timerR?.cancel();
+                                        setState(() {
+                                          _isRunningR = false;
+                                          _secR = _initSecR;
+                                          final tid =
+                                              _timerIdsByType['doubleR'];
+                                          if (tid != null)
+                                            widget.sessionTimerSeconds[tid] =
+                                                _secR;
+                                        });
+                                      },
+                                      isA2: true,
+                                      isRight: true,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                    ),
-                ],
+
+                    // School Info (Always show on all pages, matches PageManagerPage layout)
+                    if (widget.pageData.showSchools ?? true)
+                      Stack(
+                        children: [
+                          if (_schoolA != null)
+                            _buildSchoolRender(
+                              _schoolA!,
+                              _logoA,
+                              _posA,
+                              isA: true,
+                            ),
+                          if (_schoolB != null)
+                            _buildSchoolRender(
+                              _schoolB!,
+                              _logoB,
+                              _posB,
+                              isA: false,
+                            ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
-            ),
-
-          // School Info (Always show on all pages, matches PageManagerPage layout)
-          Stack(
-            children: [
-              if (_schoolA != null)
-                _buildSchoolRender(
-                  _schoolA!,
-                  _logoA,
-                  _posA,
-                  isA: true,
-                ),
-              if (_schoolB != null)
-                _buildSchoolRender(
-                  _schoolB!,
-                  _logoB,
-                  _posB,
-                  isA: false,
-                ),
-            ],
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -1121,7 +1179,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
         _format(time),
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Colors.black,
+          color: _resolveColor(widget.pageData.timerFontColor,
+              widget.flow.timerFontColor, Colors.black),
           fontSize: isA2 ? 140 : 200,
           fontWeight: FontWeight.bold,
           fontFamily:

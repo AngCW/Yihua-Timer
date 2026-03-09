@@ -2284,6 +2284,20 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
+  static const VerificationMeta _sectionFontColorMeta =
+      const VerificationMeta('sectionFontColor');
+  late final GeneratedColumn<String> sectionFontColor = GeneratedColumn<String>(
+      'section_font_color', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _timerFontColorMeta =
+      const VerificationMeta('timerFontColor');
+  late final GeneratedColumn<String> timerFontColor = GeneratedColumn<String>(
+      'timer_font_color', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2298,7 +2312,9 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
         folderId,
         schoolAId,
         schoolBId,
-        positionConfig
+        positionConfig,
+        sectionFontColor,
+        timerFontColor
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2377,6 +2393,18 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
           positionConfig.isAcceptableOrUnknown(
               data['position_config']!, _positionConfigMeta));
     }
+    if (data.containsKey('section_font_color')) {
+      context.handle(
+          _sectionFontColorMeta,
+          sectionFontColor.isAcceptableOrUnknown(
+              data['section_font_color']!, _sectionFontColorMeta));
+    }
+    if (data.containsKey('timer_font_color')) {
+      context.handle(
+          _timerFontColorMeta,
+          timerFontColor.isAcceptableOrUnknown(
+              data['timer_font_color']!, _timerFontColorMeta));
+    }
     return context;
   }
 
@@ -2412,6 +2440,10 @@ class Flow extends Table with TableInfo<Flow, FlowData> {
           .read(DriftSqlType.int, data['${effectivePrefix}school_b_id']),
       positionConfig: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}position_config']),
+      sectionFontColor: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}section_font_color']),
+      timerFontColor: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}timer_font_color']),
     );
   }
 
@@ -2438,6 +2470,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
   final int? schoolAId;
   final int? schoolBId;
   final String? positionConfig;
+  final String? sectionFontColor;
+  final String? timerFontColor;
   const FlowData(
       {required this.id,
       this.flowName,
@@ -2451,7 +2485,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       this.folderId,
       this.schoolAId,
       this.schoolBId,
-      this.positionConfig});
+      this.positionConfig,
+      this.sectionFontColor,
+      this.timerFontColor});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2491,6 +2527,12 @@ class FlowData extends DataClass implements Insertable<FlowData> {
     }
     if (!nullToAbsent || positionConfig != null) {
       map['position_config'] = Variable<String>(positionConfig);
+    }
+    if (!nullToAbsent || sectionFontColor != null) {
+      map['section_font_color'] = Variable<String>(sectionFontColor);
+    }
+    if (!nullToAbsent || timerFontColor != null) {
+      map['timer_font_color'] = Variable<String>(timerFontColor);
     }
     return map;
   }
@@ -2534,6 +2576,12 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       positionConfig: positionConfig == null && nullToAbsent
           ? const Value.absent()
           : Value(positionConfig),
+      sectionFontColor: sectionFontColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sectionFontColor),
+      timerFontColor: timerFontColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerFontColor),
     );
   }
 
@@ -2554,6 +2602,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       schoolAId: serializer.fromJson<int?>(json['school_a_id']),
       schoolBId: serializer.fromJson<int?>(json['school_b_id']),
       positionConfig: serializer.fromJson<String?>(json['position_config']),
+      sectionFontColor:
+          serializer.fromJson<String?>(json['section_font_color']),
+      timerFontColor: serializer.fromJson<String?>(json['timer_font_color']),
     );
   }
   @override
@@ -2573,6 +2624,8 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       'school_a_id': serializer.toJson<int?>(schoolAId),
       'school_b_id': serializer.toJson<int?>(schoolBId),
       'position_config': serializer.toJson<String?>(positionConfig),
+      'section_font_color': serializer.toJson<String?>(sectionFontColor),
+      'timer_font_color': serializer.toJson<String?>(timerFontColor),
     };
   }
 
@@ -2589,7 +2642,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
           Value<int?> folderId = const Value.absent(),
           Value<int?> schoolAId = const Value.absent(),
           Value<int?> schoolBId = const Value.absent(),
-          Value<String?> positionConfig = const Value.absent()}) =>
+          Value<String?> positionConfig = const Value.absent(),
+          Value<String?> sectionFontColor = const Value.absent(),
+          Value<String?> timerFontColor = const Value.absent()}) =>
       FlowData(
         id: id ?? this.id,
         flowName: flowName.present ? flowName.value : this.flowName,
@@ -2611,6 +2666,11 @@ class FlowData extends DataClass implements Insertable<FlowData> {
         schoolBId: schoolBId.present ? schoolBId.value : this.schoolBId,
         positionConfig:
             positionConfig.present ? positionConfig.value : this.positionConfig,
+        sectionFontColor: sectionFontColor.present
+            ? sectionFontColor.value
+            : this.sectionFontColor,
+        timerFontColor:
+            timerFontColor.present ? timerFontColor.value : this.timerFontColor,
       );
   FlowData copyWithCompanion(FlowCompanion data) {
     return FlowData(
@@ -2639,6 +2699,12 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       positionConfig: data.positionConfig.present
           ? data.positionConfig.value
           : this.positionConfig,
+      sectionFontColor: data.sectionFontColor.present
+          ? data.sectionFontColor.value
+          : this.sectionFontColor,
+      timerFontColor: data.timerFontColor.present
+          ? data.timerFontColor.value
+          : this.timerFontColor,
     );
   }
 
@@ -2657,7 +2723,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
           ..write('folderId: $folderId, ')
           ..write('schoolAId: $schoolAId, ')
           ..write('schoolBId: $schoolBId, ')
-          ..write('positionConfig: $positionConfig')
+          ..write('positionConfig: $positionConfig, ')
+          ..write('sectionFontColor: $sectionFontColor, ')
+          ..write('timerFontColor: $timerFontColor')
           ..write(')'))
         .toString();
   }
@@ -2676,7 +2744,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
       folderId,
       schoolAId,
       schoolBId,
-      positionConfig);
+      positionConfig,
+      sectionFontColor,
+      timerFontColor);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2693,7 +2763,9 @@ class FlowData extends DataClass implements Insertable<FlowData> {
           other.folderId == this.folderId &&
           other.schoolAId == this.schoolAId &&
           other.schoolBId == this.schoolBId &&
-          other.positionConfig == this.positionConfig);
+          other.positionConfig == this.positionConfig &&
+          other.sectionFontColor == this.sectionFontColor &&
+          other.timerFontColor == this.timerFontColor);
 }
 
 class FlowCompanion extends UpdateCompanion<FlowData> {
@@ -2710,6 +2782,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
   final Value<int?> schoolAId;
   final Value<int?> schoolBId;
   final Value<String?> positionConfig;
+  final Value<String?> sectionFontColor;
+  final Value<String?> timerFontColor;
   const FlowCompanion({
     this.id = const Value.absent(),
     this.flowName = const Value.absent(),
@@ -2724,6 +2798,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     this.schoolAId = const Value.absent(),
     this.schoolBId = const Value.absent(),
     this.positionConfig = const Value.absent(),
+    this.sectionFontColor = const Value.absent(),
+    this.timerFontColor = const Value.absent(),
   });
   FlowCompanion.insert({
     this.id = const Value.absent(),
@@ -2739,6 +2815,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     this.schoolAId = const Value.absent(),
     this.schoolBId = const Value.absent(),
     this.positionConfig = const Value.absent(),
+    this.sectionFontColor = const Value.absent(),
+    this.timerFontColor = const Value.absent(),
   });
   static Insertable<FlowData> custom({
     Expression<int>? id,
@@ -2754,6 +2832,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     Expression<int>? schoolAId,
     Expression<int>? schoolBId,
     Expression<String>? positionConfig,
+    Expression<String>? sectionFontColor,
+    Expression<String>? timerFontColor,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2769,6 +2849,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
       if (schoolAId != null) 'school_a_id': schoolAId,
       if (schoolBId != null) 'school_b_id': schoolBId,
       if (positionConfig != null) 'position_config': positionConfig,
+      if (sectionFontColor != null) 'section_font_color': sectionFontColor,
+      if (timerFontColor != null) 'timer_font_color': timerFontColor,
     });
   }
 
@@ -2785,7 +2867,9 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
       Value<int?>? folderId,
       Value<int?>? schoolAId,
       Value<int?>? schoolBId,
-      Value<String?>? positionConfig}) {
+      Value<String?>? positionConfig,
+      Value<String?>? sectionFontColor,
+      Value<String?>? timerFontColor}) {
     return FlowCompanion(
       id: id ?? this.id,
       flowName: flowName ?? this.flowName,
@@ -2800,6 +2884,8 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
       schoolAId: schoolAId ?? this.schoolAId,
       schoolBId: schoolBId ?? this.schoolBId,
       positionConfig: positionConfig ?? this.positionConfig,
+      sectionFontColor: sectionFontColor ?? this.sectionFontColor,
+      timerFontColor: timerFontColor ?? this.timerFontColor,
     );
   }
 
@@ -2845,6 +2931,12 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
     if (positionConfig.present) {
       map['position_config'] = Variable<String>(positionConfig.value);
     }
+    if (sectionFontColor.present) {
+      map['section_font_color'] = Variable<String>(sectionFontColor.value);
+    }
+    if (timerFontColor.present) {
+      map['timer_font_color'] = Variable<String>(timerFontColor.value);
+    }
     return map;
   }
 
@@ -2863,7 +2955,9 @@ class FlowCompanion extends UpdateCompanion<FlowData> {
           ..write('folderId: $folderId, ')
           ..write('schoolAId: $schoolAId, ')
           ..write('schoolBId: $schoolBId, ')
-          ..write('positionConfig: $positionConfig')
+          ..write('positionConfig: $positionConfig, ')
+          ..write('sectionFontColor: $sectionFontColor, ')
+          ..write('timerFontColor: $timerFontColor')
           ..write(')'))
         .toString();
   }
@@ -3192,6 +3286,27 @@ class Page extends Table with TableInfo<Page, PageData> {
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT TRUE',
       defaultValue: const CustomExpression('TRUE'));
+  static const VerificationMeta _inheritTimerFromIdMeta =
+      const VerificationMeta('inheritTimerFromId');
+  late final GeneratedColumn<int> inheritTimerFromId = GeneratedColumn<int>(
+      'inherit_timer_from_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES page(id)');
+  static const VerificationMeta _sectionFontColorMeta =
+      const VerificationMeta('sectionFontColor');
+  late final GeneratedColumn<String> sectionFontColor = GeneratedColumn<String>(
+      'section_font_color', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _timerFontColorMeta =
+      const VerificationMeta('timerFontColor');
+  late final GeneratedColumn<String> timerFontColor = GeneratedColumn<String>(
+      'timer_font_color', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -3212,7 +3327,10 @@ class Page extends Table with TableInfo<Page, PageData> {
         isDefaultPage,
         schoolAPositionId,
         schoolBPositionId,
-        showSchools
+        showSchools,
+        inheritTimerFromId,
+        sectionFontColor,
+        timerFontColor
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3329,6 +3447,24 @@ class Page extends Table with TableInfo<Page, PageData> {
           showSchools.isAcceptableOrUnknown(
               data['show_schools']!, _showSchoolsMeta));
     }
+    if (data.containsKey('inherit_timer_from_id')) {
+      context.handle(
+          _inheritTimerFromIdMeta,
+          inheritTimerFromId.isAcceptableOrUnknown(
+              data['inherit_timer_from_id']!, _inheritTimerFromIdMeta));
+    }
+    if (data.containsKey('section_font_color')) {
+      context.handle(
+          _sectionFontColorMeta,
+          sectionFontColor.isAcceptableOrUnknown(
+              data['section_font_color']!, _sectionFontColorMeta));
+    }
+    if (data.containsKey('timer_font_color')) {
+      context.handle(
+          _timerFontColorMeta,
+          timerFontColor.isAcceptableOrUnknown(
+              data['timer_font_color']!, _timerFontColorMeta));
+    }
     return context;
   }
 
@@ -3376,6 +3512,12 @@ class Page extends Table with TableInfo<Page, PageData> {
           DriftSqlType.int, data['${effectivePrefix}school_b_position_id']),
       showSchools: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}show_schools']),
+      inheritTimerFromId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}inherit_timer_from_id']),
+      sectionFontColor: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}section_font_color']),
+      timerFontColor: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}timer_font_color']),
     );
   }
 
@@ -3410,6 +3552,9 @@ class PageData extends DataClass implements Insertable<PageData> {
   final int? schoolAPositionId;
   final int? schoolBPositionId;
   final bool? showSchools;
+  final int? inheritTimerFromId;
+  final String? sectionFontColor;
+  final String? timerFontColor;
   const PageData(
       {required this.id,
       this.pageName,
@@ -3429,7 +3574,10 @@ class PageData extends DataClass implements Insertable<PageData> {
       this.isDefaultPage,
       this.schoolAPositionId,
       this.schoolBPositionId,
-      this.showSchools});
+      this.showSchools,
+      this.inheritTimerFromId,
+      this.sectionFontColor,
+      this.timerFontColor});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3487,6 +3635,15 @@ class PageData extends DataClass implements Insertable<PageData> {
     }
     if (!nullToAbsent || showSchools != null) {
       map['show_schools'] = Variable<bool>(showSchools);
+    }
+    if (!nullToAbsent || inheritTimerFromId != null) {
+      map['inherit_timer_from_id'] = Variable<int>(inheritTimerFromId);
+    }
+    if (!nullToAbsent || sectionFontColor != null) {
+      map['section_font_color'] = Variable<String>(sectionFontColor);
+    }
+    if (!nullToAbsent || timerFontColor != null) {
+      map['timer_font_color'] = Variable<String>(timerFontColor);
     }
     return map;
   }
@@ -3546,6 +3703,15 @@ class PageData extends DataClass implements Insertable<PageData> {
       showSchools: showSchools == null && nullToAbsent
           ? const Value.absent()
           : Value(showSchools),
+      inheritTimerFromId: inheritTimerFromId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inheritTimerFromId),
+      sectionFontColor: sectionFontColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sectionFontColor),
+      timerFontColor: timerFontColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerFontColor),
     );
   }
 
@@ -3574,6 +3740,11 @@ class PageData extends DataClass implements Insertable<PageData> {
       schoolBPositionId:
           serializer.fromJson<int?>(json['school_b_position_id']),
       showSchools: serializer.fromJson<bool?>(json['show_schools']),
+      inheritTimerFromId:
+          serializer.fromJson<int?>(json['inherit_timer_from_id']),
+      sectionFontColor:
+          serializer.fromJson<String?>(json['section_font_color']),
+      timerFontColor: serializer.fromJson<String?>(json['timer_font_color']),
     );
   }
   @override
@@ -3599,6 +3770,9 @@ class PageData extends DataClass implements Insertable<PageData> {
       'school_a_position_id': serializer.toJson<int?>(schoolAPositionId),
       'school_b_position_id': serializer.toJson<int?>(schoolBPositionId),
       'show_schools': serializer.toJson<bool?>(showSchools),
+      'inherit_timer_from_id': serializer.toJson<int?>(inheritTimerFromId),
+      'section_font_color': serializer.toJson<String?>(sectionFontColor),
+      'timer_font_color': serializer.toJson<String?>(timerFontColor),
     };
   }
 
@@ -3621,7 +3795,10 @@ class PageData extends DataClass implements Insertable<PageData> {
           Value<bool?> isDefaultPage = const Value.absent(),
           Value<int?> schoolAPositionId = const Value.absent(),
           Value<int?> schoolBPositionId = const Value.absent(),
-          Value<bool?> showSchools = const Value.absent()}) =>
+          Value<bool?> showSchools = const Value.absent(),
+          Value<int?> inheritTimerFromId = const Value.absent(),
+          Value<String?> sectionFontColor = const Value.absent(),
+          Value<String?> timerFontColor = const Value.absent()}) =>
       PageData(
         id: id ?? this.id,
         pageName: pageName.present ? pageName.value : this.pageName,
@@ -3655,6 +3832,14 @@ class PageData extends DataClass implements Insertable<PageData> {
             ? schoolBPositionId.value
             : this.schoolBPositionId,
         showSchools: showSchools.present ? showSchools.value : this.showSchools,
+        inheritTimerFromId: inheritTimerFromId.present
+            ? inheritTimerFromId.value
+            : this.inheritTimerFromId,
+        sectionFontColor: sectionFontColor.present
+            ? sectionFontColor.value
+            : this.sectionFontColor,
+        timerFontColor:
+            timerFontColor.present ? timerFontColor.value : this.timerFontColor,
       );
   PageData copyWithCompanion(PageCompanion data) {
     return PageData(
@@ -3701,6 +3886,15 @@ class PageData extends DataClass implements Insertable<PageData> {
           : this.schoolBPositionId,
       showSchools:
           data.showSchools.present ? data.showSchools.value : this.showSchools,
+      inheritTimerFromId: data.inheritTimerFromId.present
+          ? data.inheritTimerFromId.value
+          : this.inheritTimerFromId,
+      sectionFontColor: data.sectionFontColor.present
+          ? data.sectionFontColor.value
+          : this.sectionFontColor,
+      timerFontColor: data.timerFontColor.present
+          ? data.timerFontColor.value
+          : this.timerFontColor,
     );
   }
 
@@ -3725,32 +3919,39 @@ class PageData extends DataClass implements Insertable<PageData> {
           ..write('isDefaultPage: $isDefaultPage, ')
           ..write('schoolAPositionId: $schoolAPositionId, ')
           ..write('schoolBPositionId: $schoolBPositionId, ')
-          ..write('showSchools: $showSchools')
+          ..write('showSchools: $showSchools, ')
+          ..write('inheritTimerFromId: $inheritTimerFromId, ')
+          ..write('sectionFontColor: $sectionFontColor, ')
+          ..write('timerFontColor: $timerFontColor')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      pageName,
-      sectionName,
-      bgmId,
-      pageTypeId,
-      hotkeyValue,
-      flowId,
-      pagePosition,
-      sectionXpos,
-      sectionYpos,
-      sectionScale,
-      sectionFontName,
-      timerFontName,
-      useFrontpage,
-      sectionPositionId,
-      isDefaultPage,
-      schoolAPositionId,
-      schoolBPositionId,
-      showSchools);
+  int get hashCode => Object.hashAll([
+        id,
+        pageName,
+        sectionName,
+        bgmId,
+        pageTypeId,
+        hotkeyValue,
+        flowId,
+        pagePosition,
+        sectionXpos,
+        sectionYpos,
+        sectionScale,
+        sectionFontName,
+        timerFontName,
+        useFrontpage,
+        sectionPositionId,
+        isDefaultPage,
+        schoolAPositionId,
+        schoolBPositionId,
+        showSchools,
+        inheritTimerFromId,
+        sectionFontColor,
+        timerFontColor
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3773,7 +3974,10 @@ class PageData extends DataClass implements Insertable<PageData> {
           other.isDefaultPage == this.isDefaultPage &&
           other.schoolAPositionId == this.schoolAPositionId &&
           other.schoolBPositionId == this.schoolBPositionId &&
-          other.showSchools == this.showSchools);
+          other.showSchools == this.showSchools &&
+          other.inheritTimerFromId == this.inheritTimerFromId &&
+          other.sectionFontColor == this.sectionFontColor &&
+          other.timerFontColor == this.timerFontColor);
 }
 
 class PageCompanion extends UpdateCompanion<PageData> {
@@ -3796,6 +4000,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
   final Value<int?> schoolAPositionId;
   final Value<int?> schoolBPositionId;
   final Value<bool?> showSchools;
+  final Value<int?> inheritTimerFromId;
+  final Value<String?> sectionFontColor;
+  final Value<String?> timerFontColor;
   const PageCompanion({
     this.id = const Value.absent(),
     this.pageName = const Value.absent(),
@@ -3816,6 +4023,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.schoolAPositionId = const Value.absent(),
     this.schoolBPositionId = const Value.absent(),
     this.showSchools = const Value.absent(),
+    this.inheritTimerFromId = const Value.absent(),
+    this.sectionFontColor = const Value.absent(),
+    this.timerFontColor = const Value.absent(),
   });
   PageCompanion.insert({
     this.id = const Value.absent(),
@@ -3837,6 +4047,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.schoolAPositionId = const Value.absent(),
     this.schoolBPositionId = const Value.absent(),
     this.showSchools = const Value.absent(),
+    this.inheritTimerFromId = const Value.absent(),
+    this.sectionFontColor = const Value.absent(),
+    this.timerFontColor = const Value.absent(),
   });
   static Insertable<PageData> custom({
     Expression<int>? id,
@@ -3858,6 +4071,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     Expression<int>? schoolAPositionId,
     Expression<int>? schoolBPositionId,
     Expression<bool>? showSchools,
+    Expression<int>? inheritTimerFromId,
+    Expression<String>? sectionFontColor,
+    Expression<String>? timerFontColor,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3879,6 +4095,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
       if (schoolAPositionId != null) 'school_a_position_id': schoolAPositionId,
       if (schoolBPositionId != null) 'school_b_position_id': schoolBPositionId,
       if (showSchools != null) 'show_schools': showSchools,
+      if (inheritTimerFromId != null)
+        'inherit_timer_from_id': inheritTimerFromId,
+      if (sectionFontColor != null) 'section_font_color': sectionFontColor,
+      if (timerFontColor != null) 'timer_font_color': timerFontColor,
     });
   }
 
@@ -3901,7 +4121,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
       Value<bool?>? isDefaultPage,
       Value<int?>? schoolAPositionId,
       Value<int?>? schoolBPositionId,
-      Value<bool?>? showSchools}) {
+      Value<bool?>? showSchools,
+      Value<int?>? inheritTimerFromId,
+      Value<String?>? sectionFontColor,
+      Value<String?>? timerFontColor}) {
     return PageCompanion(
       id: id ?? this.id,
       pageName: pageName ?? this.pageName,
@@ -3922,6 +4145,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
       schoolAPositionId: schoolAPositionId ?? this.schoolAPositionId,
       schoolBPositionId: schoolBPositionId ?? this.schoolBPositionId,
       showSchools: showSchools ?? this.showSchools,
+      inheritTimerFromId: inheritTimerFromId ?? this.inheritTimerFromId,
+      sectionFontColor: sectionFontColor ?? this.sectionFontColor,
+      timerFontColor: timerFontColor ?? this.timerFontColor,
     );
   }
 
@@ -3985,6 +4211,15 @@ class PageCompanion extends UpdateCompanion<PageData> {
     if (showSchools.present) {
       map['show_schools'] = Variable<bool>(showSchools.value);
     }
+    if (inheritTimerFromId.present) {
+      map['inherit_timer_from_id'] = Variable<int>(inheritTimerFromId.value);
+    }
+    if (sectionFontColor.present) {
+      map['section_font_color'] = Variable<String>(sectionFontColor.value);
+    }
+    if (timerFontColor.present) {
+      map['timer_font_color'] = Variable<String>(timerFontColor.value);
+    }
     return map;
   }
 
@@ -4009,7 +4244,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
           ..write('isDefaultPage: $isDefaultPage, ')
           ..write('schoolAPositionId: $schoolAPositionId, ')
           ..write('schoolBPositionId: $schoolBPositionId, ')
-          ..write('showSchools: $showSchools')
+          ..write('showSchools: $showSchools, ')
+          ..write('inheritTimerFromId: $inheritTimerFromId, ')
+          ..write('sectionFontColor: $sectionFontColor, ')
+          ..write('timerFontColor: $timerFontColor')
           ..write(')'))
         .toString();
   }
@@ -4558,7 +4796,7 @@ final class $EventReferences
 
   $SchoolProcessedTableManager get schoolRefs {
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.eventId.id($_item.id));
+        .filter((f) => f.eventId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_schoolRefsTable($_db));
     return ProcessedTableManager(
@@ -4767,7 +5005,7 @@ class $EventTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (schoolRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<EventData, Event, SchoolData>(
                         currentTable: table,
                         referencedTable: $EventReferences._schoolRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -4816,7 +5054,7 @@ final class $DingAudioReferences
 
   $TimerTemplateProcessedTableManager get timerTemplateRefs {
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.dingAudioId.id($_item.id));
+        .filter((f) => f.dingAudioId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_timerTemplateRefsTable($_db));
     return ProcessedTableManager(
@@ -4963,7 +5201,8 @@ class $DingAudioTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (timerTemplateRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<DingAudioData, DingAudio,
+                            TimerTemplateData>(
                         currentTable: table,
                         referencedTable:
                             $DingAudioReferences._timerTemplateRefsTable(db),
@@ -5013,9 +5252,10 @@ final class $TimerTemplateReferences
           $_aliasNameGenerator(db.timerTemplate.dingAudioId, db.dingAudio.id));
 
   $DingAudioProcessedTableManager? get dingAudioId {
-    if ($_item.dingAudioId == null) return null;
+    final $_column = $_itemColumn<int>('ding_audio_id');
+    if ($_column == null) return null;
     final manager = $DingAudioTableManager($_db, $_db.dingAudio)
-        .filter((f) => f.id($_item.dingAudioId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_dingAudioIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5029,8 +5269,8 @@ final class $TimerTemplateReferences
                   db.timerTemplate.id, db.dingValue.timerTemplateId));
 
   $DingValueProcessedTableManager get dingValueRefs {
-    final manager = $DingValueTableManager($_db, $_db.dingValue)
-        .filter((f) => f.timerTemplateId.id($_item.id));
+    final manager = $DingValueTableManager($_db, $_db.dingValue).filter(
+        (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_dingValueRefsTable($_db));
     return ProcessedTableManager(
@@ -5044,8 +5284,8 @@ final class $TimerTemplateReferences
               db.timerTemplate.id, db.timer.timerTemplateId));
 
   $TimerProcessedTableManager get timerRefs {
-    final manager = $TimerTableManager($_db, $_db.timer)
-        .filter((f) => f.timerTemplateId.id($_item.id));
+    final manager = $TimerTableManager($_db, $_db.timer).filter(
+        (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -5330,7 +5570,8 @@ class $TimerTemplateTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (dingValueRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<TimerTemplateData, TimerTemplate,
+                            DingValueData>(
                         currentTable: table,
                         referencedTable:
                             $TimerTemplateReferences._dingValueRefsTable(db),
@@ -5342,7 +5583,8 @@ class $TimerTemplateTableManager extends RootTableManager<
                                 .where((e) => e.timerTemplateId == item.id),
                         typedResults: items),
                   if (timerRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<TimerTemplateData, TimerTemplate,
+                            TimerData>(
                         currentTable: table,
                         referencedTable:
                             $TimerTemplateReferences._timerRefsTable(db),
@@ -5394,9 +5636,10 @@ final class $DingValueReferences
           db.dingValue.timerTemplateId, db.timerTemplate.id));
 
   $TimerTemplateProcessedTableManager? get timerTemplateId {
-    if ($_item.timerTemplateId == null) return null;
+    final $_column = $_itemColumn<int>('timer_template_id');
+    if ($_column == null) return null;
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.id($_item.timerTemplateId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5642,7 +5885,7 @@ final class $FlowFolderReferences
 
   $FlowProcessedTableManager get flowRefs {
     final manager = $FlowTableManager($_db, $_db.flow)
-        .filter((f) => f.folderId.id($_item.id));
+        .filter((f) => f.folderId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_flowRefsTable($_db));
     return ProcessedTableManager(
@@ -5816,7 +6059,8 @@ class $FlowFolderTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (flowRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<FlowFolderData, FlowFolder,
+                            FlowData>(
                         currentTable: table,
                         referencedTable:
                             $FlowFolderReferences._flowRefsTable(db),
@@ -5870,7 +6114,7 @@ final class $PositionReferences
 
   $ImagesProcessedTableManager get imagesRefs {
     final manager = $ImagesTableManager($_db, $_db.images)
-        .filter((f) => f.positionId.id($_item.id));
+        .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_imagesRefsTable($_db));
     return ProcessedTableManager(
@@ -5884,7 +6128,7 @@ final class $PositionReferences
 
   $TimerProcessedTableManager get timerRefs {
     final manager = $TimerTableManager($_db, $_db.timer)
-        .filter((f) => f.positionId.id($_item.id));
+        .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -6100,7 +6344,8 @@ class $PositionTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (imagesRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<PositionData, Position,
+                            ImagesData>(
                         currentTable: table,
                         referencedTable:
                             $PositionReferences._imagesRefsTable(db),
@@ -6111,7 +6356,8 @@ class $PositionTableManager extends RootTableManager<
                                 .where((e) => e.positionId == item.id),
                         typedResults: items),
                   if (timerRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<PositionData, Position,
+                            TimerData>(
                         currentTable: table,
                         referencedTable:
                             $PositionReferences._timerRefsTable(db),
@@ -6163,9 +6409,10 @@ final class $ImagesReferences
       .createAlias($_aliasNameGenerator(db.images.positionId, db.position.id));
 
   $PositionProcessedTableManager? get positionId {
-    if ($_item.positionId == null) return null;
+    final $_column = $_itemColumn<int>('position_id');
+    if ($_column == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id($_item.positionId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_positionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6179,7 +6426,7 @@ final class $ImagesReferences
 
   $SchoolProcessedTableManager get schoolRefs {
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.logoImageId.id($_item.id));
+        .filter((f) => f.logoImageId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_schoolRefsTable($_db));
     return ProcessedTableManager(
@@ -6436,7 +6683,7 @@ class $ImagesTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (schoolRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<ImagesData, Images, SchoolData>(
                         currentTable: table,
                         referencedTable: $ImagesReferences._schoolRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -6484,10 +6731,11 @@ final class $SchoolReferences
   static Event _eventIdTable(_$AppDatabase db) => db.event
       .createAlias($_aliasNameGenerator(db.school.eventId, db.event.id));
 
-  $EventProcessedTableManager? get eventId {
-    if ($_item.eventId == null) return null;
+  $EventProcessedTableManager get eventId {
+    final $_column = $_itemColumn<int>('event_id')!;
+
     final manager = $EventTableManager($_db, $_db.event)
-        .filter((f) => f.id($_item.eventId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6498,9 +6746,10 @@ final class $SchoolReferences
       .createAlias($_aliasNameGenerator(db.school.logoImageId, db.images.id));
 
   $ImagesProcessedTableManager? get logoImageId {
-    if ($_item.logoImageId == null) return null;
+    final $_column = $_itemColumn<int>('logo_image_id');
+    if ($_column == null) return null;
     final manager = $ImagesTableManager($_db, $_db.images)
-        .filter((f) => f.id($_item.logoImageId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_logoImageIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6793,6 +7042,8 @@ typedef $FlowCreateCompanionBuilder = FlowCompanion Function({
   Value<int?> schoolAId,
   Value<int?> schoolBId,
   Value<String?> positionConfig,
+  Value<String?> sectionFontColor,
+  Value<String?> timerFontColor,
 });
 typedef $FlowUpdateCompanionBuilder = FlowCompanion Function({
   Value<int> id,
@@ -6808,6 +7059,8 @@ typedef $FlowUpdateCompanionBuilder = FlowCompanion Function({
   Value<int?> schoolAId,
   Value<int?> schoolBId,
   Value<String?> positionConfig,
+  Value<String?> sectionFontColor,
+  Value<String?> timerFontColor,
 });
 
 final class $FlowReferences
@@ -6818,9 +7071,10 @@ final class $FlowReferences
       .createAlias($_aliasNameGenerator(db.flow.folderId, db.flowFolder.id));
 
   $FlowFolderProcessedTableManager? get folderId {
-    if ($_item.folderId == null) return null;
+    final $_column = $_itemColumn<int>('folder_id');
+    if ($_column == null) return null;
     final manager = $FlowFolderTableManager($_db, $_db.flowFolder)
-        .filter((f) => f.id($_item.folderId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_folderIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6831,9 +7085,10 @@ final class $FlowReferences
       .createAlias($_aliasNameGenerator(db.flow.schoolAId, db.school.id));
 
   $SchoolProcessedTableManager? get schoolAId {
-    if ($_item.schoolAId == null) return null;
+    final $_column = $_itemColumn<int>('school_a_id');
+    if ($_column == null) return null;
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.id($_item.schoolAId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_schoolAIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6844,9 +7099,10 @@ final class $FlowReferences
       .createAlias($_aliasNameGenerator(db.flow.schoolBId, db.school.id));
 
   $SchoolProcessedTableManager? get schoolBId {
-    if ($_item.schoolBId == null) return null;
+    final $_column = $_itemColumn<int>('school_b_id');
+    if ($_column == null) return null;
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.id($_item.schoolBId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_schoolBIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6893,6 +7149,14 @@ class $FlowFilterComposer extends Composer<_$AppDatabase, Flow> {
 
   ColumnFilters<String> get positionConfig => $composableBuilder(
       column: $table.positionConfig,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sectionFontColor => $composableBuilder(
+      column: $table.sectionFontColor,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get timerFontColor => $composableBuilder(
+      column: $table.timerFontColor,
       builder: (column) => ColumnFilters(column));
 
   $FlowFolderFilterComposer get folderId {
@@ -7000,6 +7264,14 @@ class $FlowOrderingComposer extends Composer<_$AppDatabase, Flow> {
       column: $table.positionConfig,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get sectionFontColor => $composableBuilder(
+      column: $table.sectionFontColor,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get timerFontColor => $composableBuilder(
+      column: $table.timerFontColor,
+      builder: (column) => ColumnOrderings(column));
+
   $FlowFolderOrderingComposer get folderId {
     final $FlowFolderOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -7099,6 +7371,12 @@ class $FlowAnnotationComposer extends Composer<_$AppDatabase, Flow> {
   GeneratedColumn<String> get positionConfig => $composableBuilder(
       column: $table.positionConfig, builder: (column) => column);
 
+  GeneratedColumn<String> get sectionFontColor => $composableBuilder(
+      column: $table.sectionFontColor, builder: (column) => column);
+
+  GeneratedColumn<String> get timerFontColor => $composableBuilder(
+      column: $table.timerFontColor, builder: (column) => column);
+
   $FlowFolderAnnotationComposer get folderId {
     final $FlowFolderAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -7196,6 +7474,8 @@ class $FlowTableManager extends RootTableManager<
             Value<int?> schoolAId = const Value.absent(),
             Value<int?> schoolBId = const Value.absent(),
             Value<String?> positionConfig = const Value.absent(),
+            Value<String?> sectionFontColor = const Value.absent(),
+            Value<String?> timerFontColor = const Value.absent(),
           }) =>
               FlowCompanion(
             id: id,
@@ -7211,6 +7491,8 @@ class $FlowTableManager extends RootTableManager<
             schoolAId: schoolAId,
             schoolBId: schoolBId,
             positionConfig: positionConfig,
+            sectionFontColor: sectionFontColor,
+            timerFontColor: timerFontColor,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -7226,6 +7508,8 @@ class $FlowTableManager extends RootTableManager<
             Value<int?> schoolAId = const Value.absent(),
             Value<int?> schoolBId = const Value.absent(),
             Value<String?> positionConfig = const Value.absent(),
+            Value<String?> sectionFontColor = const Value.absent(),
+            Value<String?> timerFontColor = const Value.absent(),
           }) =>
               FlowCompanion.insert(
             id: id,
@@ -7241,6 +7525,8 @@ class $FlowTableManager extends RootTableManager<
             schoolAId: schoolAId,
             schoolBId: schoolBId,
             positionConfig: positionConfig,
+            sectionFontColor: sectionFontColor,
+            timerFontColor: timerFontColor,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $FlowReferences(db, table, e)))
@@ -7328,8 +7614,8 @@ final class $BgmReferences extends BaseReferences<_$AppDatabase, Bgm, BgmData> {
           aliasName: $_aliasNameGenerator(db.bgm.id, db.page.bgmId));
 
   $PageProcessedTableManager get pageRefs {
-    final manager =
-        $PageTableManager($_db, $_db.page).filter((f) => f.bgmId.id($_item.id));
+    final manager = $PageTableManager($_db, $_db.page)
+        .filter((f) => f.bgmId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_pageRefsTable($_db));
     return ProcessedTableManager(
@@ -7473,7 +7759,7 @@ class $BgmTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (pageRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<BgmData, Bgm, PageData>(
                         currentTable: table,
                         referencedTable: $BgmReferences._pageRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -7521,6 +7807,9 @@ typedef $PageCreateCompanionBuilder = PageCompanion Function({
   Value<int?> schoolAPositionId,
   Value<int?> schoolBPositionId,
   Value<bool?> showSchools,
+  Value<int?> inheritTimerFromId,
+  Value<String?> sectionFontColor,
+  Value<String?> timerFontColor,
 });
 typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int> id,
@@ -7542,6 +7831,9 @@ typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int?> schoolAPositionId,
   Value<int?> schoolBPositionId,
   Value<bool?> showSchools,
+  Value<int?> inheritTimerFromId,
+  Value<String?> sectionFontColor,
+  Value<String?> timerFontColor,
 });
 
 final class $PageReferences
@@ -7552,9 +7844,10 @@ final class $PageReferences
       db.bgm.createAlias($_aliasNameGenerator(db.page.bgmId, db.bgm.id));
 
   $BgmProcessedTableManager? get bgmId {
-    if ($_item.bgmId == null) return null;
-    final manager =
-        $BgmTableManager($_db, $_db.bgm).filter((f) => f.id($_item.bgmId!));
+    final $_column = $_itemColumn<int>('bgm_id');
+    if ($_column == null) return null;
+    final manager = $BgmTableManager($_db, $_db.bgm)
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_bgmIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7566,9 +7859,10 @@ final class $PageReferences
           $_aliasNameGenerator(db.page.sectionPositionId, db.position.id));
 
   $PositionProcessedTableManager? get sectionPositionId {
-    if ($_item.sectionPositionId == null) return null;
+    final $_column = $_itemColumn<int>('section_position_id');
+    if ($_column == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id($_item.sectionPositionId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_sectionPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7580,9 +7874,10 @@ final class $PageReferences
           $_aliasNameGenerator(db.page.schoolAPositionId, db.position.id));
 
   $PositionProcessedTableManager? get schoolAPositionId {
-    if ($_item.schoolAPositionId == null) return null;
+    final $_column = $_itemColumn<int>('school_a_position_id');
+    if ($_column == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id($_item.schoolAPositionId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_schoolAPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7594,9 +7889,10 @@ final class $PageReferences
           $_aliasNameGenerator(db.page.schoolBPositionId, db.position.id));
 
   $PositionProcessedTableManager? get schoolBPositionId {
-    if ($_item.schoolBPositionId == null) return null;
+    final $_column = $_itemColumn<int>('school_b_position_id');
+    if ($_column == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id($_item.schoolBPositionId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_schoolBPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7610,7 +7906,7 @@ final class $PageReferences
 
   $TimerProcessedTableManager get timerRefs {
     final manager = $TimerTableManager($_db, $_db.timer)
-        .filter((f) => f.pageId.id($_item.id));
+        .filter((f) => f.pageId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -7671,6 +7967,18 @@ class $PageFilterComposer extends Composer<_$AppDatabase, Page> {
 
   ColumnFilters<bool> get showSchools => $composableBuilder(
       column: $table.showSchools, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get inheritTimerFromId => $composableBuilder(
+      column: $table.inheritTimerFromId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sectionFontColor => $composableBuilder(
+      column: $table.sectionFontColor,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get timerFontColor => $composableBuilder(
+      column: $table.timerFontColor,
+      builder: (column) => ColumnFilters(column));
 
   $BgmFilterComposer get bgmId {
     final $BgmFilterComposer composer = $composerBuilder(
@@ -7833,6 +8141,18 @@ class $PageOrderingComposer extends Composer<_$AppDatabase, Page> {
   ColumnOrderings<bool> get showSchools => $composableBuilder(
       column: $table.showSchools, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get inheritTimerFromId => $composableBuilder(
+      column: $table.inheritTimerFromId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sectionFontColor => $composableBuilder(
+      column: $table.sectionFontColor,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get timerFontColor => $composableBuilder(
+      column: $table.timerFontColor,
+      builder: (column) => ColumnOrderings(column));
+
   $BgmOrderingComposer get bgmId {
     final $BgmOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -7966,6 +8286,15 @@ class $PageAnnotationComposer extends Composer<_$AppDatabase, Page> {
 
   GeneratedColumn<bool> get showSchools => $composableBuilder(
       column: $table.showSchools, builder: (column) => column);
+
+  GeneratedColumn<int> get inheritTimerFromId => $composableBuilder(
+      column: $table.inheritTimerFromId, builder: (column) => column);
+
+  GeneratedColumn<String> get sectionFontColor => $composableBuilder(
+      column: $table.sectionFontColor, builder: (column) => column);
+
+  GeneratedColumn<String> get timerFontColor => $composableBuilder(
+      column: $table.timerFontColor, builder: (column) => column);
 
   $BgmAnnotationComposer get bgmId {
     final $BgmAnnotationComposer composer = $composerBuilder(
@@ -8116,6 +8445,9 @@ class $PageTableManager extends RootTableManager<
             Value<int?> schoolAPositionId = const Value.absent(),
             Value<int?> schoolBPositionId = const Value.absent(),
             Value<bool?> showSchools = const Value.absent(),
+            Value<int?> inheritTimerFromId = const Value.absent(),
+            Value<String?> sectionFontColor = const Value.absent(),
+            Value<String?> timerFontColor = const Value.absent(),
           }) =>
               PageCompanion(
             id: id,
@@ -8137,6 +8469,9 @@ class $PageTableManager extends RootTableManager<
             schoolAPositionId: schoolAPositionId,
             schoolBPositionId: schoolBPositionId,
             showSchools: showSchools,
+            inheritTimerFromId: inheritTimerFromId,
+            sectionFontColor: sectionFontColor,
+            timerFontColor: timerFontColor,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -8158,6 +8493,9 @@ class $PageTableManager extends RootTableManager<
             Value<int?> schoolAPositionId = const Value.absent(),
             Value<int?> schoolBPositionId = const Value.absent(),
             Value<bool?> showSchools = const Value.absent(),
+            Value<int?> inheritTimerFromId = const Value.absent(),
+            Value<String?> sectionFontColor = const Value.absent(),
+            Value<String?> timerFontColor = const Value.absent(),
           }) =>
               PageCompanion.insert(
             id: id,
@@ -8179,6 +8517,9 @@ class $PageTableManager extends RootTableManager<
             schoolAPositionId: schoolAPositionId,
             schoolBPositionId: schoolBPositionId,
             showSchools: showSchools,
+            inheritTimerFromId: inheritTimerFromId,
+            sectionFontColor: sectionFontColor,
+            timerFontColor: timerFontColor,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $PageReferences(db, table, e)))
@@ -8249,7 +8590,7 @@ class $PageTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (timerRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<PageData, Page, TimerData>(
                         currentTable: table,
                         referencedTable: $PageReferences._timerRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -8314,9 +8655,10 @@ final class $TimerReferences
           $_aliasNameGenerator(db.timer.timerTemplateId, db.timerTemplate.id));
 
   $TimerTemplateProcessedTableManager? get timerTemplateId {
-    if ($_item.timerTemplateId == null) return null;
+    final $_column = $_itemColumn<int>('timer_template_id');
+    if ($_column == null) return null;
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.id($_item.timerTemplateId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -8327,9 +8669,10 @@ final class $TimerReferences
       db.page.createAlias($_aliasNameGenerator(db.timer.pageId, db.page.id));
 
   $PageProcessedTableManager? get pageId {
-    if ($_item.pageId == null) return null;
-    final manager =
-        $PageTableManager($_db, $_db.page).filter((f) => f.id($_item.pageId!));
+    final $_column = $_itemColumn<int>('page_id');
+    if ($_column == null) return null;
+    final manager = $PageTableManager($_db, $_db.page)
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_pageIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -8340,9 +8683,10 @@ final class $TimerReferences
       .createAlias($_aliasNameGenerator(db.timer.positionId, db.position.id));
 
   $PositionProcessedTableManager? get positionId {
-    if ($_item.positionId == null) return null;
+    final $_column = $_itemColumn<int>('position_id');
+    if ($_column == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id($_item.positionId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_positionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

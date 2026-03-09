@@ -63,18 +63,12 @@ class _TimerFolderDetailPageState extends State<TimerFolderDetailPage> {
                   if (flows.isEmpty) {
                     return const Center(child: Text('此文件夹暂无赛程'));
                   }
-                  return SizedBox(
-                    height: 160,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: flows.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: _buildFlowBox(context, flows[index]),
-                        );
-                      },
-                    ),
+                  return Wrap(
+                    spacing: 16.0,
+                    runSpacing: 16.0,
+                    children: flows.map((flow) {
+                      return _buildFlowBox(context, flow);
+                    }).toList(),
                   );
                 },
               ),

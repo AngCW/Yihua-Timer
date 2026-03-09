@@ -9,6 +9,7 @@ import 'dart:async' as async;
 import 'dart:ui' as ui;
 import '../database/app_database.dart';
 import '../main.dart';
+import '../EventManager/clipboard_manager.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:convert';
 
@@ -39,6 +40,10 @@ class _PageManagerPageState extends State<PageManagerPage> {
   int? _selectedBgmId;
   String? _selectedPageType;
   bool _showSchools = true;
+  int? _selectedInheritFromId;
+  List<PageData> _allPagesInFlow = [];
+  String? _sectionFontColor;
+  String? _timerFontColor;
 
   // Single Timer (A1)
   int? _singleTemplateId;
@@ -160,6 +165,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _selectedPageType = _currentPage.pageTypeId ?? 'A1';
     _showSchools = _currentPage.showSchools ?? true;
     _useFrontpage = _currentPage.useFrontpage ?? false;
+    _sectionFontColor = _currentPage.sectionFontColor;
+    _timerFontColor = _currentPage.timerFontColor;
 
     _loadData();
     _loadTimerData();
@@ -183,6 +190,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _rightSecController.addListener(_updatePreviewSeconds);
 
     _loadFlowSchools(widget.flow);
+    _loadAssetPaths(widget.flow);
   }
 
   Future<void> _loadFlowSchools(FlowData flow) async {
@@ -237,6 +245,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
   Future<void> _loadAssetPaths(FlowData flow) async {
     _schoolFontFamily = null;
+    _sectionFontFamily = null;
+    _timerFontFamily = null;
     final supportDir = await getApplicationSupportDirectory();
     final imagesPath = p.join(
         supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
@@ -500,11 +510,17 @@ class _PageManagerPageState extends State<PageManagerPage> {
     final bgms = await database.select(database.bgm).get();
     final templates = await database.select(database.timerTemplate).get();
     final dingAudios = await database.select(database.dingAudio).get();
+    final allPages = await (database.select(database.page)
+          ..where((t) => t.flowId.equals(widget.flow.id))
+          ..orderBy([(t) => drift.OrderingTerm(expression: t.pagePosition)]))
+        .get();
     if (mounted) {
       setState(() {
         _bgmList = bgms;
         _templateList = templates;
         _dingAudioList = dingAudios;
+        _allPagesInFlow = allPages;
+        _selectedInheritFromId = _currentPage.inheritTimerFromId;
       });
     }
   }
@@ -1226,6 +1242,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
         schoolAPositionId: drift.Value(saPosId),
         schoolBPositionId: drift.Value(sbPosId),
         showSchools: drift.Value(_showSchools),
+        inheritTimerFromId: drift.Value(_selectedInheritFromId),
+        sectionFontColor: drift.Value(_sectionFontColor),
+        timerFontColor: drift.Value(_timerFontColor),
       ));
 
       final updated = await (database.select(database.page)
@@ -1245,7 +1264,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('页面基本配置及计时器已保存')));
-        _askApplyPositionToAllPages();
       }
     } catch (e) {
       if (mounted) {
@@ -1505,288 +1523,300 @@ class _PageManagerPageState extends State<PageManagerPage> {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF111827),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: OutlinedButton.icon(
+              onPressed: _askApplyPositionToAllPages,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF6B46C1)),
+                foregroundColor: const Color(0xFF6B46C1),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.auto_fix_high_rounded, size: 18),
+              label: const Text('应用到同类页面 (Apply to All Same Types)',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0, top: 8, bottom: 8),
+            child: FilledButton.icon(
+              onPressed: _saveDetails,
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6B46C1),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.check_circle_rounded, size: 18),
+              label: const Text('保存当前 (Save Current)',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle('基本信息 (General Info)'),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200)),
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left: Settings Panel
+          Container(
+            width: 500,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(right: BorderSide(color: Colors.grey.shade200)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(4, 0),
+                )
+              ],
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildSectionTitle('基本信息 (General Info)'),
+                  const SizedBox(height: 16),
                   _buildTextField(
                       controller: _pageNameController,
                       label: '页面名称 (Page Name)',
                       hint: '例如: 第一页'),
                   const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ClipboardManager.copiedPage = _currentPage;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('已复制页面: ${_currentPage.pageName}')),
+                        );
+                      },
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      label: const Text('复制此页面'),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.blue),
+                        foregroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
+                  _buildSectionTitle('页面控制与显示'),
+                  const SizedBox(height: 16),
                   // Hotkey — only for default pages
                   if (_currentPage.isDefaultPage == true) ...[
                     _buildTextField(
                       controller: _hotkeyController,
                       label: '快捷键 (Hotkey)',
                       hint: '例如: 1',
+                      readOnly: true,
                     ),
                     const SizedBox(height: 4),
                     Text('该快捷键用于计时器运行时直接跳转到此页面。',
                         style: TextStyle(
                             fontSize: 11, color: Colors.grey.shade500)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                   ],
 
-                  // BGM Selection
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('封面/背景图选择',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF4B5563))),
-                      SwitchListTile(
-                        title: const Text('使用封面图 (Global Frontpage)',
-                            style: TextStyle(fontSize: 14)),
-                        subtitle: const Text('默认使用背景图',
-                            style: TextStyle(fontSize: 12)),
-                        value: _useFrontpage,
-                        onChanged: (val) {
-                          setState(() {
-                            _useFrontpage = val;
-                          });
-                          // Re-load paths with the current flow data
-                          (database.select(database.flow)
-                                ..where((t) => t.id.equals(widget.flow.id)))
-                              .getSingle()
-                              .then((f) => _loadAssetPaths(f));
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      const Text('背景音乐 (BGM)',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF4B5563))),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              value: _selectedBgmId,
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                              ),
-                              items: [
-                                const DropdownMenuItem<int>(
-                                    value: null, child: Text('无音乐')),
-                                ..._bgmList.map((bgm) => DropdownMenuItem<int>(
-                                      value: bgm.id,
-                                      child: Text(bgm.bgmName,
-                                          overflow: TextOverflow.ellipsis),
-                                    )),
-                              ],
-                              onChanged: (val) =>
-                                  setState(() => _selectedBgmId = val),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton.filled(
-                            onPressed: _uploadBgm,
-                            icon: const Icon(Icons.upload_rounded),
-                            style: IconButton.styleFrom(
-                                backgroundColor: const Color(0xFF6B46C1)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        title: const Text('显示学校名称和Logo (Show Schools)',
-                            style: TextStyle(fontSize: 14)),
-                        subtitle: const Text('关闭后将不在此页面显示学校信息',
-                            style: TextStyle(fontSize: 12)),
-                        value: _showSchools,
-                        activeColor: const Color(0xFF6B46C1),
-                        contentPadding: EdgeInsets.zero,
-                        onChanged: (val) {
-                          setState(() {
-                            _showSchools = val;
-                          });
-                        },
-                      ),
-                    ],
+                  // School toggle
+                  SwitchListTile(
+                    title: const Text('显示学校信息 (Show Schools)',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold)),
+                    subtitle: const Text('在本页开启/关闭学校名称与Logo',
+                        style: TextStyle(fontSize: 12)),
+                    value: _showSchools,
+                    activeColor: const Color(0xFF6B46C1),
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: (val) => setState(() => _showSchools = val),
                   ),
                   const SizedBox(height: 16),
 
-                  // Page Type selection
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  SwitchListTile(
+                    title: const Text('使用封面图 (Frontpage)',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold)),
+                    subtitle: const Text('开启后使用赛程主预览图',
+                        style: TextStyle(fontSize: 12)),
+                    value: _useFrontpage,
+                    activeColor: const Color(0xFF6B46C1),
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: (val) {
+                      setState(() => _useFrontpage = val);
+                      (database.select(database.flow)
+                            ..where((t) => t.id.equals(widget.flow.id)))
+                          .getSingle()
+                          .then((f) => _loadAssetPaths(f));
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      const Text('页面类型 (Page Type)',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF4B5563))),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: ['A1', 'A2', 'B', 'C'].map((type) {
-                          final isSelected = _selectedPageType == type;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: FilterChip(
-                              label: Text(type),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() {
-                                    _selectedPageType = type;
-                                  });
-                                  _loadTimerData();
-                                }
-                              },
-                              selectedColor: const Color(0xFF6B46C1)
-                                  .withOpacity(0.2),
-                              checkmarkColor: const Color(0xFF6B46C1),
-                              labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? const Color(0xFF6B46C1)
-                                      : Colors.black),
-                            ),
-                          );
-                        }).toList(),
+                      _buildColorBox(
+                        label: '环节字体颜色',
+                        colorHex: _sectionFontColor,
+                        onTap: () => _showColorPicker('section'),
                       ),
-                      if (_selectedPageType != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            {
-                                  'A1': '一个计时器，一个人说话罢了就用这个',
-                                  'A2': '两个计时器，for 对辩，自由辩，计器 介绍用',
-                                  'B': '没有计时器，显示阶段标题在中间',
-                                  'C': '没有计时器或阶段标题，只显示背景',
-                                }[_selectedPageType] ??
-                                '',
-                            style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                                fontStyle: FontStyle.italic),
-                          ),
-                        ),
+                      const SizedBox(width: 24),
+                      _buildColorBox(
+                        label: '计时器字体颜色',
+                        colorHex: _timerFontColor,
+                        onTap: () => _showColorPicker('timer'),
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 32),
+
+                  _buildSectionTitle('环节属性 (Section Settings)'),
+                  const SizedBox(height: 16),
+
+                  // Page Type selection
+                  const Text('页面类型 (Page Type)',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF4B5563))),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: ['A1', 'A2', 'B', 'C'].map((type) {
+                      final isSelected = _selectedPageType == type;
+                      return ChoiceChip(
+                        label: Text(type),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _selectedPageType = type);
+                            _loadTimerData();
+                          }
+                        },
+                        selectedColor: const Color(0xFF6B46C1).withOpacity(0.1),
+                        labelStyle: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFF6B46C1)
+                                : Colors.black,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  const Text('继承上一页面时间 (Inherit Time From)',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF4B5563))),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<int?>(
+                    value: _selectedInheritFromId,
+                    onChanged: (val) =>
+                        setState(() => _selectedInheritFromId = val),
+                    items: [
+                      const DropdownMenuItem<int?>(
+                        value: null,
+                        child: Text('不继承 (Do not inherit)'),
+                      ),
+                      ..._allPagesInFlow
+                          .where((p) =>
+                              p.id != _currentPage.id &&
+                              p.pageTypeId == _selectedPageType)
+                          .map((p) => DropdownMenuItem<int?>(
+                                value: p.id,
+                                child: Text(p.pageName ?? 'Unnamed Page'),
+                              ))
+                    ],
+                    decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8))),
+                  ),
+                  const SizedBox(height: 24),
+
                   if (_selectedPageType == 'A1' ||
                       _selectedPageType == 'A2' ||
                       _selectedPageType == 'B') ...[
-                    const SizedBox(height: 24),
                     _buildTextField(
                         controller: _sectionNameController,
-                        label: '环节名称 (Section Name)',
-                        hint: '例如: 开场介绍'),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: _buildPositionControl(
-                        label: '环节名称位置 (Section Name Position)',
-                        x: _sectionX,
-                        y: _sectionY,
-                        scale: _sectionScale,
-                        xCtrl: _sectionXCtrl,
-                        yCtrl: _sectionYCtrl,
-                        scaleCtrl: _sectionScaleCtrl,
-                        onXChanged: (val) => setState(() => _sectionX = val),
-                        onYChanged: (val) => setState(() => _sectionY = val),
-                        onScaleChanged: (val) =>
-                            setState(() => _sectionScale = val),
-                      ),
+                        label: '阶段标题内容',
+                        hint: '例如: 开场立论'),
+                    const SizedBox(height: 16),
+                    _buildPositionControl(
+                      label: '标题位置与大小',
+                      x: _sectionX,
+                      y: _sectionY,
+                      scale: _sectionScale,
+                      xCtrl: _sectionXCtrl,
+                      yCtrl: _sectionYCtrl,
+                      scaleCtrl: _sectionScaleCtrl,
+                      onXChanged: (val) => setState(() => _sectionX = val),
+                      onYChanged: (val) => setState(() => _sectionY = val),
+                      onScaleChanged: (val) =>
+                          setState(() => _sectionScale = val),
                     ),
                   ],
+                  const SizedBox(height: 32),
 
-                  const SizedBox(height: 24),
                   if (_selectedPageType == 'A1') ...[
-                    Row(
-                      children: [
-                        Expanded(
-                            child: _buildTimerBox(
-                                '单计时器 (Single Timer)', 'single')),
-                        const Spacer(),
-                      ],
-                    ),
+                    _buildSectionTitle('计时器配置 (Single Timer)'),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.45,
-                      child: _buildPositionControl(
-                        label: '计时器位置 (Timer Position)',
-                        x: _t1X,
-                        y: _t1Y,
-                        scale: _t1Scale,
-                        xCtrl: _t1XCtrl,
-                        yCtrl: _t1YCtrl,
-                        scaleCtrl: _t1ScaleCtrl,
-                        onXChanged: (val) => setState(() => _t1X = val),
-                        onYChanged: (val) => setState(() => _t1Y = val),
-                        onScaleChanged: (val) => setState(() => _t1Scale = val),
-                      ),
+                    _buildTimerBox('计时时长', 'single'),
+                    const SizedBox(height: 16),
+                    _buildPositionControl(
+                      label: '计时器位置与大小',
+                      x: _t1X,
+                      y: _t1Y,
+                      scale: _t1Scale,
+                      xCtrl: _t1XCtrl,
+                      yCtrl: _t1YCtrl,
+                      scaleCtrl: _t1ScaleCtrl,
+                      onXChanged: (val) => setState(() => _t1X = val),
+                      onYChanged: (val) => setState(() => _t1Y = val),
+                      onScaleChanged: (val) => setState(() => _t1Scale = val),
+                    ),
+                    const SizedBox(height: 32),
+                  ] else if (_selectedPageType == 'A2') ...[
+                    _buildSectionTitle('左侧计时器 (Left Timer)'),
+                    _buildTimerBox('', 'doubleL'),
+                    const SizedBox(height: 12),
+                    _buildPositionControl(
+                      label: '左侧位置',
+                      x: _tlX,
+                      y: _tlY,
+                      scale: _tlScale,
+                      xCtrl: _tlXCtrl,
+                      yCtrl: _tlYCtrl,
+                      scaleCtrl: _tlScaleCtrl,
+                      onXChanged: (val) => setState(() => _tlX = val),
+                      onYChanged: (val) => setState(() => _tlY = val),
+                      onScaleChanged: (val) => setState(() => _tlScale = val),
                     ),
                     const SizedBox(height: 24),
-                  ] else if (_selectedPageType == 'A2') ...[
-                    Row(
-                      children: [
-                        Expanded(
-                            child: _buildTimerBox(
-                                '左侧计时器 (Left Timer)', 'doubleL')),
-                        const SizedBox(width: 16),
-                        Expanded(
-                            child: _buildTimerBox(
-                                '右侧计时器 (Right Timer)', 'doubleR')),
-                      ],
-                    ),
+                    _buildSectionTitle('右侧计时器 (Right Timer)'),
+                    _buildTimerBox('', 'doubleR'),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildPositionControl(
-                            label: '左侧计时器位置',
-                            x: _tlX,
-                            y: _tlY,
-                            scale: _tlScale,
-                            xCtrl: _tlXCtrl,
-                            yCtrl: _tlYCtrl,
-                            scaleCtrl: _tlScaleCtrl,
-                            onXChanged: (val) => setState(() => _tlX = val),
-                            onYChanged: (val) => setState(() => _tlY = val),
-                            onScaleChanged: (val) =>
-                                setState(() => _tlScale = val),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildPositionControl(
-                            label: '右侧计时器位置',
-                            x: _trX,
-                            y: _trY,
-                            scale: _trScale,
-                            xCtrl: _trXCtrl,
-                            yCtrl: _trYCtrl,
-                            scaleCtrl: _trScaleCtrl,
-                            onXChanged: (val) => setState(() => _trX = val),
-                            onYChanged: (val) => setState(() => _trY = val),
-                            onScaleChanged: (val) =>
-                                setState(() => _trScale = val),
-                          ),
-                        ),
-                      ],
+                    _buildPositionControl(
+                      label: '右侧位置',
+                      x: _trX,
+                      y: _trY,
+                      scale: _trScale,
+                      xCtrl: _trXCtrl,
+                      yCtrl: _trYCtrl,
+                      scaleCtrl: _trScaleCtrl,
+                      onXChanged: (val) => setState(() => _trX = val),
+                      onYChanged: (val) => setState(() => _trY = val),
+                      onScaleChanged: (val) => setState(() => _trScale = val),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -1796,297 +1826,383 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         Expanded(child: _buildFontPicker('计时器字体', 'timer')),
                       ],
                     ),
+                    const SizedBox(height: 32),
                   ],
-                  const SizedBox(height: 24),
 
-                  const SizedBox(height: 32),
+                  if (_showSchools) ...[
+                    _buildSectionTitle('学校 A 位置'),
+                    const SizedBox(height: 12),
+                    _buildPositionControl(
+                      label: '正方学校信息位置',
+                      x: _saX,
+                      y: _saY,
+                      scale: _saScale,
+                      xCtrl: _saxCtrl,
+                      yCtrl: _sayCtrl,
+                      scaleCtrl: _saScaleCtrl,
+                      onXChanged: (val) => setState(() => _saX = val),
+                      onYChanged: (val) => setState(() => _saY = val),
+                      onScaleChanged: (val) => setState(() => _saScale = val),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildSectionTitle('学校 B 位置'),
+                    const SizedBox(height: 12),
+                    _buildPositionControl(
+                      label: '反方学校信息位置',
+                      x: _sbX,
+                      y: _sbY,
+                      scale: _sbScale,
+                      xCtrl: _sbxCtrl,
+                      yCtrl: _sbyCtrl,
+                      scaleCtrl: _sbScaleCtrl,
+                      onXChanged: (val) => setState(() => _sbX = val),
+                      onYChanged: (val) => setState(() => _sbY = val),
+                      onScaleChanged: (val) => setState(() => _sbScale = val),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  _buildSectionTitle('背景音乐 (BGM)'),
+                  const SizedBox(height: 12),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSectionTitle('学校 A 位置 (School A Config)'),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey.shade200)),
-                              child: _buildPositionControl(
-                                label: '位置与大小 (Position & Scale)',
-                                x: _saX,
-                                y: _saY,
-                                scale: _saScale,
-                                xCtrl: _saxCtrl,
-                                yCtrl: _sayCtrl,
-                                scaleCtrl: _saScaleCtrl,
-                                onXChanged: (val) => setState(() => _saX = val),
-                                onYChanged: (val) => setState(() => _saY = val),
-                                onScaleChanged: (val) =>
-                                    setState(() => _saScale = val),
-                              ),
-                            ),
+                        child: DropdownButtonFormField<int>(
+                          value: _selectedBgmId,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          items: [
+                            const DropdownMenuItem<int>(
+                                value: null, child: Text('无音乐')),
+                            ..._bgmList.map((bgm) => DropdownMenuItem<int>(
+                                  value: bgm.id,
+                                  child: Text(bgm.bgmName,
+                                      overflow: TextOverflow.ellipsis),
+                                )),
                           ],
+                          onChanged: (val) =>
+                              setState(() => _selectedBgmId = val),
                         ),
                       ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSectionTitle('学校 B 位置 (School B Config)'),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey.shade200)),
-                              child: _buildPositionControl(
-                                label: '位置与大小 (Position & Scale)',
-                                x: _sbX,
-                                y: _sbY,
-                                scale: _sbScale,
-                                xCtrl: _sbxCtrl,
-                                yCtrl: _sbyCtrl,
-                                scaleCtrl: _sbScaleCtrl,
-                                onXChanged: (val) => setState(() => _sbX = val),
-                                onYChanged: (val) => setState(() => _sbY = val),
-                                onScaleChanged: (val) =>
-                                    setState(() => _sbScale = val),
-                              ),
-                            ),
-                          ],
-                        ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        onPressed: _uploadBgm,
+                        icon: const Icon(Icons.upload_rounded),
+                        style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFF6B46C1)),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 32),
-                  _buildSectionTitle('页面预览 (Preview)'),
-                  const SizedBox(height: 16),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final screenSize = MediaQuery.of(context).size;
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ClipRect(
-                            child: SizedBox(
-                              width: constraints.maxWidth,
-                              height: screenSize.height *
-                                  (constraints.maxWidth / screenSize.width),
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: Container(
-                                  width: screenSize.width,
-                                  height: screenSize.height,
-                                  color: Colors.black,
-                                  child: Stack(
-                                    children: [
-                                      // Background
-                                      if (_backgroundPath != null &&
-                                          File(_backgroundPath!).existsSync())
-                                        Positioned.fill(
-                                            child: Image.file(
-                                                File(_backgroundPath!),
-                                                fit: BoxFit.cover))
-                                      else
-                                        const Positioned.fill(
-                                            child: Center(
-                                                child: Text('未上传背景图',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 32)))),
-
-                                      // Overlay
-                                      Positioned.fill(
-                                          child:
-                                              Container(color: Colors.black26)),
-
-                                      // Content
-                                      if (_selectedPageType != 'C')
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 100, horizontal: 100),
-                                          child: Stack(
-                                            children: [
-                                              // Section Name
-                                              _buildDraggableItem(
-                                                alignment:
-                                                    _selectedPageType == 'B'
-                                                        ? Alignment.center
-                                                        : Alignment.topCenter,
-                                                x: _sectionX,
-                                                y: _sectionY,
-                                                scale: _sectionScale,
-                                                onChanged: (dx, dy, s) {},
-                                                child: Text(
-                                                  _sectionNameController
-                                                          .text.isEmpty
-                                                      ? (_selectedPageType ==
-                                                              'B'
-                                                          ? '中间环节名称预览'
-                                                          : '环节名称预览')
-                                                      : _sectionNameController
-                                                          .text,
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 48,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily:
-                                                        _sectionFontFamily,
-                                                    shadows: [
-                                                      Shadow(
-                                                          color: Colors.white
-                                                              .withOpacity(0.5),
-                                                          blurRadius: 15,
-                                                          offset: const Offset(
-                                                              0, 6))
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-
-                                              // Timer A1
-                                              if (_selectedPageType == 'A1')
-                                                _buildDraggableItem(
-                                                  alignment: Alignment.center,
-                                                  x: _t1X,
-                                                  y: _t1Y,
-                                                  scale: _t1Scale,
-                                                  onChanged: (dx, dy, s) {},
-                                                  child:
-                                                      _buildPreviewTimerWidget(
-                                                    time: _previewSeconds,
-                                                    isRunning:
-                                                        _isPreviewRunning,
-                                                    onToggle:
-                                                        _togglePreviewTimer,
-                                                    onReset: () {
-                                                      _previewTimer?.cancel();
-                                                      _updatePreviewSeconds();
-                                                      setState(() {
-                                                        _isPreviewRunning =
-                                                            false;
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-
-                                              // Timer A2
-                                              if (_selectedPageType ==
-                                                  'A2') ...[
-                                                _buildDraggableItem(
-                                                  alignment: const Alignment(
-                                                      -0.5, 0.0),
-                                                  x: _tlX,
-                                                  y: _tlY,
-                                                  scale: _tlScale,
-                                                  onChanged: (dx, dy, s) {},
-                                                  child:
-                                                      _buildPreviewTimerWidget(
-                                                    time: _previewSecLeft,
-                                                    isRunning:
-                                                        _isPreviewRunningLeft,
-                                                    onToggle:
-                                                        _togglePreviewTimerLeft,
-                                                    onReset: () {
-                                                      _previewTimerLeft
-                                                          ?.cancel();
-                                                      _updatePreviewSeconds();
-                                                      setState(() {
-                                                        _isPreviewRunningLeft =
-                                                            false;
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                                _buildDraggableItem(
-                                                  alignment:
-                                                      const Alignment(0.5, 0.0),
-                                                  x: _trX,
-                                                  y: _trY,
-                                                  scale: _trScale,
-                                                  onChanged: (dx, dy, s) {},
-                                                  child:
-                                                      _buildPreviewTimerWidget(
-                                                    time: _previewSecRight,
-                                                    isRunning:
-                                                        _isPreviewRunningRight,
-                                                    onToggle:
-                                                        _togglePreviewTimerRight,
-                                                    onReset: () {
-                                                      _previewTimerRight
-                                                          ?.cancel();
-                                                      _updatePreviewSeconds();
-                                                      setState(() {
-                                                        _isPreviewRunningRight =
-                                                            false;
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                      // School Logos & Names
-                                      if (_showSchools) ...[
-                                        _buildDraggableItem(
-                                          alignment: Alignment.bottomLeft,
-                                          x: _saX,
-                                          y: _saY,
-                                          scale: _saScale,
-                                          onChanged: (dx, dy, s) {},
-                                          child: _buildSchoolPreview(
-                                              _schoolA, _schoolALogo,
-                                              isA: true),
-                                        ),
-                                        _buildDraggableItem(
-                                          alignment: Alignment.bottomRight,
-                                          x: _sbX,
-                                          y: _sbY,
-                                          scale: _sbScale,
-                                          onChanged: (dx, dy, s) {},
-                                          child: _buildSchoolPreview(
-                                              _schoolB, _schoolBLogo,
-                                              isA: false),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 32),
-                  SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                          onPressed: _saveDetails,
-                          icon: const Icon(Icons.save_rounded),
-                          label: const Text('保存基本配置'),
-                          style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF6B46C1),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16)))),
+                  const SizedBox(height: 60), // Extra space
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Right: Preview Area
+          Expanded(
+            child: Container(
+              color: const Color(0xFFE5E7EB),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(48.0),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final screenSize = MediaQuery.of(context).size;
+                            final double designWidth = screenSize.width;
+                            final double designHeight = screenSize.height;
+
+                            // Scale down the preview so it fits inside the constraints
+                            // We compare the aspect ratios to decide the limiting factor
+                            final double scale =
+                                (constraints.maxWidth / designWidth) >
+                                        (constraints.maxHeight / designHeight)
+                                    ? (constraints.maxHeight / designHeight)
+                                        .clamp(0.1, 1.0)
+                                    : (constraints.maxWidth / designWidth)
+                                        .clamp(0.1, 1.0);
+
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('实时画面预览 (Live Preview)',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF374151))),
+                                const SizedBox(height: 24),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    width: designWidth * scale,
+                                    height: designHeight * scale,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 30,
+                                          offset: const Offset(0, 15),
+                                        )
+                                      ],
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.contain,
+                                      child: Container(
+                                        width: designWidth,
+                                        height: designHeight,
+                                        color: Colors.black,
+                                        child: Stack(
+                                          children: [
+                                            // Background
+                                            if (_backgroundPath != null &&
+                                                File(_backgroundPath!)
+                                                    .existsSync())
+                                              Positioned.fill(
+                                                  child: Image.file(
+                                                      File(_backgroundPath!),
+                                                      fit: BoxFit.cover))
+                                            else
+                                              const Positioned.fill(
+                                                  child: Center(
+                                                      child: Text('未上传背景图',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 64)))),
+
+                                            // Overlay
+                                            Positioned.fill(
+                                                child: Container(
+                                                    color: Colors.black26)),
+
+                                            // Content
+                                            if (_selectedPageType != 'C')
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 100,
+                                                        horizontal: 100),
+                                                child: Stack(
+                                                  children: [
+                                                    // Section Name
+                                                    _buildDraggableItem(
+                                                      alignment:
+                                                          _selectedPageType ==
+                                                                  'B'
+                                                              ? Alignment.center
+                                                              : Alignment
+                                                                  .topCenter,
+                                                      x: _sectionX,
+                                                      y: _sectionY,
+                                                      scale: _sectionScale,
+                                                      onChanged: (dx, dy, s) {},
+                                                      child: Text(
+                                                        _sectionNameController
+                                                                .text.isEmpty
+                                                            ? (_selectedPageType ==
+                                                                    'B'
+                                                                ? '中间环节名称预览'
+                                                                : '环节名称预览')
+                                                            : _sectionNameController
+                                                                .text,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: _resolveColor(
+                                                              _sectionFontColor,
+                                                              widget.flow
+                                                                  .sectionFontColor,
+                                                              Colors.black),
+                                                          fontSize: 48,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontFamily:
+                                                              _sectionFontFamily,
+                                                          shadows: [
+                                                            Shadow(
+                                                                color: Colors
+                                                                    .white
+                                                                    .withOpacity(
+                                                                        0.5),
+                                                                blurRadius: 15,
+                                                                offset:
+                                                                    const Offset(
+                                                                        0, 6))
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+
+                                                    // Timer A1
+                                                    if (_selectedPageType ==
+                                                        'A1')
+                                                      _buildDraggableItem(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        x: _t1X,
+                                                        y: _t1Y,
+                                                        scale: _t1Scale,
+                                                        onChanged:
+                                                            (dx, dy, s) {},
+                                                        child:
+                                                            _buildPreviewTimerWidget(
+                                                          time: _previewSeconds,
+                                                          isRunning:
+                                                              _isPreviewRunning,
+                                                          onToggle:
+                                                              _togglePreviewTimer,
+                                                          onReset: () {
+                                                            _previewTimer
+                                                                ?.cancel();
+                                                            _updatePreviewSeconds();
+                                                            setState(() =>
+                                                                _isPreviewRunning =
+                                                                    false);
+                                                          },
+                                                          isA2: false,
+                                                        ),
+                                                      ),
+
+                                                    // Timer A2
+                                                    if (_selectedPageType ==
+                                                        'A2') ...[
+                                                      _buildDraggableItem(
+                                                        alignment:
+                                                            const Alignment(
+                                                                -0.5, 0.0),
+                                                        x: _tlX,
+                                                        y: _tlY,
+                                                        scale: _tlScale,
+                                                        onChanged:
+                                                            (dx, dy, s) {},
+                                                        child:
+                                                            _buildPreviewTimerWidget(
+                                                          time: _previewSecLeft,
+                                                          isRunning:
+                                                              _isPreviewRunningLeft,
+                                                          onToggle:
+                                                              _togglePreviewTimerLeft,
+                                                          onReset: () {
+                                                            _previewTimerLeft
+                                                                ?.cancel();
+                                                            _updatePreviewSeconds();
+                                                            setState(() =>
+                                                                _isPreviewRunningLeft =
+                                                                    false);
+                                                          },
+                                                          isA2: true,
+                                                        ),
+                                                      ),
+                                                      _buildDraggableItem(
+                                                        alignment:
+                                                            const Alignment(
+                                                                0.5, 0.0),
+                                                        x: _trX,
+                                                        y: _trY,
+                                                        scale: _trScale,
+                                                        onChanged:
+                                                            (dx, dy, s) {},
+                                                        child:
+                                                            _buildPreviewTimerWidget(
+                                                          time:
+                                                              _previewSecRight,
+                                                          isRunning:
+                                                              _isPreviewRunningRight,
+                                                          onToggle:
+                                                              _togglePreviewTimerRight,
+                                                          onReset: () {
+                                                            _previewTimerRight
+                                                                ?.cancel();
+                                                            _updatePreviewSeconds();
+                                                            setState(() =>
+                                                                _isPreviewRunningRight =
+                                                                    false);
+                                                          },
+                                                          isA2: true,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+
+                                            // Schools (Outside padding to match actual timer)
+                                            if (_showSchools) ...[
+                                              _buildDraggableItem(
+                                                alignment: Alignment.bottomLeft,
+                                                x: _saX,
+                                                y: _saY,
+                                                scale: _saScale,
+                                                onChanged: (dx, dy, s) {},
+                                                child: _buildSchoolPreview(
+                                                    _schoolA, _schoolALogo,
+                                                    isA: true),
+                                              ),
+                                              _buildDraggableItem(
+                                                alignment:
+                                                    Alignment.bottomRight,
+                                                x: _sbX,
+                                                y: _sbY,
+                                                scale: _sbScale,
+                                                onChanged: (dx, dy, s) {},
+                                                child: _buildSchoolPreview(
+                                                    _schoolB, _schoolBLogo,
+                                                    isA: false),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black.withOpacity(0.05),
+                                          blurRadius: 10)
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.info_outline_rounded,
+                                          size: 16, color: Color(0xFF6B46C1)),
+                                      const SizedBox(width: 8),
+                                      Text('当前画布为 1920x1080 标准比例镜像',
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey.shade700)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2096,19 +2212,22 @@ class _PageManagerPageState extends State<PageManagerPage> {
     required bool isRunning,
     required VoidCallback onToggle,
     required VoidCallback onReset,
+    required bool isA2,
   }) {
+    final double timerFontSize = isA2 ? 140 : 200;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 800,
+          width: 1000,
           child: Text(
             _formatTime(time),
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black,
-              fontSize: 120,
+              color: _resolveColor(
+                  _timerFontColor, widget.flow.timerFontColor, Colors.black),
+              fontSize: timerFontSize,
               fontWeight: FontWeight.bold,
               fontFamily: _timerFontFamily,
               fontFeatures: const [ui.FontFeature.tabularFigures()],
@@ -2123,11 +2242,11 @@ class _PageManagerPageState extends State<PageManagerPage> {
         ),
         const SizedBox(height: 16),
         Row(
-          mainAxisSize: MainAxisSize.min, // Changed to min
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton.filled(
-              iconSize: 120 * 0.2,
+              iconSize: timerFontSize * 0.2,
               onPressed: onToggle,
               icon: Icon(
                   isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded),
@@ -2136,9 +2255,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
                 foregroundColor: Colors.black,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 24),
             IconButton.filled(
-              iconSize: 120 * 0.2,
+              iconSize: timerFontSize * 0.2,
               onPressed: onReset,
               icon: const Icon(Icons.refresh_rounded),
               style: IconButton.styleFrom(
@@ -2312,7 +2431,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
   Widget _buildTextField(
       {required TextEditingController controller,
       required String label,
-      required String hint}) {
+      required String hint,
+      bool readOnly = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2324,6 +2444,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
         const SizedBox(height: 8),
         TextFormField(
             controller: controller,
+            readOnly: readOnly,
             decoration: InputDecoration(
                 hintText: hint,
                 filled: true,
@@ -2524,6 +2645,13 @@ class _PageManagerPageState extends State<PageManagerPage> {
         fontSize: 36,
         fontWeight: FontWeight.bold,
         fontFamily: _schoolFontFamily,
+        shadows: [
+          Shadow(
+            color: Colors.white.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
     );
 
@@ -2546,6 +2674,135 @@ class _PageManagerPageState extends State<PageManagerPage> {
                 logoWidget,
               ],
             ),
+    );
+  }
+
+  Color _resolveColor(
+      String? colorHex, String? fallbackHex, Color defaultColor) {
+    if (colorHex != null && colorHex.isNotEmpty) {
+      try {
+        return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+      } catch (_) {}
+    }
+    if (fallbackHex != null && fallbackHex.isNotEmpty) {
+      try {
+        return Color(int.parse(fallbackHex.replaceFirst('#', '0xFF')));
+      } catch (_) {}
+    }
+    return defaultColor;
+  }
+
+  void _showColorPicker(String type) {
+    final List<String> colors = [
+      '#000000',
+      '#FFFFFF',
+      '#FF0000',
+      '#0000FF',
+      '#008000',
+      '#FFFF00',
+      '#800080',
+      '#FFA500',
+      '#744210',
+      '#2D3748',
+      '#6B46C1',
+      '#2B6CB0',
+      '#C53030',
+      '#2F855A'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(type == 'section' ? '选择环节字体颜色' : '选择计时器字体颜色'),
+        content: SizedBox(
+          width: 300,
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: colors.map((c) {
+              final color = Color(int.parse(c.replaceFirst('#', '0xFF')));
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    if (type == 'section') {
+                      _sectionFontColor = c;
+                    } else {
+                      _timerFontColor = c;
+                    }
+                  });
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorBox({
+    required String label,
+    required String? colorHex,
+    required VoidCallback onTap,
+  }) {
+    final color = colorHex != null
+        ? Color(int.parse(colorHex.replaceFirst('#', '0xFF')))
+        : Colors.black;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: 140,
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  colorHex ?? '默认 (Flow)',
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

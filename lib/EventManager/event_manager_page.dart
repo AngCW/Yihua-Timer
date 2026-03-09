@@ -8,6 +8,7 @@ import '../main.dart';
 import '../database/app_database.dart';
 import '../database/event_transfer.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:drift/drift.dart' as drift;
 
 class EventManagerPage extends StatefulWidget {
   const EventManagerPage({super.key});
@@ -52,6 +53,12 @@ class _EventManagerPageState extends State<EventManagerPage> {
           final pages = await (database.select(database.page)
                 ..where((t) => t.flowId.equals(flow.id)))
               .get();
+
+          // Clear self-referencing foreign keys first to prevent constraint violations
+          await (database.update(database.page)
+                ..where((t) => t.flowId.equals(flow.id)))
+              .write(
+                  const PageCompanion(inheritTimerFromId: drift.Value(null)));
 
           for (var page in pages) {
             // Delete timers
@@ -104,22 +111,30 @@ class _EventManagerPageState extends State<EventManagerPage> {
               ..where((t) => t.eventId.equals(event.id)))
             .get();
 
+        final List<int> schoolLogoImageIds = [];
         for (var school in schools) {
           if (school.logoImageId != null) {
-            final image = await (database.select(database.images)
-                  ..where((t) => t.id.equals(school.logoImageId!)))
-                .getSingleOrNull();
-            if (image != null) {
-              if (image.positionId != null) positionIds.add(image.positionId!);
-              await (database.delete(database.images)
-                    ..where((t) => t.id.equals(image.id)))
-                  .go();
-            }
+            schoolLogoImageIds.add(school.logoImageId!);
           }
         }
+
+        // Must delete schools FIRST because they reference images(id)
         await (database.delete(database.school)
               ..where((t) => t.eventId.equals(event.id)))
             .go();
+
+        // Now delete the school logo images
+        for (var imgId in schoolLogoImageIds) {
+          final image = await (database.select(database.images)
+                ..where((t) => t.id.equals(imgId)))
+              .getSingleOrNull();
+          if (image != null) {
+            if (image.positionId != null) positionIds.add(image.positionId!);
+            await (database.delete(database.images)
+                  ..where((t) => t.id.equals(image.id)))
+                .go();
+          }
+        }
 
         // 4. Finally delete the event itself
         await (database.delete(database.event)

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../database/app_database.dart';
 import '../main.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:reorderables/reorderables.dart';
 import 'timer_runner_page.dart';
 import 'timer_folder_detail_page.dart';
 
@@ -105,25 +106,19 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey)),
                           const SizedBox(height: 8),
-                          SizedBox(
-                            height: 160,
-                            child: ReorderableListView(
-                              scrollDirection: Axis.horizontal,
-                              onReorder: (oldIndex, newIndex) {
-                                _reorderFolders(folders, oldIndex, newIndex);
-                              },
-                              children: [
-                                for (int i = 0; i < folders.length; i++)
-                                  ReorderableDelayedDragStartListener(
-                                    key: ValueKey(folders[i].id),
-                                    index: i,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(right: 16.0),
-                                      child: _buildFolderBox(context, folders[i]),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                          ReorderableWrap(
+                            spacing: 16.0,
+                            runSpacing: 16.0,
+                            onReorder: (oldIndex, newIndex) {
+                              _reorderFolders(folders, oldIndex, newIndex);
+                            },
+                            children: [
+                              for (int i = 0; i < folders.length; i++)
+                                Container(
+                                  key: ValueKey(folders[i].id),
+                                  child: _buildFolderBox(context, folders[i]),
+                                ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -152,25 +147,19 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey)),
                           const SizedBox(height: 8),
-                          SizedBox(
-                            height: 160,
-                            child: ReorderableListView(
-                              scrollDirection: Axis.horizontal,
-                              onReorder: (oldIndex, newIndex) {
-                                _reorderFlows(flows, oldIndex, newIndex);
-                              },
-                              children: [
-                                for (int i = 0; i < flows.length; i++)
-                                  ReorderableDelayedDragStartListener(
-                                    key: ValueKey(flows[i].id),
-                                    index: i,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(right: 16.0),
-                                      child: _buildFlowBox(context, flows[i]),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                          ReorderableWrap(
+                            spacing: 16.0,
+                            runSpacing: 16.0,
+                            onReorder: (oldIndex, newIndex) {
+                              _reorderFlows(flows, oldIndex, newIndex);
+                            },
+                            children: [
+                              for (int i = 0; i < flows.length; i++)
+                                Container(
+                                  key: ValueKey(flows[i].id),
+                                  child: _buildFlowBox(context, flows[i]),
+                                ),
+                            ],
                           ),
                         ],
                       );

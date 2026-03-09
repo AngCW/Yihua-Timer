@@ -41,28 +41,36 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   Future<void> _applyWindowMode(String mode) async {
     if (!Platform.isWindows) return;
 
+    final isFull = await windowManager.isFullScreen();
+
+    if (mode == 'borderless') {
+      await windowManager.setFullScreen(true);
+      return;
+    }
+
+    // If we are currently fullscreen and switching to a windowed mode,
+    // we must wait for the OS to finish the style transition before resizing
+    // to prevent the application from crashing
+    if (isFull) {
+      await windowManager.setFullScreen(false);
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+
     switch (mode) {
-      case 'borderless':
-        await windowManager.setFullScreen(true);
-        break;
       case 'windowed_1280':
-        await windowManager.setFullScreen(false);
         await windowManager.setSize(const Size(1280, 720));
         await windowManager.center();
         break;
       case 'windowed_1600':
-        await windowManager.setFullScreen(false);
         await windowManager.setSize(const Size(1600, 900));
         await windowManager.center();
         break;
       case 'windowed_1920':
-        await windowManager.setFullScreen(false);
-        await windowManager.setSize(const Size(1920, 1080));
-        await windowManager.center();
+        // Maximize fits the work area without clipping under the taskbar
+        await windowManager.maximize();
         break;
       case 'windowed':
       default:
-        await windowManager.setFullScreen(false);
         // Use a reasonable default window size
         await windowManager.setSize(const Size(1400, 900));
         await windowManager.center();
@@ -139,7 +147,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
             items: const [
               DropdownMenuItem(
                 value: 'windowed_1920',
-                child: Text('窗口化 1920 × 1080 (默认)'),
+                child: Text('最大化窗口 (默认)'),
               ),
               DropdownMenuItem(
                 value: 'windowed',
@@ -183,7 +191,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   String _getModeLabel(String value) {
     switch (value) {
       case 'windowed_1920':
-        return '窗口化 1920 × 1080 (默认)';
+        return '最大化窗口 (默认)';
       case 'borderless':
         return '无边框全屏';
       case 'windowed_1280':
@@ -196,5 +204,3 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
     }
   }
 }
-
-

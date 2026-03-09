@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
+import 'package:reorderables/reorderables.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -8,6 +9,8 @@ import 'dart:convert';
 import '../database/app_database.dart';
 import '../main.dart';
 import 'page_manager_page.dart';
+import '../EventManager/clipboard_manager.dart';
+import 'page_utils.dart';
 
 class FlowManagerPage extends StatefulWidget {
   final EventData event;
@@ -26,6 +29,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   String? _frontpageFile;
   String? _backgroundFile;
   String? _imagesDirPath;
+  String? _sectionFontColor;
+  String? _timerFontColor;
   bool _isLoading = true;
 
   @override
@@ -42,6 +47,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
     if (widget.initialFlow != null) {
       _currentFlow = widget.initialFlow;
       _flowNameController.text = _currentFlow!.flowName ?? '';
+      _sectionFontColor = _currentFlow!.sectionFontColor;
+      _timerFontColor = _currentFlow!.timerFontColor;
       _updateFileExistence();
       setState(() {
         _isLoading = false;
@@ -155,6 +162,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
           backgroundName: type == 'background'
               ? drift.Value(fileName)
               : const drift.Value.absent(),
+          sectionFontColor: drift.Value(_sectionFontColor),
+          timerFontColor: drift.Value(_timerFontColor),
         );
 
         await (database.update(database.flow)
@@ -329,6 +338,63 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
     }
   }
 
+  void _showColorPicker(String type) {
+    final List<String> colors = [
+      '#000000',
+      '#FFFFFF',
+      '#FF0000',
+      '#0000FF',
+      '#008000',
+      '#FFFF00',
+      '#800080',
+      '#FFA500',
+      '#744210',
+      '#2D3748',
+      '#6B46C1',
+      '#2B6CB0',
+      '#C53030',
+      '#2F855A'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(type == 'section' ? '选择环节字体颜色' : '选择计时器字体颜色'),
+        content: SizedBox(
+          width: 300,
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: colors.map((c) {
+              final color = Color(int.parse(c.replaceFirst('#', '0xFF')));
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    if (type == 'section') {
+                      _sectionFontColor = c;
+                    } else {
+                      _timerFontColor = c;
+                    }
+                  });
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _flowNameController.dispose();
@@ -393,7 +459,23 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                _buildColorBox(
+                  label: '全局环节颜色 (Section Color)',
+                  colorHex: _sectionFontColor,
+                  onTap: () => _showColorPicker('section'),
+                ),
+                const SizedBox(width: 24),
+                _buildColorBox(
+                  label: '全局计时器颜色 (Timer Color)',
+                  colorHex: _timerFontColor,
+                  onTap: () => _showColorPicker('timer'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
             Wrap(
               spacing: 20,
               runSpacing: 20,
@@ -454,17 +536,12 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                             style: TextStyle(color: Colors.grey),
                           );
                         }
-                        return SizedBox(
-                          height: 130,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: pages
-                                .map((pg) => Padding(
-                                      padding: const EdgeInsets.only(right: 16),
-                                      child: _buildDefaultPageBox(context, pg),
-                                    ))
-                                .toList(),
-                          ),
+                        return Wrap(
+                          spacing: 16.0,
+                          runSpacing: 16.0,
+                          children: pages
+                              .map((pg) => _buildDefaultPageBox(context, pg))
+                              .toList(),
                         );
                       },
                     ),
@@ -498,23 +575,18 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                         final pages = snapshot.data ?? [];
                         return Column(
                           children: [
-                            SizedBox(
-                              height: 130, // Enough for 80x80 box + text
-                              child: ReorderableListView(
-                                scrollDirection: Axis.horizontal,
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: ReorderableWrap(
+                                spacing: 16.0,
+                                runSpacing: 16.0,
                                 onReorder: (oldIndex, newIndex) {
                                   _reorderPages(pages, oldIndex, newIndex);
                                 },
                                 children: [
-                                  ...pages.map((p) =>
-                                      ReorderableDelayedDragStartListener(
+                                  ...pages.map((p) => Container(
                                         key: ValueKey(p.id),
-                                        index: pages.indexOf(p),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 16.0),
-                                          child: _buildPageBox(context, p),
-                                        ),
+                                        child: _buildPageBox(context, p),
                                       )),
                                 ],
                               ),
@@ -579,6 +651,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
               ..where((t) => t.id.equals(_currentFlow!.id)))
             .write(FlowCompanion(
           flowName: drift.Value(_flowNameController.text),
+          sectionFontColor: drift.Value(_sectionFontColor),
+          timerFontColor: drift.Value(_timerFontColor),
         ));
       }
       if (mounted) {
@@ -912,6 +986,21 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
         PopupMenuItem(
           child: const Row(
             children: [
+              Icon(Icons.copy_rounded, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text('复制页面', style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+          onTap: () {
+            setState(() => ClipboardManager.copiedPage = page);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('已复制页面: ${page.pageName}')),
+            );
+          },
+        ),
+        PopupMenuItem(
+          child: const Row(
+            children: [
               Icon(Icons.delete_rounded, color: Colors.red, size: 20),
               SizedBox(width: 8),
               Text('删除页面', style: TextStyle(color: Colors.red)),
@@ -1027,8 +1116,68 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   }
 
   Widget _buildAddPageButton(BuildContext context) {
+    return Row(
+      children: [
+        InkWell(
+          onTap: _addPage,
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6B46C1).withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF6B46C1).withOpacity(0.2),
+                    width: 2,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  size: 32,
+                  color: Color(0xFF6B46C1),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const SizedBox(
+                width: 80,
+                child: Text(
+                  '添加页面',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (ClipboardManager.copiedPage != null) ...[
+          const SizedBox(width: 16),
+          _buildPastePageButton(context),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPastePageButton(BuildContext context) {
     return InkWell(
-      onTap: _addPage,
+      onTap: () async {
+        if (ClipboardManager.copiedPage == null) return;
+        final allPages = await (database.select(database.page)
+              ..where((t) => t.flowId.equals(_currentFlow!.id)))
+            .get();
+        await PageUtils.duplicatePage(
+            ClipboardManager.copiedPage!, _currentFlow!.id,
+            position: allPages.length + 1);
+        setState(() {});
+      },
       borderRadius: BorderRadius.circular(12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1037,29 +1186,29 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF6B46C1).withOpacity(0.05),
+              color: Colors.blue.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF6B46C1).withOpacity(0.2),
+                color: Colors.blue.withOpacity(0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
             ),
             child: const Icon(
-              Icons.add_rounded,
+              Icons.paste_rounded,
               size: 32,
-              color: Color(0xFF6B46C1),
+              color: Colors.blue,
             ),
           ),
           const SizedBox(height: 8),
           const SizedBox(
             width: 80,
             child: Text(
-              '添加页面',
+              '粘贴页面',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF6B7280),
+                color: Colors.blue,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1307,6 +1456,63 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildColorBox({
+    required String label,
+    required String? colorHex,
+    required VoidCallback onTap,
+  }) {
+    final color = colorHex != null
+        ? Color(int.parse(colorHex.replaceFirst('#', '0xFF')))
+        : Colors.black;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: 140,
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  colorHex ?? '#000000',
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

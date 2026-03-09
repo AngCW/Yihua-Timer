@@ -3,6 +3,9 @@ import '../database/app_database.dart';
 import '../FlowManager/flow_manager_page.dart';
 import '../main.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:reorderables/reorderables.dart';
+import 'clipboard_manager.dart';
+import 'flow_utils.dart';
 
 class EventFolderDetailPage extends StatefulWidget {
   final EventData event;
@@ -63,23 +66,18 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
                   return Column(
                     children: [
                       if (flows.isNotEmpty)
-                        SizedBox(
-                          height: 160,
-                          child: ReorderableListView(
-                            scrollDirection: Axis.horizontal,
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: ReorderableWrap(
+                            spacing: 16.0,
+                            runSpacing: 16.0,
                             onReorder: (oldIndex, newIndex) {
                               _reorderFlows(flows, oldIndex, newIndex);
                             },
                             children: [
-                              ...flows.map((flow) =>
-                                  ReorderableDelayedDragStartListener(
+                              ...flows.map((flow) => Container(
                                     key: ValueKey(flow.id),
-                                    index: flows.indexOf(flow),
-                                    child: Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 16.0),
-                                      child: _buildFlowBox(context, flow),
-                                    ),
+                                    child: _buildFlowBox(context, flow),
                                   )),
                             ],
                           ),
@@ -90,9 +88,14 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
                           child: Text('此文件夹暂无赛程'),
                         ),
                       const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: _buildAddFlowButton(context),
+                      Row(
+                        children: [
+                          _buildAddFlowButton(context),
+                          if (ClipboardManager.copiedFlow != null) ...[
+                            const SizedBox(width: 16),
+                            _buildPasteFlowButton(context),
+                          ],
+                        ],
                       ),
                     ],
                   );
@@ -204,6 +207,21 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
       position: RelativeRect.fromLTRB(
           position.dx, position.dy, position.dx + 1, position.dy + 1),
       items: [
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.copy_rounded, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text('复制赛程', style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+          onTap: () {
+            setState(() => ClipboardManager.copiedFlow = flow);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('已复制赛程: ${flow.flowName}')),
+            );
+          },
+        ),
         PopupMenuItem(
           child: const Row(
             children: [
@@ -380,6 +398,58 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasteFlowButton(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        if (ClipboardManager.copiedFlow == null) return;
+        final flows = await (database.select(database.flow)
+              ..where((t) => t.folderId.equals(widget.folder.id)))
+            .get();
+        await FlowUtils.duplicateFlow(
+            ClipboardManager.copiedFlow!, widget.event.id,
+            folderId: widget.folder.id, position: flows.length + 1);
+        setState(() {});
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.blue.withOpacity(0.2),
+                width: 2,
+                style: BorderStyle.solid,
+              ),
+            ),
+            child: const Icon(
+              Icons.paste_rounded,
+              size: 32,
+              color: Colors.blue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const SizedBox(
+            width: 80,
+            child: Text(
+              '粘贴赛程',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue,
                 fontWeight: FontWeight.w500,
               ),
             ),

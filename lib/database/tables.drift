@@ -46,7 +46,9 @@ CREATE TABLE flow (
     folder_id INTEGER REFERENCES flow_folder(id),
     school_a_id INTEGER REFERENCES school(id),
     school_b_id INTEGER REFERENCES school(id),
-    position_config TEXT
+    position_config TEXT,
+    section_font_color VARCHAR,
+    timer_font_color VARCHAR
 );
 
 CREATE TABLE position (
@@ -100,7 +102,10 @@ CREATE TABLE page (
     is_default_page BOOLEAN DEFAULT FALSE,
     school_a_position_id INTEGER REFERENCES position(id),
     school_b_position_id INTEGER REFERENCES position(id),
-    show_schools BOOLEAN DEFAULT TRUE
+    show_schools BOOLEAN DEFAULT TRUE,
+    inherit_timer_from_id INTEGER REFERENCES page(id),
+    section_font_color VARCHAR,
+    timer_font_color VARCHAR
 );
 
 CREATE TABLE school (

@@ -24,31 +24,37 @@ Future<void> _configureInitialWindow() async {
   // 默认使用 1920 × 1080 窗口化
   final mode = prefs.getString('window_mode') ?? 'windowed_1920';
 
-  switch (mode) {
-    case 'borderless':
-      await windowManager.setFullScreen(true);
-      break;
-    case 'windowed_1280':
+  final isFull = await windowManager.isFullScreen();
+
+  if (mode == 'borderless') {
+    await windowManager.setFullScreen(true);
+  } else {
+    // If we are currently fullscreen and switching to a windowed mode,
+    // we must wait for the OS to finish the style transition before resizing
+    // to prevent the application from crashing
+    if (isFull) {
       await windowManager.setFullScreen(false);
-      await windowManager.setSize(const Size(1280, 720));
-      await windowManager.center();
-      break;
-    case 'windowed_1600':
-      await windowManager.setFullScreen(false);
-      await windowManager.setSize(const Size(1600, 900));
-      await windowManager.center();
-      break;
-    case 'windowed_1920':
-      await windowManager.setFullScreen(false);
-      await windowManager.setSize(const Size(1920, 1080));
-      await windowManager.center();
-      break;
-    case 'windowed':
-    default:
-      await windowManager.setFullScreen(false);
-      await windowManager.setSize(const Size(1400, 900));
-      await windowManager.center();
-      break;
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+
+    switch (mode) {
+      case 'windowed_1280':
+        await windowManager.setSize(const Size(1280, 720));
+        await windowManager.center();
+        break;
+      case 'windowed_1600':
+        await windowManager.setSize(const Size(1600, 900));
+        await windowManager.center();
+        break;
+      case 'windowed_1920':
+        await windowManager.maximize();
+        break;
+      case 'windowed':
+      default:
+        await windowManager.setSize(const Size(1400, 900));
+        await windowManager.center();
+        break;
+    }
   }
 
   await windowManager.show();
@@ -73,7 +79,7 @@ class DebateTimerApp extends StatelessWidget {
           seedColor: const Color(0xFF4F46E5),
           brightness: Brightness.light,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

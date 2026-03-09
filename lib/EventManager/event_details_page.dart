@@ -9,6 +9,9 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:reorderables/reorderables.dart';
+import 'clipboard_manager.dart';
+import 'flow_utils.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final EventData event;
@@ -20,9 +23,6 @@ class EventDetailsPage extends StatefulWidget {
 }
 
 class _EventDetailsPageState extends State<EventDetailsPage> {
-  static FlowData? _copiedFlow;
-  static FlowFolderData? _copiedFolder;
-
   @override
   Widget build(BuildContext context) {
     final dateRange = (widget.event.startDate != null &&
@@ -126,34 +126,25 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey)),
                             const SizedBox(height: 8),
-                            SizedBox(
-                              height: 160,
-                              child: ReorderableListView(
-                                scrollDirection: Axis.horizontal,
-                                onReorder: (oldIndex, newIndex) {
-                                  _reorderFolders(folders, oldIndex, newIndex);
-                                },
-                                children: [
-                                  ...folders.map((folder) =>
-                                      ReorderableDelayedDragStartListener(
-                                        key: ValueKey(folder.id),
-                                        index: folders.indexOf(folder),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 16.0),
-                                          child:
-                                              _buildFolderBox(context, folder),
-                                        ),
-                                      )),
-                                ],
-                              ),
+                            ReorderableWrap(
+                              spacing: 16.0,
+                              runSpacing: 16.0,
+                              onReorder: (oldIndex, newIndex) {
+                                _reorderFolders(folders, oldIndex, newIndex);
+                              },
+                              children: [
+                                ...folders.map((folder) => Container(
+                                      key: ValueKey(folder.id),
+                                      child: _buildFolderBox(context, folder),
+                                    )),
+                              ],
                             ),
                             const SizedBox(height: 16),
                           ],
                           Row(
                             children: [
                               _buildAddFolderButton(context),
-                              if (_copiedFolder != null) ...[
+                              if (ClipboardManager.copiedFolder != null) ...[
                                 const SizedBox(width: 16),
                                 _buildPasteFolderButton(context),
                               ],
@@ -186,33 +177,25 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey)),
                             const SizedBox(height: 8),
-                            SizedBox(
-                              height: 160,
-                              child: ReorderableListView(
-                                scrollDirection: Axis.horizontal,
-                                onReorder: (oldIndex, newIndex) {
-                                  _reorderFlows(flows, oldIndex, newIndex);
-                                },
-                                children: [
-                                  ...flows.map((flow) =>
-                                      ReorderableDelayedDragStartListener(
-                                        key: ValueKey(flow.id),
-                                        index: flows.indexOf(flow),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 16.0),
-                                          child: _buildFlowBox(context, flow),
-                                        ),
-                                      )),
-                                ],
-                              ),
+                            ReorderableWrap(
+                              spacing: 16.0,
+                              runSpacing: 16.0,
+                              onReorder: (oldIndex, newIndex) {
+                                _reorderFlows(flows, oldIndex, newIndex);
+                              },
+                              children: [
+                                ...flows.map((flow) => Container(
+                                      key: ValueKey(flow.id),
+                                      child: _buildFlowBox(context, flow),
+                                    )),
+                              ],
                             ),
                             const SizedBox(height: 16),
                           ],
                           Row(
                             children: [
                               _buildAddFlowButton(context),
-                              if (_copiedFlow != null) ...[
+                              if (ClipboardManager.copiedFlow != null) ...[
                                 const SizedBox(width: 16),
                                 _buildPasteFlowButton(context),
                               ],
@@ -565,7 +548,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ],
           ),
           onTap: () {
-            setState(() => _copiedFolder = folder);
+            setState(() => ClipboardManager.copiedFolder = folder);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('已复制文件夹: ${folder.folderName}')),
             );
@@ -699,7 +682,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ],
           ),
           onTap: () {
-            setState(() => _copiedFlow = flow);
+            setState(() => ClipboardManager.copiedFlow = flow);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('已复制赛程: ${flow.flowName}')),
             );
@@ -953,11 +936,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   Widget _buildPasteFlowButton(BuildContext context) {
     return InkWell(
       onTap: () async {
-        if (_copiedFlow == null) return;
+        if (ClipboardManager.copiedFlow == null) return;
         final flows = await (database.select(database.flow)
-              ..where((t) => t.eventId.equals(widget.event.id)))
+              ..where((t) => t.eventId.equals(widget.event.id))
+              ..where((t) => t.folderId.isNull()))
             .get();
-        await _duplicateFlow(_copiedFlow!, null, flows.length + 1);
+        await FlowUtils.duplicateFlow(
+            ClipboardManager.copiedFlow!, widget.event.id,
+            position: flows.length + 1);
         setState(() {});
       },
       borderRadius: BorderRadius.circular(12),
@@ -1003,26 +989,29 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   Widget _buildPasteFolderButton(BuildContext context) {
     return InkWell(
       onTap: () async {
-        if (_copiedFolder == null) return;
+        if (ClipboardManager.copiedFolder == null) return;
         final folders = await (database.select(database.flowFolder)
               ..where((t) => t.eventId.equals(widget.event.id)))
             .get();
 
-        final newFolder =
-            await database.into(database.flowFolder).insertReturning(
-                  FlowFolderCompanion.insert(
-                    folderName: '${_copiedFolder!.folderName} (副本)',
-                    eventId: widget.event.id,
-                    folderPosition: folders.length + 1,
-                  ),
-                );
+        final newFolder = await database
+            .into(database.flowFolder)
+            .insertReturning(
+              FlowFolderCompanion.insert(
+                folderName: '${ClipboardManager.copiedFolder!.folderName} (副本)',
+                eventId: widget.event.id,
+                folderPosition: folders.length + 1,
+              ),
+            );
 
         final flowsInFolder = await (database.select(database.flow)
-              ..where((t) => t.folderId.equals(_copiedFolder!.id)))
+              ..where(
+                  (t) => t.folderId.equals(ClipboardManager.copiedFolder!.id)))
             .get();
 
         for (final flow in flowsInFolder) {
-          await _duplicateFlow(flow, newFolder.id, flow.flowPosition!);
+          await FlowUtils.duplicateFlow(flow, widget.event.id,
+              folderId: newFolder.id, position: flow.flowPosition!);
         }
         setState(() {});
       },
@@ -1064,80 +1053,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         ],
       ),
     );
-  }
-
-  Future<void> _duplicateFlow(
-      FlowData flow, int? folderId, int position) async {
-    final newFlow = await database.into(database.flow).insertReturning(
-          FlowCompanion.insert(
-            flowName: drift.Value('${flow.flowName} (副本)'),
-            eventId: drift.Value(widget.event.id),
-            flowPosition: drift.Value(position),
-            folderId: drift.Value(folderId),
-            fontName: drift.Value(flow.fontName),
-            sectionFontName: drift.Value(flow.sectionFontName),
-            timerFontName: drift.Value(flow.timerFontName),
-            frontpageName: drift.Value(flow.frontpageName),
-            backgroundName: drift.Value(flow.backgroundName),
-          ),
-        );
-
-    final pages = await (database.select(database.page)
-          ..where((t) => t.flowId.equals(flow.id)))
-        .get();
-
-    for (final page in pages) {
-      final newPage = await database.into(database.page).insertReturning(
-            PageCompanion.insert(
-              pageName: drift.Value(page.pageName),
-              flowId: drift.Value(newFlow.id),
-              pagePosition: drift.Value(page.pagePosition),
-              pageTypeId: drift.Value(page.pageTypeId),
-              sectionName: drift.Value(page.sectionName),
-              bgmId: drift.Value(page.bgmId),
-              hotkeyValue: drift.Value(page.hotkeyValue),
-              sectionXpos: drift.Value(page.sectionXpos),
-              sectionYpos: drift.Value(page.sectionYpos),
-              sectionScale: drift.Value(page.sectionScale),
-              sectionFontName: drift.Value(page.sectionFontName),
-              timerFontName: drift.Value(page.timerFontName),
-              useFrontpage: drift.Value(page.useFrontpage),
-              isDefaultPage: drift.Value(page.isDefaultPage),
-            ),
-          );
-
-      // Copy timers
-      final timers = await (database.select(database.timer)
-            ..where((t) => t.pageId.equals(page.id)))
-          .get();
-      for (final timer in timers) {
-        await database.into(database.timer).insert(
-              TimerCompanion.insert(
-                pageId: drift.Value(newPage.id),
-                timerTemplateId: drift.Value(timer.timerTemplateId),
-                startTime: drift.Value(timer.startTime),
-                timerType: drift.Value(timer.timerType),
-                xpos: drift.Value(timer.xpos),
-                ypos: drift.Value(timer.ypos),
-                scale: drift.Value(timer.scale),
-              ),
-            );
-      }
-
-      // Copy images
-      final images = await (database.select(database.images)
-            ..where((t) => t.pageId.equals(page.id)))
-          .get();
-      for (final img in images) {
-        await database.into(database.images).insert(
-              ImagesCompanion.insert(
-                imageName: drift.Value(img.imageName),
-                imageType: drift.Value(img.imageType),
-                pageId: drift.Value(newPage.id),
-              ),
-            );
-      }
-    }
   }
 
   Widget _buildSchoolsSection() {

@@ -20,6 +20,7 @@ dependencies:
   audioplayers: ^6.0.0
   window_manager: ^0.3.8
   archive: ^3.6.1
+  reorderables: ^0.6.0
 dependency_overrides:
   path_provider_windows: 2.2.1
   path_provider_foundation: 2.3.0

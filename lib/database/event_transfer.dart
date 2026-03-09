@@ -234,9 +234,11 @@ class EventTransfer {
     final Map<String, dynamic> importData = jsonDecode(jsonStr);
 
     final supportDir = await getApplicationSupportDirectory();
+    final tempExtractDir = Directory(p.join(supportDir.path, 'YiHuaTimer',
+        'temp_import_${DateTime.now().millisecondsSinceEpoch}'));
 
-    // 2. Extract files — ensure paths land inside YiHuaTimer/
     try {
+      // 2. Extract files into temp directory
       for (var file in archive) {
         if (!file.isFile || file.name == 'event_data.json') continue;
 
@@ -250,19 +252,49 @@ class EventTransfer {
           continue;
         }
 
-        final destPath = p.joinAll([supportDir.path, ...segments]);
+        final destPath = p.joinAll([tempExtractDir.path, ...segments]);
         final destFile = File(destPath);
-        if (!await destFile.parent.exists())
+        if (!await destFile.parent.exists()) {
           await destFile.parent.create(recursive: true);
+        }
         await destFile.writeAsBytes(file.content as List<int>);
       }
-    } catch (e) {
-      print('Error extracting files: $e');
-      rethrow;
-    }
 
-    // 3. Database Import with ID Re-mapping
-    try {
+      // Process bgm and ding (ignore if exist)
+      final tempBgm =
+          Directory(p.join(tempExtractDir.path, 'YiHuaTimer', 'bgm'));
+      if (await tempBgm.exists()) {
+        final realBgm = Directory(p.join(supportDir.path, 'YiHuaTimer', 'bgm'));
+        if (!await realBgm.exists()) await realBgm.create(recursive: true);
+        await for (var srcFile in tempBgm.list(recursive: true)) {
+          if (srcFile is File) {
+            final destFile =
+                File(p.join(realBgm.path, p.basename(srcFile.path)));
+            if (!await destFile.exists()) {
+              await srcFile.copy(destFile.path);
+            }
+          }
+        }
+      }
+
+      final tempDing =
+          Directory(p.join(tempExtractDir.path, 'YiHuaTimer', 'ding'));
+      if (await tempDing.exists()) {
+        final realDing =
+            Directory(p.join(supportDir.path, 'YiHuaTimer', 'ding'));
+        if (!await realDing.exists()) await realDing.create(recursive: true);
+        await for (var srcFile in tempDing.list(recursive: true)) {
+          if (srcFile is File) {
+            final destFile =
+                File(p.join(realDing.path, p.basename(srcFile.path)));
+            if (!await destFile.exists()) {
+              await srcFile.copy(destFile.path);
+            }
+          }
+        }
+      }
+
+      // 3. Database Import with ID Re-mapping
       await database.transaction(() async {
         final eventData = importData['event'];
         if (eventData == null) throw Exception('Event details missing in JSON');
@@ -377,26 +409,30 @@ class EventTransfer {
               remark: drift.Value(eventJson['remark']?.toString()),
             ));
 
-        // After we have the new Event ID, we should rename the extracted images directory
-        final oldImageDir = Directory(
-            p.join(supportDir.path, 'YiHuaTimer', 'images', '$oldEventId'));
+        // After we have the new Event ID, we should rename the extracted images directory from temp
+        final extractedImageDir = Directory(
+            p.join(tempExtractDir.path, 'YiHuaTimer', 'images', '$oldEventId'));
         final newImageDir = Directory(
             p.join(supportDir.path, 'YiHuaTimer', 'images', '$newEventId'));
-        if (await oldImageDir.exists()) {
+        if (await extractedImageDir.exists()) {
           if (await newImageDir.exists())
             await newImageDir.delete(recursive: true);
-          await oldImageDir.rename(newImageDir.path);
+          if (!await newImageDir.parent.exists())
+            await newImageDir.parent.create(recursive: true);
+          await extractedImageDir.rename(newImageDir.path);
         }
 
-        // After we have the new Event ID, we should rename the extracted schools directory
-        final oldSchoolDir = Directory(
-            p.join(supportDir.path, 'YiHuaTimer', 'schools', '$oldEventId'));
+        // After we have the new Event ID, we should rename the extracted schools directory from temp
+        final extractedSchoolDir = Directory(p.join(
+            tempExtractDir.path, 'YiHuaTimer', 'schools', '$oldEventId'));
         final newSchoolDir = Directory(
             p.join(supportDir.path, 'YiHuaTimer', 'schools', '$newEventId'));
-        if (await oldSchoolDir.exists()) {
+        if (await extractedSchoolDir.exists()) {
           if (await newSchoolDir.exists())
             await newSchoolDir.delete(recursive: true);
-          await oldSchoolDir.rename(newSchoolDir.path);
+          if (!await newSchoolDir.parent.exists())
+            await newSchoolDir.parent.create(recursive: true);
+          await extractedSchoolDir.rename(newSchoolDir.path);
         }
 
         // Images (Need to remap positions and page_id later)
@@ -574,9 +610,13 @@ class EventTransfer {
         }
       });
     } catch (e, stack) {
-      print('Database transaction error during import: $e');
+      print('Error during import process: $e');
       print(stack);
       rethrow;
+    } finally {
+      if (await tempExtractDir.exists()) {
+        await tempExtractDir.delete(recursive: true);
+      }
     }
   }
 }
