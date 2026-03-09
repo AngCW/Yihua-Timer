@@ -69,12 +69,12 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
                 binding: _hotkeySettings.previousPage,
                 icon: Icons.arrow_back,
               ),
-              const Divider(height: 32),
+              const Divider(height: 20),
               _buildHotkeyRow(
                 binding: _hotkeySettings.nextPage,
                 icon: Icons.arrow_forward,
               ),
-              const Divider(height: 32),
+              const Divider(height: 20),
               _buildHotkeyRow(
                 binding: _hotkeySettings.specialPage,
                 customText: '可在各自的flow另外调',
@@ -91,7 +91,7 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
               _buildHotkeyRow(
                 binding: _hotkeySettings.pageA1StartStop,
               ),
-              const Divider(height: 32),
+              const Divider(height: 20),
               _buildHotkeyRow(
                 binding: _hotkeySettings.pageA1Reset,
               ),
@@ -111,7 +111,7 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
                   _buildHotkeyRow(
                     binding: _hotkeySettings.pageA2LeftStartStop,
                   ),
-                  const Divider(height: 32),
+                  const Divider(height: 20),
                   _buildHotkeyRow(
                     binding: _hotkeySettings.pageA2LeftReset,
                   ),
@@ -127,7 +127,7 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
                   _buildHotkeyRow(
                     binding: _hotkeySettings.pageA2RightStartStop,
                   ),
-                  const Divider(height: 32),
+                  const Divider(height: 20),
                   _buildHotkeyRow(
                     binding: _hotkeySettings.pageA2RightReset,
                   ),
@@ -223,6 +223,8 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
               color: Color(0xFF111827),
               fontWeight: FontWeight.w500,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(width: 16),

@@ -59,16 +59,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildMainContent() {
     switch (_selectedNavIndex) {
       case 0:
-        return const SingleChildScrollView(
-          padding: EdgeInsets.all(32.0),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              RecentEventsSection(),
-              SizedBox(height: 40),
-              CreateEventSection(),
-              SizedBox(height: 40),
-              ShortcutsSection(),
+              RecentEventsSection(
+                onViewAll: () {
+                  setState(() {
+                    _selectedNavIndex = 2;
+                  });
+                },
+              ),
+              const SizedBox(height: 40),
+              const CreateEventSection(),
+              const SizedBox(height: 40),
+              const ShortcutsSection(),
             ],
           ),
         );

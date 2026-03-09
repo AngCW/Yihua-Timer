@@ -492,7 +492,7 @@ class _PageConfigDialogState extends State<PageConfigDialog> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            initialValue: template,
+            value: isTimerA ? _selectedTimerATemplate : _selectedTimerBTemplate,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.shade50,

@@ -107,16 +107,22 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                           const SizedBox(height: 8),
                           SizedBox(
                             height: 160,
-                            child: ListView.builder(
+                            child: ReorderableListView(
                               scrollDirection: Axis.horizontal,
-                              itemCount: folders.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 16.0),
-                                  child:
-                                      _buildFolderBox(context, folders[index]),
-                                );
+                              onReorder: (oldIndex, newIndex) {
+                                _reorderFolders(folders, oldIndex, newIndex);
                               },
+                              children: [
+                                for (int i = 0; i < folders.length; i++)
+                                  ReorderableDelayedDragStartListener(
+                                    key: ValueKey(folders[i].id),
+                                    index: i,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 16.0),
+                                      child: _buildFolderBox(context, folders[i]),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -148,15 +154,22 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                           const SizedBox(height: 8),
                           SizedBox(
                             height: 160,
-                            child: ListView.builder(
+                            child: ReorderableListView(
                               scrollDirection: Axis.horizontal,
-                              itemCount: flows.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 16.0),
-                                  child: _buildFlowBox(context, flows[index]),
-                                );
+                              onReorder: (oldIndex, newIndex) {
+                                _reorderFlows(flows, oldIndex, newIndex);
                               },
+                              children: [
+                                for (int i = 0; i < flows.length; i++)
+                                  ReorderableDelayedDragStartListener(
+                                    key: ValueKey(flows[i].id),
+                                    index: i,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 16.0),
+                                      child: _buildFlowBox(context, flows[i]),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ],
@@ -170,6 +183,30 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _reorderFolders(
+      List<FlowFolderData> folders, int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = folders.removeAt(oldIndex);
+    folders.insert(newIndex, item);
+    for (int i = 0; i < folders.length; i++) {
+      await (database.update(database.flowFolder)
+            ..where((t) => t.id.equals(folders[i].id)))
+          .write(FlowFolderCompanion(folderPosition: drift.Value(i + 1)));
+    }
+  }
+
+  Future<void> _reorderFlows(
+      List<FlowData> flows, int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = flows.removeAt(oldIndex);
+    flows.insert(newIndex, item);
+    for (int i = 0; i < flows.length; i++) {
+      await (database.update(database.flow)
+            ..where((t) => t.id.equals(flows[i].id)))
+          .write(FlowCompanion(flowPosition: drift.Value(i + 1)));
+    }
   }
 
   Widget _buildSectionTitle(String title) {

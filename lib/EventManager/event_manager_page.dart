@@ -42,10 +42,8 @@ class _EventManagerPageState extends State<EventManagerPage> {
       // 1. Delete from database in a transaction
       await database.transaction(() async {
         final Set<int> positionIds = {};
-        final Set<int> imageIdsToDelete = {};
 
-        // 1. Collect and Delete Flows (and sub-structure)
-        // This must be done BEFORE deleting schools because Flow references School
+        // 1. Collect flows and children (pages, timers, images)
         final flows = await (database.select(database.flow)
               ..where((t) => t.eventId.equals(event.id)))
             .get();
@@ -56,15 +54,7 @@ class _EventManagerPageState extends State<EventManagerPage> {
               .get();
 
           for (var page in pages) {
-            // Collect page-level position IDs
-            if (page.sectionPositionId != null)
-              positionIds.add(page.sectionPositionId!);
-            if (page.schoolAPositionId != null)
-              positionIds.add(page.schoolAPositionId!);
-            if (page.schoolBPositionId != null)
-              positionIds.add(page.schoolBPositionId!);
-
-            // Delete Timers (reference Page)
+            // Delete timers
             final timers = await (database.select(database.timer)
                   ..where((t) => t.pageId.equals(page.id)))
                 .get();
@@ -75,63 +65,61 @@ class _EventManagerPageState extends State<EventManagerPage> {
                   .go();
             }
 
-            // Delete Page Images (reference Page)
-            final pageImages = await (database.select(database.images)
+            // Delete page images
+            final pImages = await (database.select(database.images)
                   ..where((t) => t.pageId.equals(page.id)))
                 .get();
-            for (var img in pageImages) {
+            for (var img in pImages) {
               if (img.positionId != null) positionIds.add(img.positionId!);
               await (database.delete(database.images)
                     ..where((t) => t.id.equals(img.id)))
                   .go();
             }
 
-            // Delete the Page
+            // Collect page-level position IDs if they exist
+            if (page.sectionPositionId != null)
+              positionIds.add(page.sectionPositionId!);
+            if (page.schoolAPositionId != null)
+              positionIds.add(page.schoolAPositionId!);
+            if (page.schoolBPositionId != null)
+              positionIds.add(page.schoolBPositionId!);
+
             await (database.delete(database.page)
                   ..where((t) => t.id.equals(page.id)))
                 .go();
           }
 
-          // Delete the Flow
           await (database.delete(database.flow)
                 ..where((t) => t.id.equals(flow.id)))
               .go();
         }
 
-        // 2. Delete Flow Folders
+        // 2. Delete flow folders
         await (database.delete(database.flowFolder)
               ..where((t) => t.eventId.equals(event.id)))
             .go();
 
-        // 3. Schools and School Logos
+        // 3. Delete schools and their logos
         final schools = await (database.select(database.school)
               ..where((t) => t.eventId.equals(event.id)))
             .get();
 
         for (var school in schools) {
           if (school.logoImageId != null) {
-            imageIdsToDelete.add(school.logoImageId!);
+            final image = await (database.select(database.images)
+                  ..where((t) => t.id.equals(school.logoImageId!)))
+                .getSingleOrNull();
+            if (image != null) {
+              if (image.positionId != null) positionIds.add(image.positionId!);
+              await (database.delete(database.images)
+                    ..where((t) => t.id.equals(image.id)))
+                  .go();
+            }
           }
         }
-
-        // Delete schools first to break FK from school -> images (logo_image_id)
-        // Now that flows are gone, this won't trigger FK error from flow -> school
         await (database.delete(database.school)
               ..where((t) => t.eventId.equals(event.id)))
             .go();
-
-        // Delete School Images
-        for (var imgId in imageIdsToDelete) {
-          final image = await (database.select(database.images)
-                ..where((t) => t.id.equals(imgId)))
-              .getSingleOrNull();
-          if (image != null) {
-            if (image.positionId != null) positionIds.add(image.positionId!);
-            await (database.delete(database.images)
-                  ..where((t) => t.id.equals(imgId)))
-                .go();
-          }
-        }
 
         // 4. Finally delete the event itself
         await (database.delete(database.event)
