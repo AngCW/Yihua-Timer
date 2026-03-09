@@ -3184,6 +3184,14 @@ class Page extends Table with TableInfo<Page, PageData> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'REFERENCES position(id)');
+  static const VerificationMeta _showSchoolsMeta =
+      const VerificationMeta('showSchools');
+  late final GeneratedColumn<bool> showSchools = GeneratedColumn<bool>(
+      'show_schools', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      $customConstraints: 'DEFAULT TRUE',
+      defaultValue: const CustomExpression('TRUE'));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -3203,7 +3211,8 @@ class Page extends Table with TableInfo<Page, PageData> {
         sectionPositionId,
         isDefaultPage,
         schoolAPositionId,
-        schoolBPositionId
+        schoolBPositionId,
+        showSchools
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3314,6 +3323,12 @@ class Page extends Table with TableInfo<Page, PageData> {
           schoolBPositionId.isAcceptableOrUnknown(
               data['school_b_position_id']!, _schoolBPositionIdMeta));
     }
+    if (data.containsKey('show_schools')) {
+      context.handle(
+          _showSchoolsMeta,
+          showSchools.isAcceptableOrUnknown(
+              data['show_schools']!, _showSchoolsMeta));
+    }
     return context;
   }
 
@@ -3359,6 +3374,8 @@ class Page extends Table with TableInfo<Page, PageData> {
           DriftSqlType.int, data['${effectivePrefix}school_a_position_id']),
       schoolBPositionId: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}school_b_position_id']),
+      showSchools: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}show_schools']),
     );
   }
 
@@ -3392,6 +3409,7 @@ class PageData extends DataClass implements Insertable<PageData> {
   final bool? isDefaultPage;
   final int? schoolAPositionId;
   final int? schoolBPositionId;
+  final bool? showSchools;
   const PageData(
       {required this.id,
       this.pageName,
@@ -3410,7 +3428,8 @@ class PageData extends DataClass implements Insertable<PageData> {
       this.sectionPositionId,
       this.isDefaultPage,
       this.schoolAPositionId,
-      this.schoolBPositionId});
+      this.schoolBPositionId,
+      this.showSchools});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3465,6 +3484,9 @@ class PageData extends DataClass implements Insertable<PageData> {
     }
     if (!nullToAbsent || schoolBPositionId != null) {
       map['school_b_position_id'] = Variable<int>(schoolBPositionId);
+    }
+    if (!nullToAbsent || showSchools != null) {
+      map['show_schools'] = Variable<bool>(showSchools);
     }
     return map;
   }
@@ -3521,6 +3543,9 @@ class PageData extends DataClass implements Insertable<PageData> {
       schoolBPositionId: schoolBPositionId == null && nullToAbsent
           ? const Value.absent()
           : Value(schoolBPositionId),
+      showSchools: showSchools == null && nullToAbsent
+          ? const Value.absent()
+          : Value(showSchools),
     );
   }
 
@@ -3548,6 +3573,7 @@ class PageData extends DataClass implements Insertable<PageData> {
           serializer.fromJson<int?>(json['school_a_position_id']),
       schoolBPositionId:
           serializer.fromJson<int?>(json['school_b_position_id']),
+      showSchools: serializer.fromJson<bool?>(json['show_schools']),
     );
   }
   @override
@@ -3572,6 +3598,7 @@ class PageData extends DataClass implements Insertable<PageData> {
       'is_default_page': serializer.toJson<bool?>(isDefaultPage),
       'school_a_position_id': serializer.toJson<int?>(schoolAPositionId),
       'school_b_position_id': serializer.toJson<int?>(schoolBPositionId),
+      'show_schools': serializer.toJson<bool?>(showSchools),
     };
   }
 
@@ -3593,7 +3620,8 @@ class PageData extends DataClass implements Insertable<PageData> {
           Value<int?> sectionPositionId = const Value.absent(),
           Value<bool?> isDefaultPage = const Value.absent(),
           Value<int?> schoolAPositionId = const Value.absent(),
-          Value<int?> schoolBPositionId = const Value.absent()}) =>
+          Value<int?> schoolBPositionId = const Value.absent(),
+          Value<bool?> showSchools = const Value.absent()}) =>
       PageData(
         id: id ?? this.id,
         pageName: pageName.present ? pageName.value : this.pageName,
@@ -3626,6 +3654,7 @@ class PageData extends DataClass implements Insertable<PageData> {
         schoolBPositionId: schoolBPositionId.present
             ? schoolBPositionId.value
             : this.schoolBPositionId,
+        showSchools: showSchools.present ? showSchools.value : this.showSchools,
       );
   PageData copyWithCompanion(PageCompanion data) {
     return PageData(
@@ -3670,6 +3699,8 @@ class PageData extends DataClass implements Insertable<PageData> {
       schoolBPositionId: data.schoolBPositionId.present
           ? data.schoolBPositionId.value
           : this.schoolBPositionId,
+      showSchools:
+          data.showSchools.present ? data.showSchools.value : this.showSchools,
     );
   }
 
@@ -3693,7 +3724,8 @@ class PageData extends DataClass implements Insertable<PageData> {
           ..write('sectionPositionId: $sectionPositionId, ')
           ..write('isDefaultPage: $isDefaultPage, ')
           ..write('schoolAPositionId: $schoolAPositionId, ')
-          ..write('schoolBPositionId: $schoolBPositionId')
+          ..write('schoolBPositionId: $schoolBPositionId, ')
+          ..write('showSchools: $showSchools')
           ..write(')'))
         .toString();
   }
@@ -3717,7 +3749,8 @@ class PageData extends DataClass implements Insertable<PageData> {
       sectionPositionId,
       isDefaultPage,
       schoolAPositionId,
-      schoolBPositionId);
+      schoolBPositionId,
+      showSchools);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3739,7 +3772,8 @@ class PageData extends DataClass implements Insertable<PageData> {
           other.sectionPositionId == this.sectionPositionId &&
           other.isDefaultPage == this.isDefaultPage &&
           other.schoolAPositionId == this.schoolAPositionId &&
-          other.schoolBPositionId == this.schoolBPositionId);
+          other.schoolBPositionId == this.schoolBPositionId &&
+          other.showSchools == this.showSchools);
 }
 
 class PageCompanion extends UpdateCompanion<PageData> {
@@ -3761,6 +3795,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
   final Value<bool?> isDefaultPage;
   final Value<int?> schoolAPositionId;
   final Value<int?> schoolBPositionId;
+  final Value<bool?> showSchools;
   const PageCompanion({
     this.id = const Value.absent(),
     this.pageName = const Value.absent(),
@@ -3780,6 +3815,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.isDefaultPage = const Value.absent(),
     this.schoolAPositionId = const Value.absent(),
     this.schoolBPositionId = const Value.absent(),
+    this.showSchools = const Value.absent(),
   });
   PageCompanion.insert({
     this.id = const Value.absent(),
@@ -3800,6 +3836,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.isDefaultPage = const Value.absent(),
     this.schoolAPositionId = const Value.absent(),
     this.schoolBPositionId = const Value.absent(),
+    this.showSchools = const Value.absent(),
   });
   static Insertable<PageData> custom({
     Expression<int>? id,
@@ -3820,6 +3857,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
     Expression<bool>? isDefaultPage,
     Expression<int>? schoolAPositionId,
     Expression<int>? schoolBPositionId,
+    Expression<bool>? showSchools,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3840,6 +3878,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
       if (isDefaultPage != null) 'is_default_page': isDefaultPage,
       if (schoolAPositionId != null) 'school_a_position_id': schoolAPositionId,
       if (schoolBPositionId != null) 'school_b_position_id': schoolBPositionId,
+      if (showSchools != null) 'show_schools': showSchools,
     });
   }
 
@@ -3861,7 +3900,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
       Value<int?>? sectionPositionId,
       Value<bool?>? isDefaultPage,
       Value<int?>? schoolAPositionId,
-      Value<int?>? schoolBPositionId}) {
+      Value<int?>? schoolBPositionId,
+      Value<bool?>? showSchools}) {
     return PageCompanion(
       id: id ?? this.id,
       pageName: pageName ?? this.pageName,
@@ -3881,6 +3921,7 @@ class PageCompanion extends UpdateCompanion<PageData> {
       isDefaultPage: isDefaultPage ?? this.isDefaultPage,
       schoolAPositionId: schoolAPositionId ?? this.schoolAPositionId,
       schoolBPositionId: schoolBPositionId ?? this.schoolBPositionId,
+      showSchools: showSchools ?? this.showSchools,
     );
   }
 
@@ -3941,6 +3982,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     if (schoolBPositionId.present) {
       map['school_b_position_id'] = Variable<int>(schoolBPositionId.value);
     }
+    if (showSchools.present) {
+      map['show_schools'] = Variable<bool>(showSchools.value);
+    }
     return map;
   }
 
@@ -3964,7 +4008,8 @@ class PageCompanion extends UpdateCompanion<PageData> {
           ..write('sectionPositionId: $sectionPositionId, ')
           ..write('isDefaultPage: $isDefaultPage, ')
           ..write('schoolAPositionId: $schoolAPositionId, ')
-          ..write('schoolBPositionId: $schoolBPositionId')
+          ..write('schoolBPositionId: $schoolBPositionId, ')
+          ..write('showSchools: $showSchools')
           ..write(')'))
         .toString();
   }
@@ -7475,6 +7520,7 @@ typedef $PageCreateCompanionBuilder = PageCompanion Function({
   Value<bool?> isDefaultPage,
   Value<int?> schoolAPositionId,
   Value<int?> schoolBPositionId,
+  Value<bool?> showSchools,
 });
 typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int> id,
@@ -7495,6 +7541,7 @@ typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<bool?> isDefaultPage,
   Value<int?> schoolAPositionId,
   Value<int?> schoolBPositionId,
+  Value<bool?> showSchools,
 });
 
 final class $PageReferences
@@ -7621,6 +7668,9 @@ class $PageFilterComposer extends Composer<_$AppDatabase, Page> {
 
   ColumnFilters<bool> get isDefaultPage => $composableBuilder(
       column: $table.isDefaultPage, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get showSchools => $composableBuilder(
+      column: $table.showSchools, builder: (column) => ColumnFilters(column));
 
   $BgmFilterComposer get bgmId {
     final $BgmFilterComposer composer = $composerBuilder(
@@ -7780,6 +7830,9 @@ class $PageOrderingComposer extends Composer<_$AppDatabase, Page> {
       column: $table.isDefaultPage,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get showSchools => $composableBuilder(
+      column: $table.showSchools, builder: (column) => ColumnOrderings(column));
+
   $BgmOrderingComposer get bgmId {
     final $BgmOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -7910,6 +7963,9 @@ class $PageAnnotationComposer extends Composer<_$AppDatabase, Page> {
 
   GeneratedColumn<bool> get isDefaultPage => $composableBuilder(
       column: $table.isDefaultPage, builder: (column) => column);
+
+  GeneratedColumn<bool> get showSchools => $composableBuilder(
+      column: $table.showSchools, builder: (column) => column);
 
   $BgmAnnotationComposer get bgmId {
     final $BgmAnnotationComposer composer = $composerBuilder(
@@ -8059,6 +8115,7 @@ class $PageTableManager extends RootTableManager<
             Value<bool?> isDefaultPage = const Value.absent(),
             Value<int?> schoolAPositionId = const Value.absent(),
             Value<int?> schoolBPositionId = const Value.absent(),
+            Value<bool?> showSchools = const Value.absent(),
           }) =>
               PageCompanion(
             id: id,
@@ -8079,6 +8136,7 @@ class $PageTableManager extends RootTableManager<
             isDefaultPage: isDefaultPage,
             schoolAPositionId: schoolAPositionId,
             schoolBPositionId: schoolBPositionId,
+            showSchools: showSchools,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -8099,6 +8157,7 @@ class $PageTableManager extends RootTableManager<
             Value<bool?> isDefaultPage = const Value.absent(),
             Value<int?> schoolAPositionId = const Value.absent(),
             Value<int?> schoolBPositionId = const Value.absent(),
+            Value<bool?> showSchools = const Value.absent(),
           }) =>
               PageCompanion.insert(
             id: id,
@@ -8119,6 +8178,7 @@ class $PageTableManager extends RootTableManager<
             isDefaultPage: isDefaultPage,
             schoolAPositionId: schoolAPositionId,
             schoolBPositionId: schoolBPositionId,
+            showSchools: showSchools,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $PageReferences(db, table, e)))

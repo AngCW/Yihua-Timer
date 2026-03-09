@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'event_details_page.dart';
 import '../main.dart';
 import '../database/app_database.dart';
+import '../database/event_transfer.dart';
+import 'package:file_picker/file_picker.dart';
 
 class EventManagerPage extends StatefulWidget {
   const EventManagerPage({super.key});
@@ -39,93 +41,109 @@ class _EventManagerPageState extends State<EventManagerPage> {
     try {
       // 1. Delete from database in a transaction
       await database.transaction(() async {
-        // Delete schools (linked to event)
-        final schools = await (database.select(database.school)
-              ..where((t) => t.eventId.equals(event.id)))
-            .get();
-        for (var school in schools) {
-          if (school.logoImageId != null) {
-            final image = await (database.select(database.images)
-                  ..where((t) => t.id.equals(school.logoImageId!)))
-                .getSingleOrNull();
-            if (image != null) {
-              if (image.positionId != null) {
-                await (database.delete(database.position)
-                      ..where((t) => t.id.equals(image.positionId!)))
-                    .go();
-              }
-              await (database.delete(database.images)
-                    ..where((t) => t.id.equals(image.id)))
-                  .go();
-            }
-          }
-        }
-        await (database.delete(database.school)
-              ..where((t) => t.eventId.equals(event.id)))
-            .go();
+        final Set<int> positionIds = {};
+        final Set<int> imageIdsToDelete = {};
 
-        // Delete flow folders
-        await (database.delete(database.flowFolder)
-              ..where((t) => t.eventId.equals(event.id)))
-            .go();
-
-        // Delete flows
+        // 1. Collect and Delete Flows (and sub-structure)
+        // This must be done BEFORE deleting schools because Flow references School
         final flows = await (database.select(database.flow)
               ..where((t) => t.eventId.equals(event.id)))
             .get();
+
         for (var flow in flows) {
-          // Delete pages
           final pages = await (database.select(database.page)
                 ..where((t) => t.flowId.equals(flow.id)))
               .get();
+
           for (var page in pages) {
-            // Delete timers
+            // Collect page-level position IDs
+            if (page.sectionPositionId != null)
+              positionIds.add(page.sectionPositionId!);
+            if (page.schoolAPositionId != null)
+              positionIds.add(page.schoolAPositionId!);
+            if (page.schoolBPositionId != null)
+              positionIds.add(page.schoolBPositionId!);
+
+            // Delete Timers (reference Page)
             final timers = await (database.select(database.timer)
                   ..where((t) => t.pageId.equals(page.id)))
                 .get();
             for (var timer in timers) {
-              if (timer.positionId != null) {
-                await (database.delete(database.position)
-                      ..where((t) => t.id.equals(timer.positionId!)))
-                    .go();
-              }
+              if (timer.positionId != null) positionIds.add(timer.positionId!);
               await (database.delete(database.timer)
                     ..where((t) => t.id.equals(timer.id)))
                   .go();
             }
-            // Delete images
-            final pImages = await (database.select(database.images)
+
+            // Delete Page Images (reference Page)
+            final pageImages = await (database.select(database.images)
                   ..where((t) => t.pageId.equals(page.id)))
                 .get();
-            for (var img in pImages) {
-              if (img.positionId != null) {
-                await (database.delete(database.position)
-                      ..where((t) => t.id.equals(img.positionId!)))
-                    .go();
-              }
+            for (var img in pageImages) {
+              if (img.positionId != null) positionIds.add(img.positionId!);
               await (database.delete(database.images)
                     ..where((t) => t.id.equals(img.id)))
                   .go();
             }
 
-            if (page.sectionPositionId != null) {
-              await (database.delete(database.position)
-                    ..where((t) => t.id.equals(page.sectionPositionId!)))
-                  .go();
-            }
+            // Delete the Page
             await (database.delete(database.page)
                   ..where((t) => t.id.equals(page.id)))
                 .go();
           }
+
+          // Delete the Flow
           await (database.delete(database.flow)
                 ..where((t) => t.id.equals(flow.id)))
               .go();
         }
 
-        // Finally delete the event itself
+        // 2. Delete Flow Folders
+        await (database.delete(database.flowFolder)
+              ..where((t) => t.eventId.equals(event.id)))
+            .go();
+
+        // 3. Schools and School Logos
+        final schools = await (database.select(database.school)
+              ..where((t) => t.eventId.equals(event.id)))
+            .get();
+
+        for (var school in schools) {
+          if (school.logoImageId != null) {
+            imageIdsToDelete.add(school.logoImageId!);
+          }
+        }
+
+        // Delete schools first to break FK from school -> images (logo_image_id)
+        // Now that flows are gone, this won't trigger FK error from flow -> school
+        await (database.delete(database.school)
+              ..where((t) => t.eventId.equals(event.id)))
+            .go();
+
+        // Delete School Images
+        for (var imgId in imageIdsToDelete) {
+          final image = await (database.select(database.images)
+                ..where((t) => t.id.equals(imgId)))
+              .getSingleOrNull();
+          if (image != null) {
+            if (image.positionId != null) positionIds.add(image.positionId!);
+            await (database.delete(database.images)
+                  ..where((t) => t.id.equals(imgId)))
+                .go();
+          }
+        }
+
+        // 4. Finally delete the event itself
         await (database.delete(database.event)
               ..where((t) => t.id.equals(event.id)))
             .go();
+
+        // 5. Cleanup all collected positions
+        for (var posId in positionIds) {
+          await (database.delete(database.position)
+                ..where((t) => t.id.equals(posId)))
+              .go();
+        }
       });
 
       // 2. Delete folders
@@ -147,6 +165,83 @@ class _EventManagerPageState extends State<EventManagerPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('删除失败: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportEvent(EventData event) async {
+    try {
+      final String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: '导出赛事',
+        fileName: '${event.eventName}_export.zip',
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
+
+      if (outputPath == null) return;
+
+      // Show loading
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      await EventTransfer.exportEvent(event, outputPath);
+
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('赛事 "${event.eventName}" 导出成功')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('导出失败: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _importEvent() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
+
+      if (result == null || result.files.single.path == null) return;
+
+      // Show loading
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      await EventTransfer.importEvent(File(result.files.single.path!));
+
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        setState(() {}); // refresh list
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('赛事导入成功')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('导入失败: $e')),
         );
       }
     }
@@ -210,6 +305,22 @@ class _EventManagerPageState extends State<EventManagerPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Tooltip(
+                          message: '导出赛事',
+                          child: InkWell(
+                            onTap: () => _exportEvent(event),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.ios_share_rounded,
+                                color: Colors.blue.shade400,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Tooltip(
                           message: '删除赛事',
                           child: InkWell(
                             onTap: () => _deleteEvent(event),
@@ -224,7 +335,7 @@ class _EventManagerPageState extends State<EventManagerPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
                         Icon(
                           Icons.arrow_forward_ios_rounded,
                           color: Colors.grey.shade300,
@@ -314,47 +425,26 @@ class _EventManagerPageState extends State<EventManagerPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('导入功能暂未实现')),
-                          );
-                        },
+                        onPressed: _importEvent,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF4F46E5),
-                          side: const BorderSide(
-                              color: Color(0xFF4F46E5), width: 1),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                          foregroundColor: const Color(0xFF6B46C1),
+                          side: const BorderSide(color: Color(0xFF6B46C1)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        icon: const Icon(Icons.file_upload_outlined, size: 18),
-                        label: const Text('导入'),
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('导出功能暂未实现')),
-                          );
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF4F46E5),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                              horizontal: 20, vertical: 12),
                         ),
-                        icon:
-                            const Icon(Icons.file_download_outlined, size: 18),
-                        label: const Text('导出'),
+                        icon: const Icon(Icons.file_upload_outlined, size: 20),
+                        label: const Text(
+                          '导入赛事',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
                       ),
                     ],
                   ),

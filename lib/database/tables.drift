@@ -99,7 +99,8 @@ CREATE TABLE page (
     section_position_id INTEGER REFERENCES position(id),
     is_default_page BOOLEAN DEFAULT FALSE,
     school_a_position_id INTEGER REFERENCES position(id),
-    school_b_position_id INTEGER REFERENCES position(id)
+    school_b_position_id INTEGER REFERENCES position(id),
+    show_schools BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE school (

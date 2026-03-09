@@ -281,21 +281,6 @@ class _EventFormPageState extends State<_EventFormPage> {
                         border: OutlineInputBorder(), hintText: '例如: 2'),
                   )),
               const SizedBox(height: 24),
-              _UploadTile(
-                  label: '投票数据表',
-                  path: widget.draft.votingDataPath,
-                  onPick: () => _pickFile('voting')),
-              const SizedBox(height: 16),
-              _UploadTile(
-                  label: '背景音乐',
-                  path: widget.draft.bgmPath,
-                  onPick: () => _pickFile('bgm')),
-              const SizedBox(height: 16),
-              _UploadTile(
-                  label: '背景图',
-                  path: widget.draft.bgImgPath,
-                  onPick: () => _pickFile('bgImg')),
-              const SizedBox(height: 24),
               Text('备注', style: labelStyle),
               const SizedBox(height: 6),
               TextField(

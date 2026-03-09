@@ -38,6 +38,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   List<DingAudioData> _dingAudioList = [];
   int? _selectedBgmId;
   String? _selectedPageType;
+  bool _showSchools = true;
 
   // Single Timer (A1)
   int? _singleTemplateId;
@@ -155,9 +156,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _sectionNameController.text = _currentPage.sectionName ?? '';
     _hotkeyController.text = _currentPage.hotkeyValue ?? '';
     _selectedBgmId = _currentPage.bgmId;
-    _selectedPageType = _currentPage.pageTypeId;
-    _useFrontpage = _currentPage.useFrontpage ?? false;
-
+    // Default page type to A1 if not yet set
+    _selectedPageType = _currentPage.pageTypeId ?? 'A1';
+    _showSchools = _currentPage.showSchools ?? true;
     _useFrontpage = _currentPage.useFrontpage ?? false;
 
     _loadData();
@@ -538,41 +539,83 @@ class _PageManagerPageState extends State<PageManagerPage> {
     } catch (_) {}
 
     if (flowConfig != null) {
-      if (flowConfig.containsKey('section')) {
-        final m = flowConfig['section'];
-        _sectionX = m['x']?.toDouble() ?? _sectionX;
-        _sectionY = m['y']?.toDouble() ?? _sectionY;
-        _sectionScale = m['s']?.toDouble() ?? _sectionScale;
-      }
-      if (flowConfig.containsKey('timer_single')) {
-        final m = flowConfig['timer_single'];
-        _t1X = m['x']?.toDouble() ?? _t1X;
-        _t1Y = m['y']?.toDouble() ?? _t1Y;
-        _t1Scale = m['s']?.toDouble() ?? _t1Scale;
-      }
-      if (flowConfig.containsKey('timer_doubleL')) {
-        final m = flowConfig['timer_doubleL'];
-        _tlX = m['x']?.toDouble() ?? _tlX;
-        _tlY = m['y']?.toDouble() ?? _tlY;
-        _tlScale = m['s']?.toDouble() ?? _tlScale;
-      }
-      if (flowConfig.containsKey('timer_doubleR')) {
-        final m = flowConfig['timer_doubleR'];
-        _trX = m['x']?.toDouble() ?? _trX;
-        _trY = m['y']?.toDouble() ?? _trY;
-        _trScale = m['s']?.toDouble() ?? _trScale;
-      }
-      if (flowConfig.containsKey('schoolA')) {
-        final m = flowConfig['schoolA'];
-        _saX = m['x']?.toDouble() ?? _saX;
-        _saY = m['y']?.toDouble() ?? _saY;
-        _saScale = m['s']?.toDouble() ?? _saScale;
-      }
-      if (flowConfig.containsKey('schoolB')) {
-        final m = flowConfig['schoolB'];
-        _sbX = m['x']?.toDouble() ?? _sbX;
-        _sbY = m['y']?.toDouble() ?? _sbY;
-        _sbScale = m['s']?.toDouble() ?? _sbScale;
+      // Look for per-type config first
+      final typeConfig = flowConfig[_selectedPageType];
+      if (typeConfig != null && typeConfig is Map<String, dynamic>) {
+        if (typeConfig.containsKey('section')) {
+          final m = typeConfig['section'];
+          _sectionX = m['x']?.toDouble() ?? _sectionX;
+          _sectionY = m['y']?.toDouble() ?? _sectionY;
+          _sectionScale = m['s']?.toDouble() ?? _sectionScale;
+        }
+        if (typeConfig.containsKey('timer_single')) {
+          final m = typeConfig['timer_single'];
+          _t1X = m['x']?.toDouble() ?? _t1X;
+          _t1Y = m['y']?.toDouble() ?? _t1Y;
+          _t1Scale = m['s']?.toDouble() ?? _t1Scale;
+        }
+        if (typeConfig.containsKey('timer_doubleL')) {
+          final m = typeConfig['timer_doubleL'];
+          _tlX = m['x']?.toDouble() ?? _tlX;
+          _tlY = m['y']?.toDouble() ?? _tlY;
+          _tlScale = m['s']?.toDouble() ?? _tlScale;
+        }
+        if (typeConfig.containsKey('timer_doubleR')) {
+          final m = typeConfig['timer_doubleR'];
+          _trX = m['x']?.toDouble() ?? _trX;
+          _trY = m['y']?.toDouble() ?? _trY;
+          _trScale = m['s']?.toDouble() ?? _trScale;
+        }
+        if (typeConfig.containsKey('schoolA')) {
+          final m = typeConfig['schoolA'];
+          _saX = m['x']?.toDouble() ?? _saX;
+          _saY = m['y']?.toDouble() ?? _saY;
+          _saScale = m['s']?.toDouble() ?? _saScale;
+        }
+        if (typeConfig.containsKey('schoolB')) {
+          final m = typeConfig['schoolB'];
+          _sbX = m['x']?.toDouble() ?? _sbX;
+          _sbY = m['y']?.toDouble() ?? _sbY;
+          _sbScale = m['s']?.toDouble() ?? _sbScale;
+        }
+      } else {
+        // Fallback to old flat format for backward compatibility
+        if (flowConfig.containsKey('section')) {
+          final m = flowConfig['section'];
+          _sectionX = m['x']?.toDouble() ?? _sectionX;
+          _sectionY = m['y']?.toDouble() ?? _sectionY;
+          _sectionScale = m['s']?.toDouble() ?? _sectionScale;
+        }
+        if (flowConfig.containsKey('timer_single')) {
+          final m = flowConfig['timer_single'];
+          _t1X = m['x']?.toDouble() ?? _t1X;
+          _t1Y = m['y']?.toDouble() ?? _t1Y;
+          _t1Scale = m['s']?.toDouble() ?? _t1Scale;
+        }
+        if (flowConfig.containsKey('timer_doubleL')) {
+          final m = flowConfig['timer_doubleL'];
+          _tlX = m['x']?.toDouble() ?? _tlX;
+          _tlY = m['y']?.toDouble() ?? _tlY;
+          _tlScale = m['s']?.toDouble() ?? _tlScale;
+        }
+        if (flowConfig.containsKey('timer_doubleR')) {
+          final m = flowConfig['timer_doubleR'];
+          _trX = m['x']?.toDouble() ?? _trX;
+          _trY = m['y']?.toDouble() ?? _trY;
+          _trScale = m['s']?.toDouble() ?? _trScale;
+        }
+        if (flowConfig.containsKey('schoolA')) {
+          final m = flowConfig['schoolA'];
+          _saX = m['x']?.toDouble() ?? _saX;
+          _saY = m['y']?.toDouble() ?? _saY;
+          _saScale = m['s']?.toDouble() ?? _saScale;
+        }
+        if (flowConfig.containsKey('schoolB')) {
+          final m = flowConfig['schoolB'];
+          _sbX = m['x']?.toDouble() ?? _sbX;
+          _sbY = m['y']?.toDouble() ?? _sbY;
+          _sbScale = m['s']?.toDouble() ?? _sbScale;
+        }
       }
     }
 
@@ -1182,6 +1225,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
             : _hotkeyController.text.trim()),
         schoolAPositionId: drift.Value(saPosId),
         schoolBPositionId: drift.Value(sbPosId),
+        showSchools: drift.Value(_showSchools),
       ));
 
       final updated = await (database.select(database.page)
@@ -1273,169 +1317,172 @@ class _PageManagerPageState extends State<PageManagerPage> {
     try {
       final pages = await (database.select(database.page)
             ..where((t) => t.flowId.equals(widget.flow.id))
+            ..where((t) => t.pageTypeId.equals(_selectedPageType!))
             ..where((t) => t.id.isNotValue(_currentPage.id)))
           .get();
 
-      for (final pg in pages) {
-        // Upsert section position
-        int? secPosId = pg.sectionPositionId;
-        if (secPosId != null) {
-          final existingId = secPosId;
-          await (database.update(database.position)
-                ..where((t) => t.id.equals(existingId)))
-              .write(PositionCompanion(
-            xpos: drift.Value(_sectionX),
-            ypos: drift.Value(_sectionY),
-            size: drift.Value(_sectionScale),
-          ));
-        } else {
-          secPosId = await database.into(database.position).insert(
-                PositionCompanion.insert(
-                  xpos: drift.Value(_sectionX),
-                  ypos: drift.Value(_sectionY),
-                  size: drift.Value(_sectionScale),
-                ),
-              );
-        }
-        await (database.update(database.page)..where((t) => t.id.equals(pg.id)))
-            .write(PageCompanion(
-          sectionXpos: drift.Value(_sectionX),
-          sectionYpos: drift.Value(_sectionY),
-          sectionScale: drift.Value(_sectionScale),
-          sectionPositionId: drift.Value(secPosId),
-        ));
-
-        // Upsert timer positions for matching types
-        final timers = await (database.select(database.timer)
-              ..where((t) => t.pageId.equals(pg.id)))
-            .get();
-        for (final t in timers) {
-          double tx = 0, ty = 0, ts = 1.0;
-          if (t.timerType == 'single') {
-            tx = _t1X;
-            ty = _t1Y;
-            ts = _t1Scale;
-          } else if (t.timerType == 'doubleL') {
-            tx = _tlX;
-            ty = _tlY;
-            ts = _tlScale;
-          } else if (t.timerType == 'doubleR') {
-            tx = _trX;
-            ty = _trY;
-            ts = _trScale;
-          }
-
-          int? posId = t.positionId;
-          if (posId != null) {
-            final existingPosId = posId;
+      await database.transaction(() async {
+        for (final pg in pages) {
+          // Upsert section position
+          int? secPosId = pg.sectionPositionId;
+          if (secPosId != null) {
             await (database.update(database.position)
-                  ..where((p) => p.id.equals(existingPosId)))
+                  ..where((t) => t.id.equals(secPosId!)))
                 .write(PositionCompanion(
-              xpos: drift.Value(tx),
-              ypos: drift.Value(ty),
-              size: drift.Value(ts),
+              xpos: drift.Value(_sectionX),
+              ypos: drift.Value(_sectionY),
+              size: drift.Value(_sectionScale),
             ));
           } else {
-            posId = await database.into(database.position).insert(
+            secPosId = await database.into(database.position).insert(
                   PositionCompanion.insert(
-                    xpos: drift.Value(tx),
-                    ypos: drift.Value(ty),
-                    size: drift.Value(ts),
+                    xpos: drift.Value(_sectionX),
+                    ypos: drift.Value(_sectionY),
+                    size: drift.Value(_sectionScale),
                   ),
                 );
           }
-          await (database.update(database.timer)
-                ..where((p) => p.id.equals(t.id)))
-              .write(TimerCompanion(
-            xpos: drift.Value(tx),
-            ypos: drift.Value(ty),
-            scale: drift.Value(ts),
-            positionId: drift.Value(posId),
+          await (database.update(database.page)
+                ..where((t) => t.id.equals(pg.id)))
+              .write(PageCompanion(
+            sectionXpos: drift.Value(_sectionX),
+            sectionYpos: drift.Value(_sectionY),
+            sectionScale: drift.Value(_sectionScale),
+            sectionPositionId: drift.Value(secPosId),
+          ));
+
+          // Upsert timer positions for matching types
+          final timers = await (database.select(database.timer)
+                ..where((t) => t.pageId.equals(pg.id)))
+              .get();
+          for (final t in timers) {
+            double tx = 0, ty = 0, ts = 1.0;
+            if (t.timerType == 'single') {
+              tx = _t1X;
+              ty = _t1Y;
+              ts = _t1Scale;
+            } else if (t.timerType == 'doubleL') {
+              tx = _tlX;
+              ty = _tlY;
+              ts = _tlScale;
+            } else if (t.timerType == 'doubleR') {
+              tx = _trX;
+              ty = _trY;
+              ts = _trScale;
+            }
+
+            int? posId = t.positionId;
+            if (posId != null) {
+              await (database.update(database.position)
+                    ..where((p) => p.id.equals(posId!)))
+                  .write(PositionCompanion(
+                xpos: drift.Value(tx),
+                ypos: drift.Value(ty),
+                size: drift.Value(ts),
+              ));
+            } else {
+              posId = await database.into(database.position).insert(
+                    PositionCompanion.insert(
+                      xpos: drift.Value(tx),
+                      ypos: drift.Value(ty),
+                      size: drift.Value(ts),
+                    ),
+                  );
+            }
+            await (database.update(database.timer)
+                  ..where((p) => p.id.equals(t.id)))
+                .write(TimerCompanion(
+              xpos: drift.Value(tx),
+              ypos: drift.Value(ty),
+              scale: drift.Value(ts),
+              positionId: drift.Value(posId),
+            ));
+          }
+
+          // Apply School Positions
+          int? saPosId = pg.schoolAPositionId;
+          if (saPosId != null) {
+            await (database.update(database.position)
+                  ..where((t) => t.id.equals(saPosId!)))
+                .write(PositionCompanion(
+              xpos: drift.Value(_saX),
+              ypos: drift.Value(_saY),
+              size: drift.Value(_saScale),
+            ));
+          } else {
+            saPosId = await database.into(database.position).insert(
+                  PositionCompanion.insert(
+                    xpos: drift.Value(_saX),
+                    ypos: drift.Value(_saY),
+                    size: drift.Value(_saScale),
+                  ),
+                );
+          }
+
+          int? sbPosId = pg.schoolBPositionId;
+          if (sbPosId != null) {
+            await (database.update(database.position)
+                  ..where((t) => t.id.equals(sbPosId!)))
+                .write(PositionCompanion(
+              xpos: drift.Value(_sbX),
+              ypos: drift.Value(_sbY),
+              size: drift.Value(_sbScale),
+            ));
+          } else {
+            sbPosId = await database.into(database.position).insert(
+                  PositionCompanion.insert(
+                    xpos: drift.Value(_sbX),
+                    ypos: drift.Value(_sbY),
+                    size: drift.Value(_sbScale),
+                  ),
+                );
+          }
+
+          await (database.update(database.page)
+                ..where((t) => t.id.equals(pg.id)))
+              .write(PageCompanion(
+            schoolAPositionId: drift.Value(saPosId),
+            schoolBPositionId: drift.Value(sbPosId),
           ));
         }
 
-        // Apply School Positions
-        int? saPosId = pg.schoolAPositionId;
-        if (saPosId != null) {
-          await (database.update(database.position)
-                ..where((t) => t.id.equals(saPosId!)))
-              .write(PositionCompanion(
-            xpos: drift.Value(_saX),
-            ypos: drift.Value(_saY),
-            size: drift.Value(_saScale),
-          ));
-        } else {
-          saPosId = await database.into(database.position).insert(
-                PositionCompanion.insert(
-                  xpos: drift.Value(_saX),
-                  ypos: drift.Value(_saY),
-                  size: drift.Value(_saScale),
-                ),
-              );
-        }
+        // Update Flow defaults for persistence for NEW pages
+        Map<String, dynamic> existingConfig = {};
+        try {
+          if (widget.flow.positionConfig != null) {
+            existingConfig = jsonDecode(widget.flow.positionConfig!);
+          }
+        } catch (_) {}
 
-        int? sbPosId = pg.schoolBPositionId;
-        if (sbPosId != null) {
-          await (database.update(database.position)
-                ..where((t) => t.id.equals(sbPosId!)))
-              .write(PositionCompanion(
-            xpos: drift.Value(_sbX),
-            ypos: drift.Value(_sbY),
-            size: drift.Value(_sbScale),
-          ));
-        } else {
-          sbPosId = await database.into(database.position).insert(
-                PositionCompanion.insert(
-                  xpos: drift.Value(_sbX),
-                  ypos: drift.Value(_sbY),
-                  size: drift.Value(_sbScale),
-                ),
-              );
-        }
+        final newConfig = Map<String, dynamic>.from(existingConfig);
 
-        await (database.update(database.page)..where((t) => t.id.equals(pg.id)))
-            .write(PageCompanion(
-          schoolAPositionId: drift.Value(saPosId),
-          schoolBPositionId: drift.Value(sbPosId),
+        // Use nested config per page type
+        final typeConfig =
+            Map<String, dynamic>.from(newConfig[_selectedPageType!] ?? {});
+        typeConfig['section'] = {
+          'x': _sectionX,
+          'y': _sectionY,
+          's': _sectionScale
+        };
+        typeConfig['timer_single'] = {'x': _t1X, 'y': _t1Y, 's': _t1Scale};
+        typeConfig['timer_doubleL'] = {'x': _tlX, 'y': _tlY, 's': _tlScale};
+        typeConfig['timer_doubleR'] = {'x': _trX, 'y': _trY, 's': _trScale};
+        typeConfig['schoolA'] = {'x': _saX, 'y': _saY, 's': _saScale};
+        typeConfig['schoolB'] = {'x': _sbX, 'y': _sbY, 's': _sbScale};
+
+        newConfig[_selectedPageType!] = typeConfig;
+
+        await (database.update(database.flow)
+              ..where((t) => t.id.equals(widget.flow.id)))
+            .write(FlowCompanion(
+          positionConfig: drift.Value(jsonEncode(newConfig)),
         ));
-      }
-
-      // Update Flow defaults for persistence for NEW pages
-      Map<String, dynamic> existingConfig = {};
-      try {
-        if (widget.flow.positionConfig != null) {
-          existingConfig = jsonDecode(widget.flow.positionConfig!);
-        }
-      } catch (_) {}
-
-      final newConfig = Map<String, dynamic>.from(existingConfig);
-      // Always update globals (schools)
-      newConfig['schoolA'] = {'x': _saX, 'y': _saY, 's': _saScale};
-      newConfig['schoolB'] = {'x': _sbX, 'y': _sbY, 's': _sbScale};
-      // Always update current section (we'll treat section as global for simplicity as per existing logic)
-      newConfig['section'] = {
-        'x': _sectionX,
-        'y': _sectionY,
-        's': _sectionScale
-      };
-
-      // Conditionally update timers depending on current page type to avoid accidental reset of other types
-      if (_selectedPageType == 'A1') {
-        newConfig['timer_single'] = {'x': _t1X, 'y': _t1Y, 's': _t1Scale};
-      } else if (_selectedPageType == 'A2') {
-        newConfig['timer_doubleL'] = {'x': _tlX, 'y': _tlY, 's': _tlScale};
-        newConfig['timer_doubleR'] = {'x': _trX, 'y': _trY, 's': _trScale};
-      }
-
-      await (database.update(database.flow)
-            ..where((t) => t.id.equals(widget.flow.id)))
-          .write(FlowCompanion(
-        positionConfig: drift.Value(jsonEncode(newConfig)),
-      ));
+      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('位置已应用到 ${pages.length} 个页面，并已保存为该赛程的默认配置')),
+          SnackBar(
+              content: Text('位置已应用到同一类型的 ${pages.length} 个页面，并已保存为该类型的默认配置')),
         );
       }
     } catch (e) {
@@ -1473,6 +1520,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade200)),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTextField(
                       controller: _pageNameController,
@@ -1562,6 +1610,21 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                 backgroundColor: const Color(0xFF6B46C1)),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+                      SwitchListTile(
+                        title: const Text('显示学校名称和Logo (Show Schools)',
+                            style: TextStyle(fontSize: 14)),
+                        subtitle: const Text('关闭后将不在此页面显示学校信息',
+                            style: TextStyle(fontSize: 12)),
+                        value: _showSchools,
+                        activeColor: const Color(0xFF6B46C1),
+                        contentPadding: EdgeInsets.zero,
+                        onChanged: (val) {
+                          setState(() {
+                            _showSchools = val;
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -1976,26 +2039,28 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                           ),
                                         ),
                                       // School Logos & Names
-                                      _buildDraggableItem(
-                                        alignment: Alignment.bottomLeft,
-                                        x: _saX,
-                                        y: _saY,
-                                        scale: _saScale,
-                                        onChanged: (dx, dy, s) {},
-                                        child: _buildSchoolPreview(
-                                            _schoolA, _schoolALogo,
-                                            isA: true),
-                                      ),
-                                      _buildDraggableItem(
-                                        alignment: Alignment.bottomRight,
-                                        x: _sbX,
-                                        y: _sbY,
-                                        scale: _sbScale,
-                                        onChanged: (dx, dy, s) {},
-                                        child: _buildSchoolPreview(
-                                            _schoolB, _schoolBLogo,
-                                            isA: false),
-                                      ),
+                                      if (_showSchools) ...[
+                                        _buildDraggableItem(
+                                          alignment: Alignment.bottomLeft,
+                                          x: _saX,
+                                          y: _saY,
+                                          scale: _saScale,
+                                          onChanged: (dx, dy, s) {},
+                                          child: _buildSchoolPreview(
+                                              _schoolA, _schoolALogo,
+                                              isA: true),
+                                        ),
+                                        _buildDraggableItem(
+                                          alignment: Alignment.bottomRight,
+                                          x: _sbX,
+                                          y: _sbY,
+                                          scale: _sbScale,
+                                          onChanged: (dx, dy, s) {},
+                                          child: _buildSchoolPreview(
+                                              _schoolB, _schoolBLogo,
+                                              isA: false),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),

@@ -1234,74 +1234,367 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           : Future.value(null),
       builder: (context, imgSnapshot) {
         final img = imgSnapshot.data;
-        return Container(
-          width: 120,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.01),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  shape: BoxShape.circle,
+        return GestureDetector(
+          onSecondaryTapDown: (details) {
+            _showSchoolContextMenu(context, school, details.globalPosition);
+          },
+          child: Container(
+            width: 120,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade100),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.01),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
-                child: img != null
-                    ? FutureBuilder<Directory>(
-                        future: getApplicationSupportDirectory(),
-                        builder: (context, dirSnapshot) {
-                          if (!dirSnapshot.hasData) {
-                            return const SizedBox.shrink();
-                          }
-                          final path = p.join(
-                            dirSnapshot.data!.path,
-                            'YiHuaTimer',
-                            'schools',
-                            widget.event.id.toString(),
-                            img.imageName!,
-                          );
-                          final file = File(path);
-                          if (!file.existsSync()) {
-                            return const Icon(Icons.broken_image_rounded,
-                                color: Colors.grey, size: 32);
-                          }
-                          return ClipOval(
-                            child: Image.file(file, fit: BoxFit.cover),
-                          );
-                        },
-                      )
-                    : const Icon(Icons.school_rounded,
-                        color: Colors.grey, size: 32),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                school.schoolName,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF374151),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: img != null
+                      ? FutureBuilder<Directory>(
+                          future: getApplicationSupportDirectory(),
+                          builder: (context, dirSnapshot) {
+                            if (!dirSnapshot.hasData) {
+                              return const SizedBox.shrink();
+                            }
+                            final path = p.join(
+                              dirSnapshot.data!.path,
+                              'YiHuaTimer',
+                              'schools',
+                              widget.event.id.toString(),
+                              img.imageName!,
+                            );
+                            final file = File(path);
+                            if (!file.existsSync()) {
+                              return const Icon(Icons.broken_image_rounded,
+                                  color: Colors.grey, size: 32);
+                            }
+                            return ClipOval(
+                              child: Image.file(file, fit: BoxFit.cover),
+                            );
+                          },
+                        )
+                      : const Icon(Icons.school_rounded,
+                          color: Colors.grey, size: 32),
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  school.schoolName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  void _showSchoolContextMenu(
+      BuildContext context, SchoolData school, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx + 1, position.dy + 1),
+      items: [
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.edit_rounded, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text('编辑学校', style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+          onTap: () => Future.delayed(
+            const Duration(milliseconds: 100),
+            () => _showEditSchoolDialog(school),
+          ),
+        ),
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.delete_rounded, color: Colors.red, size: 20),
+              SizedBox(width: 8),
+              Text('删除学校', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+          onTap: () => _deleteSchool(school),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showEditSchoolDialog(SchoolData school) async {
+    final nameCtrl = TextEditingController(text: school.schoolName);
+    File? pickedLogo;
+
+    // Get current logo if exists
+    ImagesData? currentLogo;
+    if (school.logoImageId != null) {
+      currentLogo = await (database.select(database.images)
+            ..where((t) => t.id.equals(school.logoImageId!)))
+          .getSingleOrNull();
+    }
+
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('编辑学校 (Edit School)'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: '学校名称',
+                  hintText: '输入学校全称',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text('学校 Logo',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final result =
+                      await FilePicker.platform.pickFiles(type: FileType.image);
+                  if (result != null && result.files.single.path != null) {
+                    setDialogState(() {
+                      pickedLogo = File(result.files.single.path!);
+                    });
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: pickedLogo != null
+                      ? Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(pickedLogo!, fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle),
+                                child: const Icon(Icons.edit,
+                                    color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ],
+                        )
+                      : (currentLogo != null
+                          ? FutureBuilder<Directory>(
+                              future: getApplicationSupportDirectory(),
+                              builder: (context, dirSnapshot) {
+                                if (!dirSnapshot.hasData)
+                                  return const SizedBox();
+                                final path = p.join(
+                                  dirSnapshot.data!.path,
+                                  'YiHuaTimer',
+                                  'schools',
+                                  widget.event.id.toString(),
+                                  currentLogo!.imageName!,
+                                );
+                                final file = File(path);
+                                if (!file.existsSync())
+                                  return const Icon(Icons.image);
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(file, fit: BoxFit.cover),
+                                );
+                              },
+                            )
+                          : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_photo_alternate_rounded,
+                                    color: Colors.grey, size: 32),
+                                SizedBox(height: 4),
+                                Text('更换 Logo',
+                                    style: TextStyle(color: Colors.grey)),
+                              ],
+                            )),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameCtrl.text.trim();
+                if (name.isEmpty) return;
+
+                try {
+                  int? imgId = school.logoImageId;
+
+                  if (pickedLogo != null) {
+                    final supportDir = await getApplicationSupportDirectory();
+                    final schoolDir = Directory(p.join(supportDir.path,
+                        'YiHuaTimer', 'schools', widget.event.id.toString()));
+                    if (!await schoolDir.exists()) {
+                      await schoolDir.create(recursive: true);
+                    }
+
+                    // Delete old image file if possible
+                    if (currentLogo != null && currentLogo.imageName != null) {
+                      final oldFile =
+                          File(p.join(schoolDir.path, currentLogo.imageName));
+                      if (await oldFile.exists()) await oldFile.delete();
+                    }
+
+                    final fileName =
+                        'logo_${DateTime.now().millisecondsSinceEpoch}${p.extension(pickedLogo!.path)}';
+                    final targetPath = p.join(schoolDir.path, fileName);
+                    await pickedLogo!.copy(targetPath);
+
+                    if (imgId != null) {
+                      await (database.update(database.images)
+                            ..where((t) => t.id.equals(imgId!)))
+                          .write(ImagesCompanion(
+                        imageName: drift.Value(fileName),
+                      ));
+                    } else {
+                      imgId = await database.into(database.images).insert(
+                            ImagesCompanion.insert(
+                              imageName: drift.Value(fileName),
+                              imageType: const drift.Value('schoolLogo'),
+                            ),
+                          );
+                    }
+                  }
+
+                  await (database.update(database.school)
+                        ..where((t) => t.id.equals(school.id)))
+                      .write(SchoolCompanion(
+                    schoolName: drift.Value(name),
+                    logoImageId: drift.Value(imgId),
+                  ));
+
+                  if (mounted) {
+                    Navigator.pop(context);
+                    setState(() {});
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B46C1),
+                  foregroundColor: Colors.white),
+              child: const Text('保存修改'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteSchool(SchoolData school) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确认要删除学校 "${school.schoolName}" 吗？'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('取消')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('删除', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await database.transaction(() async {
+          if (school.logoImageId != null) {
+            final img = await (database.select(database.images)
+                  ..where((t) => t.id.equals(school.logoImageId!)))
+                .getSingleOrNull();
+            if (img != null) {
+              // Delete position if exists
+              if (img.positionId != null) {
+                await (database.delete(database.position)
+                      ..where((t) => t.id.equals(img.positionId!)))
+                    .go();
+              }
+              // Delete image entry
+              await (database.delete(database.images)
+                    ..where((t) => t.id.equals(img.id)))
+                  .go();
+
+              // Delete file
+              final supportDir = await getApplicationSupportDirectory();
+              final path = p.join(
+                supportDir.path,
+                'YiHuaTimer',
+                'schools',
+                widget.event.id.toString(),
+                img.imageName!,
+              );
+              final file = File(path);
+              if (await file.exists()) await file.delete();
+            }
+          }
+
+          // Finally delete school mapping
+          await (database.delete(database.school)
+                ..where((t) => t.id.equals(school.id)))
+              .go();
+        });
+        setState(() {});
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        }
+      }
+    }
   }
 
   Future<void> _showAddSchoolDialog() async {

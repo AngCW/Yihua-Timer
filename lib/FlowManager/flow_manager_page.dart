@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:convert';
 import '../database/app_database.dart';
 import '../main.dart';
 import 'page_manager_page.dart';
@@ -210,11 +211,100 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
             ..where((t) => t.flowId.equals(_currentFlow!.id)))
           .get();
 
+      // Load saved position defaults from flow config
+      Map<String, dynamic> flowConfig = {};
+      try {
+        if (_currentFlow!.positionConfig != null) {
+          flowConfig = jsonDecode(_currentFlow!.positionConfig!);
+        }
+      } catch (_) {}
+
+      // Look for A1 specific config first, then fallback to flat keys
+      final a1Config = flowConfig['A1'] ?? flowConfig;
+
+      // Section defaults
+      final secX = (a1Config['section']?['x'] as num?)?.toDouble() ?? 0.0;
+      final secY = (a1Config['section']?['y'] as num?)?.toDouble() ?? 0.0;
+      final secS = (a1Config['section']?['s'] as num?)?.toDouble() ?? 1.0;
+
+      // Timer A1 (single) defaults
+      final t1X = (a1Config['timer_single']?['x'] as num?)?.toDouble() ?? 0.0;
+      final t1Y = (a1Config['timer_single']?['y'] as num?)?.toDouble() ?? 0.0;
+      final t1S = (a1Config['timer_single']?['s'] as num?)?.toDouble() ?? 1.0;
+
+      // School A/B defaults
+      final saX = (a1Config['schoolA']?['x'] as num?)?.toDouble() ?? 0.0;
+      final saY = (a1Config['schoolA']?['y'] as num?)?.toDouble() ?? 0.0;
+      final saS = (a1Config['schoolA']?['s'] as num?)?.toDouble() ?? 1.0;
+      final sbX = (a1Config['schoolB']?['x'] as num?)?.toDouble() ?? 0.0;
+      final sbY = (a1Config['schoolB']?['y'] as num?)?.toDouble() ?? 0.0;
+      final sbS = (a1Config['schoolB']?['s'] as num?)?.toDouble() ?? 1.0;
+
+      // Create section position row
+      final secPosId = await database.into(database.position).insert(
+            PositionCompanion.insert(
+              xpos: drift.Value(secX),
+              ypos: drift.Value(secY),
+              size: drift.Value(secS),
+            ),
+          );
+
+      // Create school A position row
+      final saPosId = await database.into(database.position).insert(
+            PositionCompanion.insert(
+              xpos: drift.Value(saX),
+              ypos: drift.Value(saY),
+              size: drift.Value(saS),
+            ),
+          );
+
+      // Create school B position row
+      final sbPosId = await database.into(database.position).insert(
+            PositionCompanion.insert(
+              xpos: drift.Value(sbX),
+              ypos: drift.Value(sbY),
+              size: drift.Value(sbS),
+            ),
+          );
+
+      // Insert page defaulting to A1
       final newPage = await database.into(database.page).insertReturning(
             PageCompanion.insert(
               pageName: drift.Value('第${pages.length + 1}页'),
               flowId: drift.Value(_currentFlow!.id),
               pagePosition: drift.Value(pages.length + 1),
+              pageTypeId: const drift.Value('A1'), // default page type
+              sectionXpos: drift.Value(secX),
+              sectionYpos: drift.Value(secY),
+              sectionScale: drift.Value(secS),
+              sectionPositionId: drift.Value(secPosId),
+              schoolAPositionId: drift.Value(saPosId),
+              schoolBPositionId: drift.Value(sbPosId),
+            ),
+          );
+
+      // Create a timer position row for the default single timer
+      final timerPosId = await database.into(database.position).insert(
+            PositionCompanion.insert(
+              xpos: drift.Value(t1X),
+              ypos: drift.Value(t1Y),
+              size: drift.Value(t1S),
+            ),
+          );
+
+      // Add default single timer with saved position
+      final templates = await database.select(database.timerTemplate).get();
+      final firstTemplateId = templates.isNotEmpty ? templates.first.id : null;
+      await database.into(database.timer).insert(
+            TimerCompanion.insert(
+              pageId: drift.Value(newPage.id),
+              timerType: const drift.Value('single'),
+              timerTemplateId: drift.Value(firstTemplateId),
+              startTime: const drift.Value('2:0'),
+              xpos: drift.Value(t1X),
+              ypos: drift.Value(t1Y),
+              scale: drift.Value(t1S),
+              positionId: drift.Value(timerPosId),
             ),
           );
 

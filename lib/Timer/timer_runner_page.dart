@@ -37,6 +37,9 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
   HotkeySettings? _hotkeySettings;
   final async.StreamController<String> _keyStreamController =
       async.StreamController<String>.broadcast();
+  final AudioPlayer _bgmPlayer = AudioPlayer();
+  int? _currentBgmId;
+  int _currentPageIndex = 0;
 
   @override
   void initState() {
@@ -52,6 +55,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _pageController.dispose();
     _keyStreamController.close();
+    _bgmPlayer.dispose();
     super.dispose();
   }
 
@@ -106,7 +110,34 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
         _pages = allPages.where((p) => p.isDefaultPage == false).toList();
         _extraPages = allPages.where((p) => p.isDefaultPage == true).toList();
         _isLoading = false;
+        if (_pages.isNotEmpty) {
+          _updateBgm(_pages[0]);
+        }
       });
+    }
+  }
+
+  Future<void> _updateBgm(PageData page) async {
+    if (page.bgmId == _currentBgmId) return;
+
+    _currentBgmId = page.bgmId;
+    await _bgmPlayer.stop();
+
+    if (page.bgmId != null) {
+      final bgm = await (database.select(database.bgm)
+            ..where((t) => t.id.equals(page.bgmId!)))
+          .getSingleOrNull();
+
+      if (bgm != null) {
+        final supportDir = await getApplicationSupportDirectory();
+        final bgmPath =
+            p.join(supportDir.path, 'YiHuaTimer', 'bgm', bgm.bgmName);
+        if (await File(bgmPath).exists()) {
+          await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
+          await _bgmPlayer.setSource(DeviceFileSource(bgmPath));
+          await _bgmPlayer.resume();
+        }
+      }
     }
   }
 
@@ -210,6 +241,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
           if (logicalKey == LogicalKeyboardKey.escape) {
             if (_activeExtraPage != null) {
               setState(() => _activeExtraPage = null);
+              _updateBgm(_pages[_currentPageIndex]);
             } else {
               Navigator.pop(context);
             }
@@ -221,6 +253,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
             if (ep.hotkeyValue != null &&
                 ep.hotkeyValue!.toUpperCase() == keyStr) {
               setState(() => _activeExtraPage = ep);
+              _updateBgm(ep);
               return KeyEventResult.handled;
             }
           }
@@ -238,6 +271,12 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
             PageView.builder(
               controller: _pageController,
               itemCount: _pages.length,
+              onPageChanged: (index) {
+                _currentPageIndex = index;
+                if (_activeExtraPage == null) {
+                  _updateBgm(_pages[index]);
+                }
+              },
               itemBuilder: (context, index) {
                 return _TimerPageView(
                   pageData: _pages[index],
