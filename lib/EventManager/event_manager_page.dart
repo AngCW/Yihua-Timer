@@ -64,22 +64,17 @@ class _EventManagerPageState extends State<EventManagerPage> {
               ..where((t) => t.eventId.equals(event.id)))
             .go();
 
-        // Delete flow folders
-        await (database.delete(database.flowFolder)
-              ..where((t) => t.eventId.equals(event.id)))
-            .go();
-
-        // Delete flows
+        // Delete flows first (they reference flow_folder), then flow_folder
         final flows = await (database.select(database.flow)
               ..where((t) => t.eventId.equals(event.id)))
             .get();
         for (var flow in flows) {
-          // Delete pages
+          // Delete pages and their timers, images, positions
           final pages = await (database.select(database.page)
                 ..where((t) => t.flowId.equals(flow.id)))
               .get();
           for (var page in pages) {
-            // Delete timers
+            // Delete timers and their positions
             final timers = await (database.select(database.timer)
                   ..where((t) => t.pageId.equals(page.id)))
                 .get();
@@ -93,7 +88,7 @@ class _EventManagerPageState extends State<EventManagerPage> {
                     ..where((t) => t.id.equals(timer.id)))
                   .go();
             }
-            // Delete images
+            // Delete page images and their positions
             final pImages = await (database.select(database.images)
                   ..where((t) => t.pageId.equals(page.id)))
                 .get();
@@ -107,10 +102,19 @@ class _EventManagerPageState extends State<EventManagerPage> {
                     ..where((t) => t.id.equals(img.id)))
                   .go();
             }
-
             if (page.sectionPositionId != null) {
               await (database.delete(database.position)
                     ..where((t) => t.id.equals(page.sectionPositionId!)))
+                  .go();
+            }
+            if (page.schoolAPositionId != null) {
+              await (database.delete(database.position)
+                    ..where((t) => t.id.equals(page.schoolAPositionId!)))
+                  .go();
+            }
+            if (page.schoolBPositionId != null) {
+              await (database.delete(database.position)
+                    ..where((t) => t.id.equals(page.schoolBPositionId!)))
                   .go();
             }
             await (database.delete(database.page)
@@ -121,6 +125,11 @@ class _EventManagerPageState extends State<EventManagerPage> {
                 ..where((t) => t.id.equals(flow.id)))
               .go();
         }
+
+        // Now safe to delete flow folders (no flows reference them)
+        await (database.delete(database.flowFolder)
+              ..where((t) => t.eventId.equals(event.id)))
+            .go();
 
         // Finally delete the event itself
         await (database.delete(database.event)

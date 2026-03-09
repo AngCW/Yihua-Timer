@@ -75,13 +75,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     isSelected: _selectedTabIndex == 2,
                   ),
                 ),
-                Expanded(
-                  child: _buildTabButton(
-                    label: '铃声设计',
-                    index: 3,
-                    isSelected: _selectedTabIndex == 3,
-                  ),
-                ),
               ],
             ),
           ),
@@ -97,10 +90,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 case 1:
                   return const HotkeySettingsPage();
                 case 2:
-                  return const VolumeSettingsPage();
-                case 3:
                 default:
-                  return const TimerTemplateSettingsPage();
+                  return const VolumeSettingsPage();
               }
             }(),
           ),

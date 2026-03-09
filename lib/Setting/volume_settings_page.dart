@@ -1,5 +1,14 @@
+import 'dart:async' as async;
+import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import '../database/app_database.dart';
+import '../main.dart';
+import 'timer_template_settings_page.dart';
 
 class VolumeSettingsPage extends StatefulWidget {
   const VolumeSettingsPage({super.key});
@@ -12,6 +21,162 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
   double _ringtoneVolume = 0.7;
   double _backgroundMusicVolume = 0.5;
   List<String> _ringtones = ['默认铃声'];
+  List<EventData> _events = [];
+  EventData? _selectedEvent;
+  AudioPlayer? _bgmTestPlayer;
+  async.Timer? _testStopTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  @override
+  void dispose() {
+    _testStopTimer?.cancel();
+    _bgmTestPlayer?.stop();
+    _bgmTestPlayer?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadEvents() async {
+    final query = database.select(database.event)
+      ..orderBy([
+        (t) => drift.OrderingTerm(
+              expression: t.startDate,
+              mode: drift.OrderingMode.asc,
+            ),
+      ]);
+    final list = await query.get();
+    if (!mounted) return;
+    setState(() {
+      _events = list;
+      if (_events.isNotEmpty) {
+        _selectedEvent = _events.first;
+      }
+    });
+  }
+
+  /// Runs a 10-second audio test: plays background music and one ding at current volumes.
+  Future<void> _runAudioTest() async {
+    final event = _selectedEvent;
+    if (event == null) return;
+
+    _testStopTimer?.cancel();
+    await _bgmTestPlayer?.stop();
+    await _bgmTestPlayer?.dispose();
+    _bgmTestPlayer = null;
+
+    final supportDir = await getApplicationSupportDirectory();
+    final basePath = supportDir.path;
+
+    // Resolve BGM: prefer a page BGM from this event's flows
+    String? bgmPath;
+    final flows = await (database.select(database.flow)
+          ..where((t) => t.eventId.equals(event.id)))
+        .get();
+    for (final flow in flows) {
+      final pages = await (database.select(database.page)
+            ..where((t) =>
+                t.flowId.equals(flow.id) & t.bgmId.isNotNull()))
+        .get();
+      if (pages.isNotEmpty && pages.first.bgmId != null) {
+        final bgms = await (database.select(database.bgm)
+              ..where((b) => b.id.equals(pages.first.bgmId!)))
+            .get();
+        if (bgms.isNotEmpty) {
+          final path = p.join(basePath, 'YiHuaTimer', 'bgm', bgms.first.bgmName);
+          if (File(path).existsSync()) {
+            bgmPath = path;
+            break;
+          }
+        }
+      }
+    }
+    if (bgmPath == null) {
+      final anyBgm = await database.select(database.bgm).get();
+      for (final b in anyBgm) {
+        final path = p.join(basePath, 'YiHuaTimer', 'bgm', b.bgmName);
+        if (File(path).existsSync()) {
+          bgmPath = path;
+          break;
+        }
+      }
+    }
+
+    // Resolve ding: prefer a timer template ding from this event
+    String? dingPath;
+    for (final flow in flows) {
+      final pages = await (database.select(database.page)
+            ..where((t) => t.flowId.equals(flow.id)))
+        .get();
+      for (final page in pages) {
+        final timers = await (database.select(database.timer)
+              ..where((t) => t.pageId.equals(page.id)))
+            .get();
+        for (final timer in timers) {
+          if (timer.timerTemplateId == null) continue;
+          final templates = await (database.select(database.timerTemplate)
+                ..where((t) => t.id.equals(timer.timerTemplateId!) &
+                    t.dingAudioId.isNotNull()))
+            .get();
+          if (templates.isNotEmpty && templates.first.dingAudioId != null) {
+            final dings = await (database.select(database.dingAudio)
+                  ..where((d) => d.id.equals(templates.first.dingAudioId!)))
+                .get();
+            if (dings.isNotEmpty) {
+              final path =
+                  p.join(basePath, 'YiHuaTimer', 'ding', dings.first.dingName);
+              if (File(path).existsSync()) {
+                dingPath = path;
+                break;
+              }
+            }
+          }
+        }
+        if (dingPath != null) break;
+      }
+      if (dingPath != null) break;
+    }
+    if (dingPath == null) {
+      final anyDing = await (database.select(database.dingAudio)).get();
+      for (final d in anyDing) {
+        final path = p.join(basePath, 'YiHuaTimer', 'ding', d.dingName);
+        if (File(path).existsSync()) {
+          dingPath = path;
+          break;
+        }
+      }
+    }
+
+    // Play BGM for 10 seconds (loop)
+    if (bgmPath != null) {
+      final bgmPlayer = AudioPlayer();
+      _bgmTestPlayer = bgmPlayer;
+      await bgmPlayer.setVolume(_backgroundMusicVolume);
+      await bgmPlayer.setReleaseMode(ReleaseMode.loop);
+      await bgmPlayer.play(DeviceFileSource(bgmPath));
+    }
+
+    // Play one ding at ringtone volume
+    if (dingPath != null) {
+      final dingPlayer = AudioPlayer();
+      await dingPlayer.setVolume(_ringtoneVolume);
+      dingPlayer.play(DeviceFileSource(dingPath));
+      dingPlayer.onPlayerComplete.listen((_) => dingPlayer.dispose());
+    }
+
+    // Stop BGM after 10 seconds
+    _testStopTimer = async.Timer(const Duration(seconds: 10), () async {
+      if (_bgmTestPlayer != null) {
+        await _bgmTestPlayer!.stop();
+        await _bgmTestPlayer!.dispose();
+        if (mounted) setState(() => _bgmTestPlayer = null);
+      }
+      _testStopTimer = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +189,68 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
           children: [
             // Ringtone Volume Section
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        '测试赛事：',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF4B5563),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 180,
+                        child: DropdownButtonFormField<EventData>(
+                          value: _selectedEvent,
+                          isExpanded: true,
+                          menuMaxHeight: 220,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
+                            ),
+                          ),
+                          items: _events
+                              .map(
+                                (e) => DropdownMenuItem<EventData>(
+                                  value: e,
+                                  child: Text(
+                                    e.eventName,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedEvent = val;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
                 TextButton.icon(
-                  onPressed: () {
-                    // TODO: Implement audio test functionality
-                  },
+                  onPressed: _selectedEvent == null
+                      ? null
+                      : () => _runAudioTest(),
                   icon: const Icon(Icons.volume_up, size: 16),
                   label: const Text('音频测试'),
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFF6B46C1),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
                   ),
                 ),
               ],
@@ -64,121 +280,12 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
             ),
             
             const SizedBox(height: 24),
-            
-            // Ringtone Settings Section
-            _buildRingtoneSettingsCard(),
+
+            // Timer template & ringtone design section (moved from 铃声设计)
+            const TimerTemplateSettingsPage(),
+            const SizedBox(height: 24),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildRingtoneSettingsCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '铃声设置',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                  letterSpacing: -0.3,
-                ),
-              ),
-              FilledButton.icon(
-                onPressed: () {
-                  _showAddRingtoneDialog(context);
-                },
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('添加铃声'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B46C1),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ..._ringtones.map((ringtone) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildRingtoneItem(ringtone),
-          )),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildRingtoneItem(String name) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF111827),
-            ),
-          ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.play_arrow, size: 18, color: Color(0xFF6B46C1)),
-                onPressed: () {
-                  // TODO: Implement play ringtone functionality
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.edit, size: 18, color: Color(0xFF6B46C1)),
-                onPressed: () {
-                  _showEditRingtoneDialog(context, name);
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                onPressed: () {},
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

@@ -1001,7 +1001,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         fontFamily: _schoolFontFamily,
         shadows: [
           Shadow(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: Colors.white.withOpacity(0.5),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
