@@ -747,7 +747,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<int>(
-                          initialValue: selectedDingAudioId,
+                          value: selectedDingAudioId,
                           isExpanded: true,
                           decoration: InputDecoration(
                             filled: true,
@@ -1531,7 +1531,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              initialValue: _selectedBgmId,
+                              value: _selectedBgmId,
                               isExpanded: true,
                               decoration: InputDecoration(
                                 filled: true,
@@ -1594,7 +1594,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                 }
                               },
                               selectedColor: const Color(0xFF6B46C1)
-                                  .withValues(alpha: 0.2),
+                                  .withOpacity(0.2),
                               checkmarkColor: const Color(0xFF6B46C1),
                               labelStyle: TextStyle(
                                   color: isSelected
@@ -1882,8 +1882,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                     shadows: [
                                                       Shadow(
                                                           color: Colors.white
-                                                              .withValues(
-                                                                  alpha: 0.5),
+                                                              .withOpacity(0.5),
                                                           blurRadius: 15,
                                                           offset: const Offset(
                                                               0, 6))
@@ -2050,7 +2049,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
               fontFeatures: const [ui.FontFeature.tabularFigures()],
               shadows: [
                 Shadow(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 10))
               ],
@@ -2135,7 +2134,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int>(
-                  initialValue: currentTemplateId,
+                  value: currentTemplateId,
                   isExpanded: true,
                   decoration: InputDecoration(
                     filled: true,

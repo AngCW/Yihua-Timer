@@ -847,7 +847,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
                             fontFamily: _pageSectionFont ?? widget.fontFamily,
                             shadows: [
                               Shadow(
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Colors.white.withOpacity(0.5),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
                               )
@@ -1090,7 +1090,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
           fontFeatures: const [ui.FontFeature.tabularFigures()],
           shadows: [
             Shadow(
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Colors.white.withOpacity(0.5),
               blurRadius: 20,
               offset: const Offset(0, 10),
             )
