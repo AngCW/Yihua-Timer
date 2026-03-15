@@ -66,32 +66,39 @@ class EventScheduleSidebar extends StatelessWidget {
                     ),
                   );
                 }
-                return StreamBuilder<List<FlowData>>(
-                  stream: database.select(database.flow).watch(),
-                  builder: (context, flowSnapshot) {
-                    final allFlows = flowSnapshot.data ?? [];
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (int e = 0; e < events.length; e++) ...[
-                            _EventBlock(
-                              event: events[e],
-                              flows: allFlows
-                                  .where((f) =>
-                                      f.eventId == events[e].id &&
-                                      f.folderId == null)
-                                  .toList()
-                                ..sort((a, b) =>
-                                    (a.flowPosition ?? 0)
-                                        .compareTo(b.flowPosition ?? 0)),
-                              scheduleColors: _scheduleColors,
-                            ),
-                            if (e < events.length - 1) const SizedBox(height: 28),
-                          ],
-                        ],
-                      ),
+                return StreamBuilder<List<FlowFolderData>>(
+                  stream: database.select(database.flowFolder).watch(),
+                  builder: (context, folderSnapshot) {
+                    final allFolders = folderSnapshot.data ?? [];
+                    final folderMap = {for (var f in allFolders) f.id: f.folderName};
+                    
+                    return StreamBuilder<List<FlowData>>(
+                      stream: database.select(database.flow).watch(),
+                      builder: (context, flowSnapshot) {
+                        final allFlows = flowSnapshot.data ?? [];
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (int e = 0; e < events.length; e++) ...[
+                                _EventBlock(
+                                  event: events[e],
+                                  flows: allFlows
+                                      .where((f) => f.eventId == events[e].id)
+                                      .toList()
+                                    ..sort((a, b) =>
+                                        (a.flowPosition ?? 0)
+                                            .compareTo(b.flowPosition ?? 0)),
+                                  folderMap: folderMap,
+                                  scheduleColors: _scheduleColors,
+                                ),
+                                if (e < events.length - 1) const SizedBox(height: 28),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -108,20 +115,17 @@ class _EventBlock extends StatelessWidget {
   const _EventBlock({
     required this.event,
     required this.flows,
+    required this.folderMap,
     required this.scheduleColors,
   });
 
   final EventData event;
   final List<FlowData> flows;
+  final Map<int, String> folderMap;
   final List<Color> scheduleColors;
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd/MM/yyyy');
-    final eventDateStr = event.startDate != null
-        ? dateFormat.format(event.startDate!)
-        : '—';
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -164,25 +168,76 @@ class _EventBlock extends StatelessWidget {
             ),
           )
         else
-          for (int i = 0; i < flows.length; i++)
-            _ScheduleItem(
-              stage: flows[i].flowName ?? '未命名',
-              date: eventDateStr,
-              backgroundColor: scheduleColors[i % scheduleColors.length],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => TimerRunnerPage(
-                      event: event,
-                      flow: flows[i],
-                    ),
-                  ),
-                );
-              },
-            ),
+          ..._buildGroupedFlows(context),
       ],
     );
+  }
+
+  List<Widget> _buildGroupedFlows(BuildContext context) {
+    List<Widget> items = [];
+    int? currentFolderId;
+    final dateStr = event.startDate != null
+        ? DateFormat('dd/MM/yyyy').format(event.startDate!)
+        : '—';
+
+    for (int i = 0; i < flows.length; i++) {
+      final flow = flows[i];
+      
+      if (flow.folderId != currentFolderId) {
+        if (flow.folderId != null) {
+          final folderName = folderMap[flow.folderId];
+          if (folderName != null) {
+            items.add(
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 6),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Text(
+                        folderName,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF4B5563),
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+        currentFolderId = flow.folderId;
+      }
+
+      items.add(
+        _ScheduleItem(
+          stage: flow.flowName ?? '未命名',
+          date: dateStr,
+          backgroundColor: scheduleColors[i % scheduleColors.length],
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => TimerRunnerPage(
+                  event: event,
+                  flow: flow,
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    return items;
   }
 }
 

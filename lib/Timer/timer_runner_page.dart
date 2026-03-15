@@ -40,6 +40,10 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
   final AudioPlayer _bgmPlayer = AudioPlayer();
   int? _currentBgmId;
   int _currentPageIndex = 0;
+  double _bgmVolume = 0.5;
+  double _dingVolume = 0.7;
+  String? _volumeMessage;
+  async.Timer? _volumeMessageTimer;
 
   @override
   void initState() {
@@ -48,6 +52,12 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _loadSettings();
     _loadFlowData();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _showLanguageReminder();
+      }
+    });
   }
 
   @override
@@ -75,6 +85,38 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
         });
       }
     }
+
+    if (mounted) {
+      setState(() {
+        _bgmVolume = prefs.getDouble('bgm_volume') ?? 0.5;
+        _dingVolume = prefs.getDouble('ringtone_volume') ?? 0.7;
+      });
+      _bgmPlayer.setVolume(_bgmVolume);
+    }
+  }
+
+  void _showVolumeIndicator(String message) {
+    _volumeMessageTimer?.cancel();
+    setState(() => _volumeMessage = message);
+    _volumeMessageTimer = async.Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _volumeMessage = null);
+    });
+  }
+
+  void _adjustVolume(bool isBgm, bool up) {
+    setState(() {
+      if (isBgm) {
+        _bgmVolume = (_bgmVolume + (up ? 0.05 : -0.05)).clamp(0.0, 1.0);
+        _bgmPlayer.setVolume(_bgmVolume);
+        _showVolumeIndicator('BGM 音量: ${(_bgmVolume * 100).toInt()}%');
+      } else {
+        _dingVolume = (_dingVolume + (up ? 0.05 : -0.05)).clamp(0.0, 1.0);
+        _showVolumeIndicator('提示音 音量: ${(_dingVolume * 100).toInt()}%');
+      }
+    });
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble(isBgm ? 'bgm_volume' : 'ringtone_volume', isBgm ? _bgmVolume : _dingVolume);
+    });
   }
 
   Future<void> _loadFlowData() async {
@@ -135,6 +177,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
         if (await File(bgmPath).exists()) {
           await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
           await _bgmPlayer.setSource(DeviceFileSource(bgmPath));
+          await _bgmPlayer.setVolume(_bgmVolume);
           await _bgmPlayer.resume();
         }
       }
@@ -238,6 +281,24 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
             );
             return KeyEventResult.handled;
           }
+
+          // Volume controls
+          if (keyStr == _hotkeySettings!.bgmVolumeUp.key.toUpperCase()) {
+            _adjustVolume(true, true);
+            return KeyEventResult.handled;
+          }
+          if (keyStr == _hotkeySettings!.bgmVolumeDown.key.toUpperCase()) {
+            _adjustVolume(true, false);
+            return KeyEventResult.handled;
+          }
+          if (keyStr == _hotkeySettings!.dingVolumeUp.key.toUpperCase()) {
+            _adjustVolume(false, true);
+            return KeyEventResult.handled;
+          }
+          if (keyStr == _hotkeySettings!.dingVolumeDown.key.toUpperCase()) {
+            _adjustVolume(false, false);
+            return KeyEventResult.handled;
+          }
           if (logicalKey == LogicalKeyboardKey.escape) {
             if (_activeExtraPage != null) {
               setState(() => _activeExtraPage = null);
@@ -269,6 +330,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
         child: Stack(
           children: [
             PageView.builder(
+              physics: const NeverScrollableScrollPhysics(),
               controller: _pageController,
               itemCount: _pages.length,
               onPageChanged: (index) {
@@ -287,11 +349,12 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   imagesDirPath: _imagesDirPath,
                   fontFamily: _fontFamily,
                   flowTimerFont: _timerFontFamily,
-                  hotkeys: _hotkeySettings,
+                   hotkeys: _hotkeySettings,
                   sessionTimerSeconds: _sessionTimerSeconds,
                   isActive: _activeExtraPage ==
                       null, // Main page only active if no extra page
                   allPages: _pages,
+                  dingVolume: _dingVolume,
                 );
               },
             ),
@@ -311,6 +374,26 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   sessionTimerSeconds: _sessionTimerSeconds,
                   isActive: true, // Extra page is active if shown
                   allPages: _pages,
+                  dingVolume: _dingVolume,
+                ),
+              ),
+            if (_volumeMessage != null)
+              Positioned(
+                top: 100,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Text(
+                      _volumeMessage!,
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
               ),
             // Navigation controls overlay
@@ -365,6 +448,110 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
       ),
     );
   }
+  void _showLanguageReminder() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) {
+        // Auto-dismiss after 6 seconds
+        async.Timer? timer;
+        timer = async.Timer(const Duration(seconds: 6), () {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        });
+
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 400,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F2937),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.amber.shade400.withOpacity(0.5), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.keyboard_outlined, color: Colors.amber.shade400, size: 48),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    '快捷键提示 (Hotkey Tip)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '把电脑的语言换去English',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.amber.shade100,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '华文打pinyin的方格会影响快捷键',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        timer?.cancel();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade500,
+                        foregroundColor: Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        '我知道了 (Got it)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _TimerPageView extends StatefulWidget {
@@ -380,6 +567,7 @@ class _TimerPageView extends StatefulWidget {
   final List<PageData> allPages;
   final Map<int, int> sessionTimerSeconds;
   final bool isActive;
+  final double dingVolume;
 
   const _TimerPageView({
     super.key,
@@ -391,6 +579,7 @@ class _TimerPageView extends StatefulWidget {
     required this.sessionTimerSeconds,
     required this.isActive,
     required this.allPages,
+    required this.dingVolume,
     this.imagesDirPath,
     this.fontFamily,
     this.flowTimerFont,
@@ -778,8 +967,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
   }
 
   /// Creates a short-lived AudioPlayer, plays once, then disposes itself.
-  void _spawnPlay(String audioPath) {
+   void _spawnPlay(String audioPath) {
     final player = AudioPlayer();
+    player.setVolume(widget.dingVolume);
     player.play(DeviceFileSource(audioPath));
     player.onPlayerComplete.listen((_) => player.dispose());
   }
@@ -790,7 +980,14 @@ class _TimerPageViewState extends State<_TimerPageView> {
       setState(() => _isRunningL = false);
     } else {
       if (_secL > 0) {
-        setState(() => _isRunningL = true);
+        if (_isRunningR) {
+          _timerR?.cancel();
+          _isRunningR = false;
+        }
+        setState(() {
+          _isRunningL = true;
+          _isRunningR = _isRunningR; // ensure UI update for right timer if it was stopped
+        });
         _timerL = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secL > 0) {
             setState(() {
@@ -814,7 +1011,14 @@ class _TimerPageViewState extends State<_TimerPageView> {
       setState(() => _isRunningR = false);
     } else {
       if (_secR > 0) {
-        setState(() => _isRunningR = true);
+        if (_isRunningL) {
+          _timerL?.cancel();
+          _isRunningL = false;
+        }
+        setState(() {
+          _isRunningR = true;
+          _isRunningL = _isRunningL; // ensure UI update for left timer if it was stopped
+        });
         _timerR = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secR > 0) {
             setState(() {
@@ -1208,3 +1412,4 @@ class _TimerPageViewState extends State<_TimerPageView> {
     );
   }
 }
+

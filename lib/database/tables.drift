@@ -30,7 +30,8 @@ CREATE TABLE flow_folder (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     folder_name VARCHAR NOT NULL,
     event_id INTEGER NOT NULL,
-    folder_position INTEGER NOT NULL
+    folder_position INTEGER NOT NULL,
+    parent_folder_id INTEGER REFERENCES flow_folder(id)
 ) AS FlowFolderData;
 
 CREATE TABLE flow (

@@ -357,39 +357,86 @@ class EventTransfer {
           }
         }
 
-        // Timer Templates
+        // Timer Templates with Similarity Check
         for (var tplJson in importData['timer_template'] ?? []) {
           final oldId = (tplJson['id'] as num).toInt();
           final oldAudioId = tplJson['ding_audio_id'];
-          final newId = await database
-              .into(database.timerTemplate)
-              .insert(TimerTemplateCompanion.insert(
-                templateName: drift.Value(tplJson['template_name']?.toString()),
-                dingAudioId: drift.Value(
-                    oldAudioId != null ? dingAudioIdMap[oldAudioId] : null),
-              ));
-          templateIdMap[oldId] = newId;
-        }
+          final newAudioId = oldAudioId != null ? dingAudioIdMap[oldAudioId] : null;
+          final templateName = tplJson['template_name']?.toString();
+          
+          // Collect imported ding values for this specific template
+          final importedDvs = (importData['ding_value'] as List? ?? [])
+              .where((dv) => (dv['timer_template_id'] as num).toInt() == oldId)
+              .toList();
 
-        // Ding Values
-        for (var dvJson in importData['ding_value'] ?? []) {
-          final oldTplId = (dvJson['timer_template_id'] as num).toInt();
-          await database
-              .into(database.dingValue)
-              .insert(DingValueCompanion.insert(
-                dingTime: drift.Value(dvJson['ding_time']?.toString()),
-                dingAmount:
-                    drift.Value((dvJson['ding_amount'] as num?)?.toInt() ?? 1),
-                timerTemplateId: drift.Value(templateIdMap[oldTplId]!),
-              ));
+          int? existingTplId;
+
+          // Check for existing identical template
+          final potentialTemplates = await (database.select(database.timerTemplate)
+                ..where((t) => t.templateName.equals(templateName ?? ''))
+                ..where((t) => newAudioId == null 
+                    ? t.dingAudioId.isNull() 
+                    : t.dingAudioId.equals(newAudioId)))
+              .get();
+
+          for (var pot in potentialTemplates) {
+            final potDvs = await (database.select(database.dingValue)
+                  ..where((t) => t.timerTemplateId.equals(pot.id)))
+                .get();
+            
+            if (potDvs.length == importedDvs.length) {
+              bool allMatch = true;
+              for (var impDv in importedDvs) {
+                final match = potDvs.any((pd) => 
+                  pd.dingTime == impDv['ding_time']?.toString() && 
+                  pd.dingAmount == (impDv['ding_amount'] as num?)?.toInt());
+                if (!match) {
+                  allMatch = false;
+                  break;
+                }
+              }
+              if (allMatch) {
+                existingTplId = pot.id;
+                break;
+              }
+            }
+          }
+
+          if (existingTplId != null) {
+            templateIdMap[oldId] = existingTplId;
+          } else {
+            // No identical template found, insert new one
+            final newId = await database
+                .into(database.timerTemplate)
+                .insert(TimerTemplateCompanion.insert(
+                  templateName: drift.Value(templateName),
+                  dingAudioId: drift.Value(newAudioId),
+                ));
+            templateIdMap[oldId] = newId;
+
+            // Insert new ding values only for this new template
+            for (var dvJson in importedDvs) {
+              await database
+                  .into(database.dingValue)
+                  .insert(DingValueCompanion.insert(
+                    dingTime: drift.Value(dvJson['ding_time']?.toString()),
+                    dingAmount: drift.Value((dvJson['ding_amount'] as num?)?.toInt() ?? 1),
+                    timerTemplateId: drift.Value(newId),
+                  ));
+            }
+          }
         }
 
         // The Event itself
         final eventJson = importData['event'];
 
         DateTime? safeParseDate(dynamic val) {
-          if (val == null || val.toString().isEmpty || val.toString() == 'null')
+          if (val == null || val.toString().isEmpty || val.toString() == 'null') {
             return null;
+          }
+          if (val is int) {
+            return DateTime.fromMillisecondsSinceEpoch(val * 1000, isUtc: true).toLocal();
+          }
           try {
             return DateTime.parse(val.toString());
           } catch (e) {

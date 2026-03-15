@@ -107,6 +107,7 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                                   color: Colors.grey)),
                           const SizedBox(height: 8),
                           ReorderableWrap(
+                            needsLongPressDraggable: false,
                             spacing: 16.0,
                             runSpacing: 16.0,
                             onReorder: (oldIndex, newIndex) {
@@ -148,6 +149,7 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                                   color: Colors.grey)),
                           const SizedBox(height: 8),
                           ReorderableWrap(
+                            needsLongPressDraggable: false,
                             spacing: 16.0,
                             runSpacing: 16.0,
                             onReorder: (oldIndex, newIndex) {

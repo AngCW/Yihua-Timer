@@ -53,6 +53,12 @@ class HotkeySettings {
   // Page A2 - Common
   final HotkeyBinding pageA2Swap;
 
+  // Volume Controls
+  final HotkeyBinding bgmVolumeUp;
+  final HotkeyBinding bgmVolumeDown;
+  final HotkeyBinding dingVolumeUp;
+  final HotkeyBinding dingVolumeDown;
+
   HotkeySettings({
     required this.previousPage,
     required this.nextPage,
@@ -64,6 +70,10 @@ class HotkeySettings {
     required this.pageA2RightStartStop,
     required this.pageA2RightReset,
     required this.pageA2Swap,
+    required this.bgmVolumeUp,
+    required this.bgmVolumeDown,
+    required this.dingVolumeUp,
+    required this.dingVolumeDown,
   });
 
   factory HotkeySettings.defaultSettings() {
@@ -118,6 +128,26 @@ class HotkeySettings {
         label: '开始一端并停止另一端:',
         key: 'SPACE',
       ),
+      bgmVolumeUp: HotkeyBinding(
+        id: 'bgm_vol_up',
+        label: 'BGM 音量 +:',
+        key: 'PAGE UP',
+      ),
+      bgmVolumeDown: HotkeyBinding(
+        id: 'bgm_vol_down',
+        label: 'BGM 音量 -:',
+        key: 'PAGE DOWN',
+      ),
+      dingVolumeUp: HotkeyBinding(
+        id: 'ding_vol_up',
+        label: '提示音 音量 +:',
+        key: 'HOME',
+      ),
+      dingVolumeDown: HotkeyBinding(
+        id: 'ding_vol_down',
+        label: '提示音 音量 -:',
+        key: 'END',
+      ),
     );
   }
 
@@ -132,6 +162,10 @@ class HotkeySettings {
         'pageA2RightStartStop': pageA2RightStartStop.toJson(),
         'pageA2RightReset': pageA2RightReset.toJson(),
         'pageA2Swap': pageA2Swap.toJson(),
+        'bgmVolumeUp': bgmVolumeUp.toJson(),
+        'bgmVolumeDown': bgmVolumeDown.toJson(),
+        'dingVolumeUp': dingVolumeUp.toJson(),
+        'dingVolumeDown': dingVolumeDown.toJson(),
       };
 
   factory HotkeySettings.fromJson(Map<String, dynamic> json) {
@@ -150,6 +184,19 @@ class HotkeySettings {
           ? HotkeyBinding.fromJson(json['pageA2Swap'])
           : HotkeyBinding(
               id: 'page_a2_swap', label: '开始一端并停止另一端:', key: 'SPACE'),
+      bgmVolumeUp: json['bgmVolumeUp'] != null
+          ? HotkeyBinding.fromJson(json['bgmVolumeUp'])
+          : HotkeyBinding(id: 'bgm_vol_up', label: 'BGM 音量 +:', key: 'PAGE UP'),
+      bgmVolumeDown: json['bgmVolumeDown'] != null
+          ? HotkeyBinding.fromJson(json['bgmVolumeDown'])
+          : HotkeyBinding(
+              id: 'bgm_vol_down', label: 'BGM 音量 -:', key: 'PAGE DOWN'),
+      dingVolumeUp: json['dingVolumeUp'] != null
+          ? HotkeyBinding.fromJson(json['dingVolumeUp'])
+          : HotkeyBinding(id: 'ding_vol_up', label: '提示音 音量 +:', key: 'HOME'),
+      dingVolumeDown: json['dingVolumeDown'] != null
+          ? HotkeyBinding.fromJson(json['dingVolumeDown'])
+          : HotkeyBinding(id: 'ding_vol_down', label: '提示音 音量 -:', key: 'END'),
     );
   }
 
@@ -164,6 +211,10 @@ class HotkeySettings {
     HotkeyBinding? pageA2RightStartStop,
     HotkeyBinding? pageA2RightReset,
     HotkeyBinding? pageA2Swap,
+    HotkeyBinding? bgmVolumeUp,
+    HotkeyBinding? bgmVolumeDown,
+    HotkeyBinding? dingVolumeUp,
+    HotkeyBinding? dingVolumeDown,
   }) {
     return HotkeySettings(
       previousPage: previousPage ?? this.previousPage,
@@ -176,6 +227,10 @@ class HotkeySettings {
       pageA2RightStartStop: pageA2RightStartStop ?? this.pageA2RightStartStop,
       pageA2RightReset: pageA2RightReset ?? this.pageA2RightReset,
       pageA2Swap: pageA2Swap ?? this.pageA2Swap,
+      bgmVolumeUp: bgmVolumeUp ?? this.bgmVolumeUp,
+      bgmVolumeDown: bgmVolumeDown ?? this.bgmVolumeDown,
+      dingVolumeUp: dingVolumeUp ?? this.dingVolumeUp,
+      dingVolumeDown: dingVolumeDown ?? this.dingVolumeDown,
     );
   }
 
@@ -200,6 +255,14 @@ class HotkeySettings {
       pageA2RightReset.key = newKey;
     } else if (pageA2Swap.id == id) {
       pageA2Swap.key = newKey;
+    } else if (bgmVolumeUp.id == id) {
+      bgmVolumeUp.key = newKey;
+    } else if (bgmVolumeDown.id == id) {
+      bgmVolumeDown.key = newKey;
+    } else if (dingVolumeUp.id == id) {
+      dingVolumeUp.key = newKey;
+    } else if (dingVolumeDown.id == id) {
+      dingVolumeDown.key = newKey;
     }
   }
 }

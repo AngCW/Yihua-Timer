@@ -110,6 +110,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   StreamBuilder<List<FlowFolderData>>(
                     stream: (database.select(database.flowFolder)
                           ..where((t) => t.eventId.equals(widget.event.id))
+                          ..where((t) => t.parentFolderId.isNull())
                           ..orderBy([
                             (t) =>
                                 drift.OrderingTerm(expression: t.folderPosition)
@@ -127,6 +128,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     color: Colors.grey)),
                             const SizedBox(height: 8),
                             ReorderableWrap(
+                              needsLongPressDraggable: false,
                               spacing: 16.0,
                               runSpacing: 16.0,
                               onReorder: (oldIndex, newIndex) {
@@ -178,6 +180,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     color: Colors.grey)),
                             const SizedBox(height: 8),
                             ReorderableWrap(
+                              needsLongPressDraggable: false,
                               spacing: 16.0,
                               runSpacing: 16.0,
                               onReorder: (oldIndex, newIndex) {

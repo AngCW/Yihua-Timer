@@ -146,6 +146,33 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
               ),
             ],
           ),
+          const SizedBox(height: 24),
+
+          // Audio Controls Section
+          _buildSectionCard(
+            title: '音量控制',
+            children: [
+              _buildHotkeyRow(
+                binding: _hotkeySettings.bgmVolumeUp,
+                customText: _getDisplayKey(_hotkeySettings.bgmVolumeUp.key),
+              ),
+              const Divider(height: 20),
+              _buildHotkeyRow(
+                binding: _hotkeySettings.bgmVolumeDown,
+                customText: _getDisplayKey(_hotkeySettings.bgmVolumeDown.key),
+              ),
+              const Divider(height: 20),
+              _buildHotkeyRow(
+                binding: _hotkeySettings.dingVolumeUp,
+                customText: _getDisplayKey(_hotkeySettings.dingVolumeUp.key),
+              ),
+              const Divider(height: 20),
+              _buildHotkeyRow(
+                binding: _hotkeySettings.dingVolumeDown,
+                customText: _getDisplayKey(_hotkeySettings.dingVolumeDown.key),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -328,6 +355,10 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
     if (key == 'ARROW RIGHT') return '→';
     if (key == 'ARROW UP') return '↑';
     if (key == 'ARROW DOWN') return '↓';
+    if (key == 'PAGE UP') return 'PgUp';
+    if (key == 'PAGE DOWN') return 'PgDn';
+    if (key == 'HOME') return 'Home';
+    if (key == 'END') return 'End';
     return key;
   }
 
@@ -381,6 +412,22 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
       } else if (id == _hotkeySettings.pageA2Swap.id) {
         _hotkeySettings = _hotkeySettings.copyWith(
           pageA2Swap: _hotkeySettings.pageA2Swap.copyWith(key: newKey),
+        );
+      } else if (id == _hotkeySettings.bgmVolumeUp.id) {
+        _hotkeySettings = _hotkeySettings.copyWith(
+          bgmVolumeUp: _hotkeySettings.bgmVolumeUp.copyWith(key: newKey),
+        );
+      } else if (id == _hotkeySettings.bgmVolumeDown.id) {
+        _hotkeySettings = _hotkeySettings.copyWith(
+          bgmVolumeDown: _hotkeySettings.bgmVolumeDown.copyWith(key: newKey),
+        );
+      } else if (id == _hotkeySettings.dingVolumeUp.id) {
+        _hotkeySettings = _hotkeySettings.copyWith(
+          dingVolumeUp: _hotkeySettings.dingVolumeUp.copyWith(key: newKey),
+        );
+      } else if (id == _hotkeySettings.dingVolumeDown.id) {
+        _hotkeySettings = _hotkeySettings.copyWith(
+          dingVolumeDown: _hotkeySettings.dingVolumeDown.copyWith(key: newKey),
         );
       }
     });

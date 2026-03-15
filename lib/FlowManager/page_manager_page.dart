@@ -325,7 +325,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   Future<void> _uploadSpecificFont(String target) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['ttf', 'otf', 'woff', 'woff2'],
+      allowedExtensions: ['ttf'],
     );
     if (result != null && result.files.single.path != null) {
       final file = File(result.files.single.path!);

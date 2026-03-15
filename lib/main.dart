@@ -19,41 +19,58 @@ Future<void> main() async {
   runApp(const DebateTimerApp());
 }
 
+class WindowStateListener extends WindowListener {
+  @override
+  void onWindowMaximize() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_maximized', true);
+  }
+
+  @override
+  void onWindowUnmaximize() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_maximized', false);
+  }
+}
+
 Future<void> _configureInitialWindow() async {
   final prefs = await SharedPreferences.getInstance();
+  
+  // Register the listener to track future changes
+  windowManager.addListener(WindowStateListener());
+
   // 默认使用 1920 × 1080 窗口化
   final mode = prefs.getString('window_mode') ?? 'windowed_1920';
+  final wasMaximized = prefs.getBool('is_maximized') ?? (mode == 'windowed_1920');
 
   final isFull = await windowManager.isFullScreen();
 
   if (mode == 'borderless') {
     await windowManager.setFullScreen(true);
   } else {
-    // If we are currently fullscreen and switching to a windowed mode,
-    // we must wait for the OS to finish the style transition before resizing
-    // to prevent the application from crashing
     if (isFull) {
       await windowManager.setFullScreen(false);
       await Future.delayed(const Duration(milliseconds: 200));
     }
 
-    switch (mode) {
-      case 'windowed_1280':
-        await windowManager.setSize(const Size(1280, 720));
-        await windowManager.center();
-        break;
-      case 'windowed_1600':
-        await windowManager.setSize(const Size(1600, 900));
-        await windowManager.center();
-        break;
-      case 'windowed_1920':
-        await windowManager.maximize();
-        break;
-      case 'windowed':
-      default:
-        await windowManager.setSize(const Size(1400, 900));
-        await windowManager.center();
-        break;
+    if (wasMaximized) {
+      await windowManager.maximize();
+    } else {
+      switch (mode) {
+        case 'windowed_1280':
+          await windowManager.setSize(const Size(1280, 720));
+          await windowManager.center();
+          break;
+        case 'windowed_1600':
+          await windowManager.setSize(const Size(1600, 900));
+          await windowManager.center();
+          break;
+        case 'windowed':
+        default:
+          await windowManager.setSize(const Size(1400, 900));
+          await windowManager.center();
+          break;
+      }
     }
   }
 
@@ -67,7 +84,7 @@ class DebateTimerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '辩论计时器',
+      title: 'YiHuaTimer',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.indigo,

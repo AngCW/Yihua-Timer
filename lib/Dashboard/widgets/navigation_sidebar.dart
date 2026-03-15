@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import '../screens/changelog_page.dart';
 
 class NavigationSidebar extends StatelessWidget {
   final int selectedIndex;
@@ -11,6 +11,13 @@ class NavigationSidebar extends StatelessWidget {
     required this.selectedIndex,
     required this.onItemSelected,
   });
+
+  void _openChangelog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => const ChangelogPage(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +39,11 @@ class NavigationSidebar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Title
+          // App title
           Container(
             padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
             child: const Text(
-              '辩论计时器',
+              'YiHuaTimer',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
@@ -45,10 +52,10 @@ class NavigationSidebar extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const Divider(color: Colors.white24, height: 1, thickness: 1),
-          
-          // Navigation Items + Exit button at bottom
+
+          // Navigation Items + bottom section
           Expanded(
             child: Column(
               children: [
@@ -89,10 +96,75 @@ class NavigationSidebar extends StatelessWidget {
                     ],
                   ),
                 ),
+
                 const Divider(color: Colors.white24, height: 1, thickness: 1),
+
+                // ── Version + Changelog section ──────────────────────────
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Changelog button
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: () => _openChangelog(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white70,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            alignment: Alignment.centerLeft,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          icon: const Icon(Icons.history_rounded, size: 17),
+                          label: const Text(
+                            '更新日志',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ),
+                      // Version badge
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12, bottom: 4),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: const Text(
+                                'v1.01',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              '当前版本',
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Exit button ──────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
                   child: SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -162,4 +234,3 @@ class NavigationSidebar extends StatelessWidget {
     );
   }
 }
-

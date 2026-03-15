@@ -1,11 +1,10 @@
-import 'dart:async' as async;
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
 import '../main.dart';
 import 'timer_template_settings_page.dart';
@@ -20,162 +19,115 @@ class VolumeSettingsPage extends StatefulWidget {
 class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
   double _ringtoneVolume = 0.7;
   double _backgroundMusicVolume = 0.5;
+  List<BgmData> _bgms = [];
+  List<DingAudioData> _dings = [];
+  BgmData? _selectedBgm;
+  DingAudioData? _selectedDing;
   List<String> _ringtones = ['默认铃声'];
-  List<EventData> _events = [];
-  EventData? _selectedEvent;
   AudioPlayer? _bgmTestPlayer;
-  async.Timer? _testStopTimer;
+  AudioPlayer? _dingTestPlayer; // Separate player for ding testing
+  bool _isBgmTesting = false;
+  bool _isDingTesting = false;
 
   @override
   void initState() {
     super.initState();
-    _loadEvents();
+    _loadSettings();
+    _loadAudioData();
   }
 
   @override
   void dispose() {
-    _testStopTimer?.cancel();
     _bgmTestPlayer?.stop();
     _bgmTestPlayer?.dispose();
+    _dingTestPlayer?.stop();
+    _dingTestPlayer?.dispose();
     super.dispose();
   }
 
-  Future<void> _loadEvents() async {
-    final query = database.select(database.event)
-      ..orderBy([
-        (t) => drift.OrderingTerm(
-              expression: t.startDate,
-              mode: drift.OrderingMode.asc,
-            ),
-      ]);
-    final list = await query.get();
-    if (!mounted) return;
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _events = list;
-      if (_events.isNotEmpty) {
-        _selectedEvent = _events.first;
-      }
+      _ringtoneVolume = prefs.getDouble('ringtone_volume') ?? 0.7;
+      _backgroundMusicVolume = prefs.getDouble('bgm_volume') ?? 0.5;
     });
   }
 
-  /// Runs a 10-second audio test: plays background music and one ding at current volumes.
-  Future<void> _runAudioTest() async {
-    final event = _selectedEvent;
-    if (event == null) return;
+  Future<void> _saveVolume(String key, double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(key, value);
+  }
 
-    _testStopTimer?.cancel();
-    await _bgmTestPlayer?.stop();
-    await _bgmTestPlayer?.dispose();
-    _bgmTestPlayer = null;
-
-    final supportDir = await getApplicationSupportDirectory();
-    final basePath = supportDir.path;
-
-    // Resolve BGM: prefer a page BGM from this event's flows
-    String? bgmPath;
-    final flows = await (database.select(database.flow)
-          ..where((t) => t.eventId.equals(event.id)))
-        .get();
-    for (final flow in flows) {
-      final pages = await (database.select(database.page)
-            ..where((t) =>
-                t.flowId.equals(flow.id) & t.bgmId.isNotNull()))
-        .get();
-      if (pages.isNotEmpty && pages.first.bgmId != null) {
-        final bgms = await (database.select(database.bgm)
-              ..where((b) => b.id.equals(pages.first.bgmId!)))
-            .get();
-        if (bgms.isNotEmpty) {
-          final path = p.join(basePath, 'YiHuaTimer', 'bgm', bgms.first.bgmName);
-          if (File(path).existsSync()) {
-            bgmPath = path;
-            break;
-          }
-        }
-      }
-    }
-    if (bgmPath == null) {
-      final anyBgm = await database.select(database.bgm).get();
-      for (final b in anyBgm) {
-        final path = p.join(basePath, 'YiHuaTimer', 'bgm', b.bgmName);
-        if (File(path).existsSync()) {
-          bgmPath = path;
-          break;
-        }
-      }
-    }
-
-    // Resolve ding: prefer a timer template ding from this event
-    String? dingPath;
-    for (final flow in flows) {
-      final pages = await (database.select(database.page)
-            ..where((t) => t.flowId.equals(flow.id)))
-        .get();
-      for (final page in pages) {
-        final timers = await (database.select(database.timer)
-              ..where((t) => t.pageId.equals(page.id)))
-            .get();
-        for (final timer in timers) {
-          if (timer.timerTemplateId == null) continue;
-          final templates = await (database.select(database.timerTemplate)
-                ..where((t) => t.id.equals(timer.timerTemplateId!) &
-                    t.dingAudioId.isNotNull()))
-            .get();
-          if (templates.isNotEmpty && templates.first.dingAudioId != null) {
-            final dings = await (database.select(database.dingAudio)
-                  ..where((d) => d.id.equals(templates.first.dingAudioId!)))
-                .get();
-            if (dings.isNotEmpty) {
-              final path =
-                  p.join(basePath, 'YiHuaTimer', 'ding', dings.first.dingName);
-              if (File(path).existsSync()) {
-                dingPath = path;
-                break;
-              }
-            }
-          }
-        }
-        if (dingPath != null) break;
-      }
-      if (dingPath != null) break;
-    }
-    if (dingPath == null) {
-      final anyDing = await (database.select(database.dingAudio)).get();
-      for (final d in anyDing) {
-        final path = p.join(basePath, 'YiHuaTimer', 'ding', d.dingName);
-        if (File(path).existsSync()) {
-          dingPath = path;
-          break;
-        }
-      }
-    }
-
-    // Play BGM for 10 seconds (loop)
-    if (bgmPath != null) {
-      final bgmPlayer = AudioPlayer();
-      _bgmTestPlayer = bgmPlayer;
-      await bgmPlayer.setVolume(_backgroundMusicVolume);
-      await bgmPlayer.setReleaseMode(ReleaseMode.loop);
-      await bgmPlayer.play(DeviceFileSource(bgmPath));
-    }
-
-    // Play one ding at ringtone volume
-    if (dingPath != null) {
-      final dingPlayer = AudioPlayer();
-      await dingPlayer.setVolume(_ringtoneVolume);
-      dingPlayer.play(DeviceFileSource(dingPath));
-      dingPlayer.onPlayerComplete.listen((_) => dingPlayer.dispose());
-    }
-
-    // Stop BGM after 10 seconds
-    _testStopTimer = async.Timer(const Duration(seconds: 10), () async {
-      if (_bgmTestPlayer != null) {
-        await _bgmTestPlayer!.stop();
-        await _bgmTestPlayer!.dispose();
-        if (mounted) setState(() => _bgmTestPlayer = null);
-      }
-      _testStopTimer = null;
+  Future<void> _loadAudioData() async {
+    final bgms = await database.select(database.bgm).get();
+    final dings = await database.select(database.dingAudio).get();
+    if (!mounted) return;
+    setState(() {
+      _bgms = bgms;
+      _dings = dings;
+      if (_bgms.isNotEmpty) _selectedBgm = _bgms.first;
+      if (_dings.isNotEmpty) _selectedDing = _dings.first;
     });
+  }
+
+  /// Toggles BGM testing
+  Future<void> _toggleBgmTest() async {
+    if (_isBgmTesting) {
+      await _bgmTestPlayer?.stop();
+      await _bgmTestPlayer?.dispose();
+      _bgmTestPlayer = null;
+      setState(() => _isBgmTesting = false);
+    } else {
+      if (_selectedBgm == null) return;
+      
+      final supportDir = await getApplicationSupportDirectory();
+      final path = p.join(supportDir.path, 'YiHuaTimer', 'bgm', _selectedBgm!.bgmName);
+      
+      if (File(path).existsSync()) {
+        final player = AudioPlayer();
+        _bgmTestPlayer = player;
+        await player.setVolume(_backgroundMusicMusicVolume);
+        await player.setReleaseMode(ReleaseMode.loop);
+        await player.play(DeviceFileSource(path));
+        setState(() => _isBgmTesting = true);
+      }
+    }
+  }
+
+  /// Toggles Ding testing
+  Future<void> _toggleDingTest() async {
+    if (_isDingTesting) {
+      await _dingTestPlayer?.stop();
+      await _dingTestPlayer?.dispose();
+      _dingTestPlayer = null;
+      setState(() => _isDingTesting = false);
+    } else {
+      if (_selectedDing == null) return;
+      
+      final supportDir = await getApplicationSupportDirectory();
+      final path = p.join(supportDir.path, 'YiHuaTimer', 'ding', _selectedDing!.dingName);
+      
+      if (File(path).existsSync()) {
+        final player = AudioPlayer();
+        _dingTestPlayer = player;
+        await player.setVolume(_ringtoneVolume);
+        await player.setReleaseMode(ReleaseMode.loop); // Loop for testing purposes
+        await player.play(DeviceFileSource(path));
+        setState(() => _isDingTesting = true);
+      }
+    }
+  }
+
+  // Define these as getters/setters for volume update
+  double get _backgroundMusicMusicVolume => _backgroundMusicVolume;
+  set _backgroundMusicMusicVolume(double val) {
+    _backgroundMusicVolume = val;
+    _bgmTestPlayer?.setVolume(val);
+  }
+
+  set ringtoneVolume(double val) {
+    _ringtoneVolume = val;
+    _dingTestPlayer?.setVolume(val);
   }
 
   @override
@@ -187,83 +139,42 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ringtone Volume Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Text(
-                        '测试赛事：',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF4B5563),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 180,
-                        child: DropdownButtonFormField<EventData>(
-                          value: _selectedEvent,
-                          isExpanded: true,
-                          menuMaxHeight: 220,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.grey.shade300),
-                            ),
-                          ),
-                          items: _events
-                              .map(
-                                (e) => DropdownMenuItem<EventData>(
-                                  value: e,
-                                  child: Text(
-                                    e.eventName,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              _selectedEvent = val;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                TextButton.icon(
-                  onPressed: _selectedEvent == null
-                      ? null
-                      : () => _runAudioTest(),
-                  icon: const Icon(Icons.volume_up, size: 16),
-                  label: const Text('音频测试'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF6B46C1),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
             _buildVolumeCard(
-              title: '铃声',
+              title: '提示音',
               value: _ringtoneVolume,
               onChanged: (value) {
                 setState(() {
-                  _ringtoneVolume = value;
+                  ringtoneVolume = value;
                 });
+                _saveVolume('ringtone_volume', value);
               },
+              topWidget: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<DingAudioData>(
+                      value: _selectedDing,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        labelText: '测试提示音',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      items: _dings.map((d) => DropdownMenuItem(value: d, child: Text(d.dingName, overflow: TextOverflow.ellipsis))).toList(),
+                      onChanged: (val) => setState(() => _selectedDing = val),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton.icon(
+                    onPressed: _toggleDingTest,
+                    icon: Icon(_isDingTesting ? Icons.stop : Icons.play_arrow, size: 16),
+                    label: Text(_isDingTesting ? '停止' : '测试'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: _isDingTesting ? Colors.red : const Color(0xFF6B46C1),
+                    ),
+                  ),
+                ],
+              ),
             ),
             
             const SizedBox(height: 24),
@@ -274,9 +185,37 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
               value: _backgroundMusicVolume,
               onChanged: (value) {
                 setState(() {
-                  _backgroundMusicVolume = value;
+                  _backgroundMusicMusicVolume = value;
                 });
+                _saveVolume('bgm_volume', value);
               },
+              topWidget: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<BgmData>(
+                      value: _selectedBgm,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        labelText: '测试 BGM',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      items: _bgms.map((b) => DropdownMenuItem(value: b, child: Text(b.bgmName, overflow: TextOverflow.ellipsis))).toList(),
+                      onChanged: (val) => setState(() => _selectedBgm = val),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton.icon(
+                    onPressed: _toggleBgmTest,
+                    icon: Icon(_isBgmTesting ? Icons.stop : Icons.play_arrow, size: 16),
+                    label: Text(_isBgmTesting ? '停止' : '测试'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: _isBgmTesting ? Colors.red : const Color(0xFF6B46C1),
+                    ),
+                  ),
+                ],
+              ),
             ),
             
             const SizedBox(height: 24),
@@ -294,6 +233,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
     required String title,
     required double value,
     required ValueChanged<double> onChanged,
+    Widget? topWidget,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -330,6 +270,10 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
               ),
             ],
           ),
+          if (topWidget != null) ...[
+            const SizedBox(height: 20),
+            topWidget,
+          ],
           const SizedBox(height: 20),
           Slider(
             value: value,

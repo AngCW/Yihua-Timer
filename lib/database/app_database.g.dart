@@ -1112,9 +1112,16 @@ class FlowFolder extends Table with TableInfo<FlowFolder, FlowFolderData> {
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
+  static const VerificationMeta _parentFolderIdMeta =
+      const VerificationMeta('parentFolderId');
+  late final GeneratedColumn<int> parentFolderId = GeneratedColumn<int>(
+      'parent_folder_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES flow_folder(id)');
   @override
   List<GeneratedColumn> get $columns =>
-      [id, folderName, eventId, folderPosition];
+      [id, folderName, eventId, folderPosition, parentFolderId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1150,6 +1157,12 @@ class FlowFolder extends Table with TableInfo<FlowFolder, FlowFolderData> {
     } else if (isInserting) {
       context.missing(_folderPositionMeta);
     }
+    if (data.containsKey('parent_folder_id')) {
+      context.handle(
+          _parentFolderIdMeta,
+          parentFolderId.isAcceptableOrUnknown(
+              data['parent_folder_id']!, _parentFolderIdMeta));
+    }
     return context;
   }
 
@@ -1167,6 +1180,8 @@ class FlowFolder extends Table with TableInfo<FlowFolder, FlowFolderData> {
           .read(DriftSqlType.int, data['${effectivePrefix}event_id'])!,
       folderPosition: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}folder_position'])!,
+      parentFolderId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}parent_folder_id']),
     );
   }
 
@@ -1184,11 +1199,13 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
   final String folderName;
   final int eventId;
   final int folderPosition;
+  final int? parentFolderId;
   const FlowFolderData(
       {required this.id,
       required this.folderName,
       required this.eventId,
-      required this.folderPosition});
+      required this.folderPosition,
+      this.parentFolderId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1196,6 +1213,9 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
     map['folder_name'] = Variable<String>(folderName);
     map['event_id'] = Variable<int>(eventId);
     map['folder_position'] = Variable<int>(folderPosition);
+    if (!nullToAbsent || parentFolderId != null) {
+      map['parent_folder_id'] = Variable<int>(parentFolderId);
+    }
     return map;
   }
 
@@ -1205,6 +1225,9 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
       folderName: Value(folderName),
       eventId: Value(eventId),
       folderPosition: Value(folderPosition),
+      parentFolderId: parentFolderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentFolderId),
     );
   }
 
@@ -1216,6 +1239,7 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
       folderName: serializer.fromJson<String>(json['folder_name']),
       eventId: serializer.fromJson<int>(json['event_id']),
       folderPosition: serializer.fromJson<int>(json['folder_position']),
+      parentFolderId: serializer.fromJson<int?>(json['parent_folder_id']),
     );
   }
   @override
@@ -1226,16 +1250,23 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
       'folder_name': serializer.toJson<String>(folderName),
       'event_id': serializer.toJson<int>(eventId),
       'folder_position': serializer.toJson<int>(folderPosition),
+      'parent_folder_id': serializer.toJson<int?>(parentFolderId),
     };
   }
 
   FlowFolderData copyWith(
-          {int? id, String? folderName, int? eventId, int? folderPosition}) =>
+          {int? id,
+          String? folderName,
+          int? eventId,
+          int? folderPosition,
+          Value<int?> parentFolderId = const Value.absent()}) =>
       FlowFolderData(
         id: id ?? this.id,
         folderName: folderName ?? this.folderName,
         eventId: eventId ?? this.eventId,
         folderPosition: folderPosition ?? this.folderPosition,
+        parentFolderId:
+            parentFolderId.present ? parentFolderId.value : this.parentFolderId,
       );
   FlowFolderData copyWithCompanion(FlowFolderCompanion data) {
     return FlowFolderData(
@@ -1246,6 +1277,9 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
       folderPosition: data.folderPosition.present
           ? data.folderPosition.value
           : this.folderPosition,
+      parentFolderId: data.parentFolderId.present
+          ? data.parentFolderId.value
+          : this.parentFolderId,
     );
   }
 
@@ -1255,13 +1289,15 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
           ..write('id: $id, ')
           ..write('folderName: $folderName, ')
           ..write('eventId: $eventId, ')
-          ..write('folderPosition: $folderPosition')
+          ..write('folderPosition: $folderPosition, ')
+          ..write('parentFolderId: $parentFolderId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, folderName, eventId, folderPosition);
+  int get hashCode =>
+      Object.hash(id, folderName, eventId, folderPosition, parentFolderId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1269,7 +1305,8 @@ class FlowFolderData extends DataClass implements Insertable<FlowFolderData> {
           other.id == this.id &&
           other.folderName == this.folderName &&
           other.eventId == this.eventId &&
-          other.folderPosition == this.folderPosition);
+          other.folderPosition == this.folderPosition &&
+          other.parentFolderId == this.parentFolderId);
 }
 
 class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
@@ -1277,17 +1314,20 @@ class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
   final Value<String> folderName;
   final Value<int> eventId;
   final Value<int> folderPosition;
+  final Value<int?> parentFolderId;
   const FlowFolderCompanion({
     this.id = const Value.absent(),
     this.folderName = const Value.absent(),
     this.eventId = const Value.absent(),
     this.folderPosition = const Value.absent(),
+    this.parentFolderId = const Value.absent(),
   });
   FlowFolderCompanion.insert({
     this.id = const Value.absent(),
     required String folderName,
     required int eventId,
     required int folderPosition,
+    this.parentFolderId = const Value.absent(),
   })  : folderName = Value(folderName),
         eventId = Value(eventId),
         folderPosition = Value(folderPosition);
@@ -1296,12 +1336,14 @@ class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
     Expression<String>? folderName,
     Expression<int>? eventId,
     Expression<int>? folderPosition,
+    Expression<int>? parentFolderId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (folderName != null) 'folder_name': folderName,
       if (eventId != null) 'event_id': eventId,
       if (folderPosition != null) 'folder_position': folderPosition,
+      if (parentFolderId != null) 'parent_folder_id': parentFolderId,
     });
   }
 
@@ -1309,12 +1351,14 @@ class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
       {Value<int>? id,
       Value<String>? folderName,
       Value<int>? eventId,
-      Value<int>? folderPosition}) {
+      Value<int>? folderPosition,
+      Value<int?>? parentFolderId}) {
     return FlowFolderCompanion(
       id: id ?? this.id,
       folderName: folderName ?? this.folderName,
       eventId: eventId ?? this.eventId,
       folderPosition: folderPosition ?? this.folderPosition,
+      parentFolderId: parentFolderId ?? this.parentFolderId,
     );
   }
 
@@ -1333,6 +1377,9 @@ class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
     if (folderPosition.present) {
       map['folder_position'] = Variable<int>(folderPosition.value);
     }
+    if (parentFolderId.present) {
+      map['parent_folder_id'] = Variable<int>(parentFolderId.value);
+    }
     return map;
   }
 
@@ -1342,7 +1389,8 @@ class FlowFolderCompanion extends UpdateCompanion<FlowFolderData> {
           ..write('id: $id, ')
           ..write('folderName: $folderName, ')
           ..write('eventId: $eventId, ')
-          ..write('folderPosition: $folderPosition')
+          ..write('folderPosition: $folderPosition, ')
+          ..write('parentFolderId: $parentFolderId')
           ..write(')'))
         .toString();
   }
@@ -5866,12 +5914,14 @@ typedef $FlowFolderCreateCompanionBuilder = FlowFolderCompanion Function({
   required String folderName,
   required int eventId,
   required int folderPosition,
+  Value<int?> parentFolderId,
 });
 typedef $FlowFolderUpdateCompanionBuilder = FlowFolderCompanion Function({
   Value<int> id,
   Value<String> folderName,
   Value<int> eventId,
   Value<int> folderPosition,
+  Value<int?> parentFolderId,
 });
 
 final class $FlowFolderReferences
@@ -5912,6 +5962,10 @@ class $FlowFolderFilterComposer extends Composer<_$AppDatabase, FlowFolder> {
 
   ColumnFilters<int> get folderPosition => $composableBuilder(
       column: $table.folderPosition,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get parentFolderId => $composableBuilder(
+      column: $table.parentFolderId,
       builder: (column) => ColumnFilters(column));
 
   Expression<bool> flowRefs(
@@ -5956,6 +6010,10 @@ class $FlowFolderOrderingComposer extends Composer<_$AppDatabase, FlowFolder> {
   ColumnOrderings<int> get folderPosition => $composableBuilder(
       column: $table.folderPosition,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get parentFolderId => $composableBuilder(
+      column: $table.parentFolderId,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $FlowFolderAnnotationComposer
@@ -5978,6 +6036,9 @@ class $FlowFolderAnnotationComposer
 
   GeneratedColumn<int> get folderPosition => $composableBuilder(
       column: $table.folderPosition, builder: (column) => column);
+
+  GeneratedColumn<int> get parentFolderId => $composableBuilder(
+      column: $table.parentFolderId, builder: (column) => column);
 
   Expression<T> flowRefs<T extends Object>(
       Expression<T> Function($FlowAnnotationComposer a) f) {
@@ -6028,24 +6089,28 @@ class $FlowFolderTableManager extends RootTableManager<
             Value<String> folderName = const Value.absent(),
             Value<int> eventId = const Value.absent(),
             Value<int> folderPosition = const Value.absent(),
+            Value<int?> parentFolderId = const Value.absent(),
           }) =>
               FlowFolderCompanion(
             id: id,
             folderName: folderName,
             eventId: eventId,
             folderPosition: folderPosition,
+            parentFolderId: parentFolderId,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String folderName,
             required int eventId,
             required int folderPosition,
+            Value<int?> parentFolderId = const Value.absent(),
           }) =>
               FlowFolderCompanion.insert(
             id: id,
             folderName: folderName,
             eventId: eventId,
             folderPosition: folderPosition,
+            parentFolderId: parentFolderId,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>

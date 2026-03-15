@@ -117,7 +117,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
     }
 
     final result = await FilePicker.platform.pickFiles(
-      type: type == 'font' ? FileType.any : FileType.image,
+      type: type == 'font' ? FileType.custom : FileType.image,
+      allowedExtensions: type == 'font' ? ['ttf'] : null,
     );
 
     if (result != null && result.files.single.path != null) {
@@ -551,7 +552,18 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
 
             // ── Main Pages Box ────────────────────────────────────────────
             _buildSectionTitle('页面管理 (Page Management)'),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.drag_indicator_rounded, size: 16, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(
+                  '长按并拖拽页面图标可调整页面顺序',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24.0),
@@ -578,6 +590,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: ReorderableWrap(
+                                needsLongPressDraggable: false,
                                 spacing: 16.0,
                                 runSpacing: 16.0,
                                 onReorder: (oldIndex, newIndex) {
@@ -921,56 +934,80 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   }
 
   Widget _buildPageBox(BuildContext context, PageData page) {
-    return GestureDetector(
-      onSecondaryTapDown: (details) {
-        _showPageContextMenu(context, page, details.globalPosition);
-      },
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PageManagerPage(
-                event: widget.event,
-                flow: _currentFlow!,
-                page: page,
-              ),
-            ),
-          );
+    return Tooltip(
+      message: '拖拽可调整顺序，单击打开编辑',
+      child: GestureDetector(
+        onSecondaryTapDown: (details) {
+          _showPageContextMenu(context, page, details.globalPosition);
         },
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                  width: 1,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PageManagerPage(
+                  event: widget.event,
+                  flow: _currentFlow!,
+                  page: page,
                 ),
               ),
-              child: _buildMiniPreview(page),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: 80,
-              child: Text(
-                page.pageName ?? '未命名',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF374151),
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                    ),
+                    child: _buildMiniPreview(page),
+                  ),
+                  // Drag handle indicator in top-right corner
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(
+                        Icons.drag_indicator_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  page.pageName ?? '未命名',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF374151),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

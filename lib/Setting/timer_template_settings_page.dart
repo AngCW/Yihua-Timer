@@ -418,23 +418,59 @@ class _TimerTemplateSettingsPageState extends State<TimerTemplateSettingsPage> {
             fillColor: Colors.grey.shade50),
       );
 
-  void _confirmDelete(TimerTemplateData template) {
+  void _confirmDelete(TimerTemplateData template) async {
+    final usages = await (database.select(database.timer)
+          ..where((t) => t.timerTemplateId.equals(template.id)))
+        .get();
+
+    String usageInfo = '';
+    if (usages.isNotEmpty) {
+      final pageIds = usages.map((u) => u.pageId).whereType<int>().toSet();
+      final pages = await (database.select(database.page)
+            ..where((p) => p.id.isIn(pageIds)))
+          .get();
+      final flowIds = pages.map((p) => p.flowId).whereType<int>().toSet();
+      final flows = await (database.select(database.flow)
+            ..where((f) => f.id.isIn(flowIds)))
+          .get();
+      final eventIds = flows.map((f) => f.eventId).whereType<int>().toSet();
+      final events = await (database.select(database.event)
+            ..where((e) => e.id.isIn(eventIds)))
+          .get();
+
+      usageInfo = '\n\n此模板正在以下赛事中使用:\n' +
+          events.map((e) => '• ${e.eventName}').join('\n') +
+          '\n\n删除后，相关计时器的模板将变为空白。';
+    }
+
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('确认删除'),
-        content: Text('确定要删除模板 "${template.templateName}" 吗？'),
+        content: Text('确定要删除模板 "${template.templateName}" 吗？$usageInfo'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context), child: const Text('取消')),
           TextButton(
             onPressed: () async {
+              // 1. Nullify references in timers to avoid FK error
+              await (database.update(database.timer)
+                    ..where((t) => t.timerTemplateId.equals(template.id)))
+                  .write(const TimerCompanion(
+                      timerTemplateId: drift.Value(null)));
+
+              // 2. Delete ding values
               await (database.delete(database.dingValue)
                     ..where((t) => t.timerTemplateId.equals(template.id)))
                   .go();
+
+              // 3. Delete template
               await (database.delete(database.timerTemplate)
                     ..where((t) => t.id.equals(template.id)))
                   .go();
+
               _loadData();
               if (context.mounted) Navigator.pop(context);
             },
