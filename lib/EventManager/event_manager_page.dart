@@ -184,6 +184,11 @@ class _EventManagerPageState extends State<EventManagerPage> {
 
       if (outputPath == null) return;
 
+      String finalOutputPath = outputPath;
+      if (!finalOutputPath.toLowerCase().endsWith('.zip')) {
+        finalOutputPath += '.zip';
+      }
+
       // Show loading
       if (mounted) {
         showDialog(
@@ -194,7 +199,7 @@ class _EventManagerPageState extends State<EventManagerPage> {
         );
       }
 
-      await EventTransfer.exportEvent(event, outputPath);
+      await EventTransfer.exportEvent(event, finalOutputPath);
 
       if (mounted) {
         Navigator.pop(context); // close loading

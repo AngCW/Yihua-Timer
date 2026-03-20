@@ -1,0 +1,756 @@
+[ +258 ms] Unable to locate an Android SDK.
+[ +116 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +2 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +73 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[   +2 ms] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +56 ms] Skipping pub get: version match.
+[  +47 ms] Found plugin audioplayers at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers-6.4.0\
+[   +6 ms] Found plugin audioplayers_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_android-5.2.0\
+[   +3 ms] Found plugin audioplayers_darwin at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_darwin-6.2.0\
+[   +3 ms] Found plugin audioplayers_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_linux-4.2.0\
+[   +5 ms] Found plugin audioplayers_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_web-5.1.0\
+[   +2 ms] Found plugin audioplayers_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_windows-4.2.0\
+[  +48 ms] Found plugin file_picker at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.10\
+[   +6 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.26\
+[  +31 ms] Found plugin path_provider at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.2\
+[   +2 ms] Found plugin path_provider_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.15\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.3.0\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +3 ms] Found plugin path_provider_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.2.1\
+[  +10 ms] Found plugin screen_retriever at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\screen_retriever-0.1.9\
+[   +1 ms] Found plugin shared_preferences at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.3\
+[   +2 ms] Found plugin shared_preferences_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.7\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.4\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +5 ms] Found plugin sqlite3_flutter_libs at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[  +19 ms] Found plugin window_manager at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\window_manager-0.3.9\
+[  +39 ms] Found plugin audioplayers at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers-6.4.0\
+[   +2 ms] Found plugin audioplayers_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_android-5.2.0\
+[   +1 ms] Found plugin audioplayers_darwin at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_darwin-6.2.0\
+[   +1 ms] Found plugin audioplayers_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_linux-4.2.0\
+[   +2 ms] Found plugin audioplayers_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_web-5.1.0\
+[   +1 ms] Found plugin audioplayers_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_windows-4.2.0\
+[  +30 ms] Found plugin file_picker at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.10\
+[   +3 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.26\
+[  +21 ms] Found plugin path_provider at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.2\
+[   +1 ms] Found plugin path_provider_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.15\
+[   +2 ms] Found plugin path_provider_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.3.0\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.2.1\
+[   +8 ms] Found plugin screen_retriever at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\screen_retriever-0.1.9\
+[   +1 ms] Found plugin shared_preferences at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.3\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.7\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.4\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin shared_preferences_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +5 ms] Found plugin sqlite3_flutter_libs at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[  +16 ms] Found plugin window_manager at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\window_manager-0.3.9\
+[  +35 ms] Found plugin audioplayers at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers-6.4.0\
+[   +1 ms] Found plugin audioplayers_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_android-5.2.0\
+[        ] Found plugin audioplayers_darwin at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_darwin-6.2.0\
+[   +1 ms] Found plugin audioplayers_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_linux-4.2.0\
+[   +1 ms] Found plugin audioplayers_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_web-5.1.0\
+[        ] Found plugin audioplayers_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_windows-4.2.0\
+[  +20 ms] Found plugin file_picker at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.10\
+[   +2 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.26\
+[  +16 ms] Found plugin path_provider at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.2\
+[   +1 ms] Found plugin path_provider_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.15\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.3.0\
+[        ] Found plugin path_provider_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.2.1\
+[   +7 ms] Found plugin screen_retriever at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\screen_retriever-0.1.9\
+[        ] Found plugin shared_preferences at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.3\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.7\
+[        ] Found plugin shared_preferences_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.4\
+[        ] Found plugin shared_preferences_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin shared_preferences_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +4 ms] Found plugin sqlite3_flutter_libs at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[  +13 ms] Found plugin window_manager at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\window_manager-0.3.9\
+[  +10 ms] Generating C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\android\app\src\main\java\io\flutter\plugins\GeneratedPluginRegistrant.java
+[ +100 ms] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[ +129 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] [
+             {
+               "instanceId": "c99a9db3",
+               "installDate": "2026-02-10T14:22:29Z",
+               "installationName": "VisualStudio/17.14.25+36915.13.-january.2026-",
+               "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community",
+               "installationVersion": "17.14.36915.13",
+               "productId": "Microsoft.VisualStudio.Product.Community",
+               "productPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe",
+               "state": 4294967295,
+               "isComplete": true,
+               "isLaunchable": true,
+               "isPrerelease": false,
+               "isRebootRequired": false,
+               "displayName": "Visual Studio Community 2022",
+               "description": "Powerful IDE, free for students, open-source contributors, and individuals",
+               "channelId": "VisualStudio.17.Release",
+               "channelUri": "https://aka.ms/vs/17/release/channel",
+               "enginePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\resources\\app\\ServiceHub\\Services\\Microsoft.VisualStudio.Setup.Service",
+               "installChannelUri": "https://aka.ms/vs/17/release/139677114_-1759712600/channel",
+               "installedChannelId": "VisualStudio.17.Release",
+               "installedChannelUri": "https://aka.ms/vs/17/release/channel",
+               "releaseNotes": "https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.14#17.14.25",
+               "resolvedInstallationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community",
+               "thirdPartyNotices": "https://go.microsoft.com/fwlink/?LinkId=661288",
+               "updateDate": "2026-02-10T14:22:29.4272988Z",
+               "catalog": {
+                 "buildBranch": "d17.14",
+                 "buildVersion": "17.14.36915.13",
+                 "id": "VisualStudio/17.14.25+36915.13.-january.2026-",
+                 "localBuild": "build-lab",
+                 "manifestName": "VisualStudio",
+                 "manifestType": "installer",
+                 "productDisplayVersion": "17.14.25 (January 2026)",
+                 "productLine": "Dev17",
+                 "productLineVersion": "2022",
+                 "productMilestone": "RTW",
+                 "productMilestoneIsPreRelease": "False",
+                 "productName": "Visual Studio",
+                 "productPatchVersion": "25",
+                 "productPreReleaseMilestoneSuffix": "1.0",
+                 "productReleaseNameSuffix": "(January 2026)",
+                 "productSemanticVersion": "17.14.25+36915.13.-january.2026-",
+                 "requiredEngineVersion": "3.14.2086.54749"
+               },
+               "properties": {
+                 "appLocalWPF": "false",
+                 "campaignId": "",
+                 "channelManifestId": "VisualStudio.17.Release/17.14.25+36915.13.-january.2026-",
+                 "includeRecommended": "1",
+                 "nickname": "",
+                 "setupEngineFilePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\setup.exe"
+               }
+             }
+           ]
+[   +2 ms] Building Windows application...
+[  +44 ms] executing: C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe -S C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows -B C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64 -G Visual Studio 17 2022 -A x64 -DFLUTTER_TARGET_PLATFORM=windows-x64
+[  +98 ms] -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.22624.
+[+2161 ms] -- The CXX compiler identification is MSVC 19.44.35222.0
+[ +200 ms] -- Detecting CXX compiler ABI info
+[ +962 ms] -- Detecting CXX compiler ABI info - done
+[  +57 ms] -- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+[  +11 ms] -- Detecting CXX compile features
+[  +16 ms] -- Detecting CXX compile features - done
+[  +39 ms] -- Nuget.exe not found, trying to download or use cached version.
+[+7213 ms] Feeds used:
+[        ]   C:\Users\M S I\.nuget\packages\
+[        ]   https://api.nuget.org/v3/index.json
+[  +63 ms] Attempting to gather dependency information for package 'Microsoft.Windows.ImplementationLibrary.1.0.210803.1' with respect to project 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\packages', targeting 'Any,Version=v0.0'
+[+1756 ms] Gathering dependency information took 1.75 sec
+[   +6 ms] Attempting to resolve dependencies for package 'Microsoft.Windows.ImplementationLibrary.1.0.210803.1' with DependencyBehavior 'Lowest'
+[  +28 ms] Resolving dependency information took 0 ms
+[        ] Resolving actions to install package 'Microsoft.Windows.ImplementationLibrary.1.0.210803.1'
+[        ] Resolved actions to install package 'Microsoft.Windows.ImplementationLibrary.1.0.210803.1'
+[  +19 ms] Retrieving package 'Microsoft.Windows.ImplementationLibrary 1.0.210803.1' from 'C:\Users\M S I\.nuget\packages\'.
+[  +29 ms] Adding package 'Microsoft.Windows.ImplementationLibrary.1.0.210803.1' to folder 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\packages'
+[+1515 ms] Added package 'Microsoft.Windows.ImplementationLibrary.1.0.210803.1' to folder 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\packages'
+[   +1 ms] Successfully installed 'Microsoft.Windows.ImplementationLibrary 1.0.210803.1' to C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\packages
+[   +1 ms] Executing nuget actions took 1.55 sec
+[ +803 ms] -- The C compiler identification is MSVC 19.44.35222.0
+[  +58 ms] -- Detecting C compiler ABI info
+[ +776 ms] -- Detecting C compiler ABI info - done
+[  +40 ms] -- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+[        ] -- Detecting C compile features
+[        ] -- Detecting C compile features - done
+[+114493 ms] -- Configuring done (130.3s)
+[ +209 ms] -- Generating done (0.2s)
+[  +31 ms] -- Build files have been written to: C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/build/windows/x64
+[  +18 ms] executing: C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe --build C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64 --config Release --target INSTALL --verbose
+[ +119 ms] Change Dir: 'C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/build/windows/x64'
+[  +11 ms] Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+[  +54 ms] MSBuild version 17.14.40+3e7442088 for .NET Framework
+[  +30 ms] Build started 20/3/2026 2:30:35 PM.
+[ +178 ms] Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\INSTALL.vcxproj" on node 1 (default targets).
+[        ] Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\INSTALL.vcxproj" (1) is building "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ZERO_CHECK.vcxproj" (2) on node 1 (default targets).
+[        ] PrepareForBuild:
+[        ]   Creating directory "x64\Release\ZERO_CHECK\".
+[   +4 ms]   Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+[        ]   Creating directory "x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\".
+[   +2 ms] InitializeBuildStatus:
+[        ]   Creating "x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+[        ]   Touching "x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\unsuccessfulbuild".
+[  +68 ms] CustomBuild:
+[        ]   1>Checking Build System
+[  +81 ms] FinalizeBuildStatus:
+[        ]   Deleting file "x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\unsuccessfulbuild".
+[        ]   Touching "x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\ZERO_CHECK.lastbuildstate".
+[        ] Done Building Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ZERO_CHECK.vcxproj" (default targets).
+[  +89 ms] Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\INSTALL.vcxproj" (1) is building "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ALL_BUILD.vcxproj" (3) on node 1 (default targets).
+[        ] Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ALL_BUILD.vcxproj" (3) is building "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\audioplayers_windows\audioplayers_windows_plugin.vcxproj" (4) on node 1 (default targets).
+[        ] Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\audioplayers_windows\audioplayers_windows_plugin.vcxproj" (4) is building "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj" (5) on node 1 (default targets).
+[        ] PrepareForBuild:
+[        ]   Creating directory "x64\Release\flutter_assemble\".
+[   +1 ms]   Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+[        ]   Creating directory "x64\Release\flutter_assemble\flutter_assemble.tlog\".
+[   +1 ms] InitializeBuildStatus:
+[        ]   Creating "x64\Release\flutter_assemble\flutter_assemble.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+[        ]   Touching "x64\Release\flutter_assemble\flutter_assemble.tlog\unsuccessfulbuild".
+[        ] ComputeCustomBuildOutput:
+[        ]   Creating directory "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\".
+[   +2 ms] CustomBuild:
+[        ]   "The build of 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\CMakeFiles\77b99e7d5d69b9b1a24724144d2f909e\flutter_assemble.rule' depends on 'C:\USERS\M S I\ONEDRIVE\UTM FOLDER\UTM\Y3\YIHUA\WINDOWS\FLUTTER\EPHEMERAL\FLUTTER_WINDOWS.DLL' which is produced by the build of 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\CMakeFiles\57c9dacafd00a3e849d9180bc980c437\flutter_windows.dll.rule'. The items cannot be built in parallel."
+[  +62 ms]   Generating C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/flutter_windows.dll, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/flutter_export.h, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/flutter_windows.h, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/flutter_messenger.h, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/flutter_plugin_registrar.h, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/flutter_texture_registrar.h, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/cpp_client_wrapper/core_implementations.cc, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/cpp_client_wrapper/standard_codec.cc, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/cpp_client_wrapper/plugin_registrar.cc, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/cpp_client_wrapper/flutter_engine.cc, C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/cpp_client_wrapper/flutter_view_controller.cc, _phony_
+[ +764 ms]   [ +259 ms] Unable to locate an Android SDK.
+[  +41 ms]   [  +54 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +1 ms]   [   +1 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +76 ms]   [  +76 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[   +1 ms]   [   +1 ms] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +42 ms]   [  +41 ms] Initializing file store
+[  +33 ms]   [  +33 ms] Done initializing file store
+[ +243 ms]   [ +242 ms] Skipping target: gen_localizations
+[  +18 ms]   [  +19 ms] gen_dart_plugin_registrant: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\.dart_tool\package_config_subset}
+[+1518 ms]   [+1518 ms] unpack_windows: Starting due to {InvalidatedReasonKind.outputMissing: The following outputs were missing: C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_windows.dll,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_windows.dll.exp,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_windows.dll.lib,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_windows.dll.pdb,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_export.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_messenger.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_plugin_registrar.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_texture_registrar.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\flutter_windows.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\icudtl.dat,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\binary_messenger_impl.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\byte_buffer_streams.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\core_implementations.cc,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\engine_method_result.cc,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\flutter_engine.cc,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\flutter_view_controller.cc,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\basic_message_channel.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\binary_messenger.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\byte_streams.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\dart_project.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\encodable_value.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\engine_method_result.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\event_channel.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\event_sink.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\event_stream_handler.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\event_stream_handler_functions.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\flutter_engine.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\flutter_view.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\flutter_view_controller.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\message_codec.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\method_call.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\method_channel.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\method_codec.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\method_result.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\method_result_functions.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\plugin_registrar.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\plugin_registrar_windows.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\plugin_registry.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\standard_codec_serializer.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\standard_message_codec.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\standard_method_codec.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\include\flutter\texture_registrar.h,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\plugin_registrar.cc,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\readme,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\standard_codec.cc,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\cpp_client_wrapper\texture_registrar_impl.h}
+[ +211 ms]   [ +211 ms] unpack_windows: Complete
+[+1587 ms]   [+1587 ms] Found plugin audioplayers at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers-6.4.0\
+[   +3 ms]   [   +3 ms] Found plugin audioplayers_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_android-5.2.0\
+[   +2 ms]   [   +2 ms] Found plugin audioplayers_darwin at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_darwin-6.2.0\
+[   +1 ms]   [   +1 ms] Found plugin audioplayers_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_linux-4.2.0\
+[   +3 ms]   [   +3 ms] Found plugin audioplayers_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_web-5.1.0\
+[   +3 ms]   [   +3 ms] Found plugin audioplayers_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\audioplayers_windows-4.2.0\
+[  +33 ms]   [  +33 ms] Found plugin file_picker at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.10\
+[   +5 ms]   [   +5 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.26\
+[  +31 ms]   [  +31 ms] Found plugin path_provider at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.2\
+[   +2 ms]   [   +2 ms] Found plugin path_provider_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.15\
+[   +1 ms]   [   +1 ms] Found plugin path_provider_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.3.0\
+[   +1 ms]   [   +1 ms] Found plugin path_provider_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +2 ms]   [   +2 ms] Found plugin path_provider_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.2.1\
+[   +9 ms]   [   +9 ms] Found plugin screen_retriever at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\screen_retriever-0.1.9\
+[   +1 ms]   [   +1 ms] Found plugin shared_preferences at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.3\
+[   +1 ms]   [   +1 ms] Found plugin shared_preferences_android at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.7\
+[        ]   [   +1 ms] Found plugin shared_preferences_foundation at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.4\
+[        ]   [   +1 ms] Found plugin shared_preferences_linux at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +2 ms]   [   +2 ms] Found plugin shared_preferences_web at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms]   [   +1 ms] Found plugin shared_preferences_windows at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +7 ms]   [   +6 ms] Found plugin sqlite3_flutter_libs at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\sqlite3_flutter_libs-0.5.42\
+[  +17 ms]   [  +17 ms] Found plugin window_manager at C:\Users\M S I\AppData\Local\Pub\Cache\hosted\pub.dev\window_manager-0.3.9\
+[  +29 ms]   [  +29 ms] gen_dart_plugin_registrant: Complete
+[+1279 ms]   [+1279 ms] kernel_snapshot_program: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\.dart_tool\package_config_subset,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\main.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\database\app_database.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\EventManager\event_manager_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Dashboard\widgets\navigation_sidebar.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Dashboard\widgets\event_schedule_sidebar.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\CreateEvent\create_event_form.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\database\app_database.g.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\EventManager\event_details_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Timer\timer_event_detail_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Setting\hotkey_binding_model.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Timer\timer_runner_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Setting\hotkey_settings_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Setting\volume_settings_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Setting\general_settings_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Setting\timer_template_settings_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\FlowManager\flow_manager_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\EventManager\event_folder_detail_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\Timer\timer_folder_detail_page.dart,C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\lib\FlowManager\page_manager_page.dart}
+[   +7 ms]   [   +7 ms] C:\src\flutter\bin\cache\dart-sdk\bin\dartaotruntime.exe --disable-dart-dev C:\src\flutter\bin\cache\dart-sdk\bin\snapshots\frontend_server_aot.dart.snapshot --sdk-root C:\src\flutter\bin\cache\artifacts\engine\common\flutter_patched_sdk_product/ --target=flutter --no-print-incremental-dependencies -Ddart.vm.profile=false -Ddart.vm.product=true --delete-tostring-package-uri=dart:ui --delete-tostring-package-uri=package:flutter --aot --tfa --target-os windows --packages C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\.dart_tool\package_config.json --output-dill C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\.dart_tool\flutter_build\c4309d07bd031e23ed1b3838865a62ce\program.dill --depfile C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\.dart_tool\flutter_build\c4309d07bd031e23ed1b3838865a62ce\kernel_snapshot_program.d --source file:///C:/Users/M%20S%20I/OneDrive/UTM%20FOLDER/UTM/Y3/yihua/.dart_tool/flutter_build/dart_plugin_registrant.dart --source package:flutter/src/dart_plugin_registrant.dart -Dflutter.dart_plugin_registrant=file:///C:/Users/M%20S%20I/OneDrive/UTM%20FOLDER/UTM/Y3/yihua/.dart_tool/flutter_build/dart_plugin_registrant.dart --verbosity=error package:debate_timer/main.dart
+[+2663 ms] [+2662 ms] lib/main.dart(99,20): error GE5CFE876: The method 'CardThemeData' isn't defined for the class 'DebateTimerApp'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[   +1 ms]   [        ]  - 'DebateTimerApp' is from 'package:debate_timer/main.dart' ('lib/main.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'CardThemeData'.
+[        ]   [        ]         cardTheme: CardThemeData(
+[        ]   [        ]                    ^^^^^^^^^^^^^
+[  +31 ms] [  +33 ms] lib/database/app_database.g.dart(4847,37): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.eventId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                     ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(4847,47): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$EventReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$EventReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.eventId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                               ^^^^^^^^^^^^
+[   +1 ms] [   +2 ms] lib/database/app_database.g.dart(5105,41): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.dingAudioId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                         ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5105,51): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$DingAudioReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$DingAudioReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.dingAudioId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                                   ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5303,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerTemplateReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$TimerTemplateReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('ding_audio_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5306,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5321,37): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                     ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5321,47): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerTemplateReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$TimerTemplateReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                               ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5336,37): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                     ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5336,47): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerTemplateReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$TimerTemplateReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                               ^^^^^^^^^^^^
+[   +2 ms] [   +2 ms] lib/database/app_database.g.dart(5687,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$DingValueReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$DingValueReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('timer_template_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5690,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[   +1 ms] [   +1 ms] lib/database/app_database.g.dart(5938,38): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.folderId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                      ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(5938,48): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowFolderReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$FlowFolderReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.folderId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                                ^^^^^^^^^^^^
+[   +1 ms] [   +2 ms] lib/database/app_database.g.dart(6182,40): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                        ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6182,50): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PositionReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PositionReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                                  ^^^^^^^^^^^^
+[   +4 ms] [   +4 ms] lib/database/app_database.g.dart(6196,40): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                        ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6196,50): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PositionReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PositionReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                                  ^^^^^^^^^^^^
+[   +2 ms] [   +2 ms] lib/database/app_database.g.dart(6477,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$ImagesReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$ImagesReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('position_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6480,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6494,41): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.logoImageId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                         ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6494,51): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$ImagesReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$ImagesReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.logoImageId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                                   ^^^^^^^^^^^^
+[   +2 ms] [   +2 ms] lib/database/app_database.g.dart(6800,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$SchoolReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$SchoolReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('event_id')!;
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6803,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6814,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$SchoolReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$SchoolReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('logo_image_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(6817,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[   +1 ms] [   +1 ms] lib/database/app_database.g.dart(7139,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$FlowReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('folder_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7142,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7153,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$FlowReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('school_a_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7156,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7167,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$FlowReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('school_b_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7170,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[   +4 ms] [   +4 ms] lib/database/app_database.g.dart(7683,35): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.bgmId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                   ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7683,45): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$BgmReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$BgmReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.bgmId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                             ^^^^^^^^^^^^
+[   +1 ms] [   +1 ms] lib/database/app_database.g.dart(7912,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PageReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('bgm_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7915,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7927,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PageReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('section_position_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7930,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7942,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PageReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('school_a_position_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7945,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7957,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PageReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('school_b_position_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7960,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7974,36): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.pageId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                    ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(7974,46): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$PageReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]         .filter((f) => f.pageId.id.sqlEquals($_itemColumn<int>('id')!));
+[        ]   [        ]                                              ^^^^^^^^^^^^
+[   +6 ms] [   +7 ms] lib/database/app_database.g.dart(8723,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$TimerReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('timer_template_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(8726,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(8737,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$TimerReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('page_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(8740,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(8751,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - '$TimerReferences' is from 'package:debate_timer/database/app_database.dart' ('lib/database/app_database.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named '$_itemColumn'.
+[        ]   [        ]     final $_column = $_itemColumn<int>('position_id');
+[        ]   [        ]                      ^^^^^^^^^^^^
+[        ] [        ] lib/database/app_database.g.dart(8754,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ]  - 'ColumnFilters' is from 'package:drift/src/runtime/manager/manager.dart' ('../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.23.1/lib/src/runtime/manager/manager.dart').
+[        ]   [        ] Try correcting the name to the name of an existing method, or defining a method named 'sqlEquals'.
+[        ]   [        ]         .filter((f) => f.id.sqlEquals($_column));
+[        ]   [        ]                             ^^^^^^^^^
+[+5370 ms]   [+5370 ms] Persisting file store
+[  +12 ms]   [  +12 ms] Done persisting file store
+[   +3 ms]   [   +3 ms] Target kernel_snapshot_program failed: Exception
+[        ]              #0      KernelSnapshotProgram.build (package:flutter_tools/src/build_system/targets/common.dart:276:7)
+[        ]              <asynchronous suspension>
+[        ]              #1      _BuildInstance._invokeInternal (package:flutter_tools/src/build_system/build_system.dart:875:9)
+[        ]              <asynchronous suspension>
+[        ]              #2      Future.wait.<anonymous closure> (dart:async/future.dart:534:21)
+[        ]              <asynchronous suspension>
+[        ]              #3      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:813:32)
+[        ]              <asynchronous suspension>
+[        ]              #4      Future.wait.<anonymous closure> (dart:async/future.dart:534:21)
+[        ]              <asynchronous suspension>
+[        ]              #5      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:813:32)
+[        ]              <asynchronous suspension>
+[        ]              #6      Future.wait.<anonymous closure> (dart:async/future.dart:534:21)
+[        ]              <asynchronous suspension>
+[        ]              #7      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:813:32)
+[        ]              <asynchronous suspension>
+[        ]              #8      Future.wait.<anonymous closure> (dart:async/future.dart:534:21)
+[        ]              <asynchronous suspension>
+[        ]              #9      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:813:32)
+[        ]              <asynchronous suspension>
+[        ]              #10     Future.wait.<anonymous closure> (dart:async/future.dart:534:21)
+[        ]              <asynchronous suspension>
+[        ]              #11     _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:813:32)
+[        ]              <asynchronous suspension>
+[        ]              #12     Future.wait.<anonymous closure> (dart:async/future.dart:534:21)
+[        ]              <asynchronous suspension>
+[        ]              #13     _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:813:32)
+[        ]              <asynchronous suspension>
+[        ]              #14     FlutterBuildSystem.build (package:flutter_tools/src/build_system/build_system.dart:635:16)
+[        ]              <asynchronous suspension>
+[        ]              #15     AssembleCommand.runCommand (package:flutter_tools/src/commands/assemble.dart:328:32)
+[        ]              <asynchronous suspension>
+[        ]              #16     FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1408:27)
+[        ]              <asynchronous suspension>
+[        ]              #17     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+[        ]              <asynchronous suspension>
+[        ]              #18     CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+[        ]              <asynchronous suspension>
+[        ]              #19     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:420:9)
+[        ]              <asynchronous suspension>
+[        ]              #20     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+[        ]              <asynchronous suspension>
+[        ]              #21     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:364:5)
+[        ]              <asynchronous suspension>
+[        ]              #22     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:130:9)
+[        ]              <asynchronous suspension>
+[        ]              #23     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+[        ]              <asynchronous suspension>
+[        ]              #24     main (package:flutter_tools/executable.dart:93:3)
+[        ]              <asynchronous suspension>
+[   +5 ms]   [  +10 ms] "flutter assemble" took 13,331ms.
+[  +23 ms]   [  +23 ms] 
+[        ]              #0      throwToolExit (package:flutter_tools/src/base/common.dart:10:3)
+[        ]              #1      AssembleCommand.runCommand (package:flutter_tools/src/commands/assemble.dart:345:7)
+[        ]              <asynchronous suspension>
+[        ]              #2      FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1408:27)
+[        ]              <asynchronous suspension>
+[        ]              #3      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+[        ]              <asynchronous suspension>
+[        ]              #4      CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+[        ]              <asynchronous suspension>
+[        ]              #5      FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:420:9)
+[        ]              <asynchronous suspension>
+[        ]              #6      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+[        ]              <asynchronous suspension>
+[        ]              #7      FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:364:5)
+[        ]              <asynchronous suspension>
+[        ]              #8      run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:130:9)
+[        ]              <asynchronous suspension>
+[        ]              #9      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+[        ]              <asynchronous suspension>
+[        ]              #10     main (package:flutter_tools/executable.dart:93:3)
+[        ]              <asynchronous suspension>
+[ +256 ms]   [ +258 ms] ensureAnalyticsSent: 256ms
+[        ]   [        ] Running 1 shutdown hook
+[        ]   [        ] Shutdown hooks complete
+[ +268 ms]   [ +268 ms] exiting with code 1
+[  +54 ms] C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(254,5): error MSB8066: Custom build for 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\CMakeFiles\57c9dacafd00a3e849d9180bc980c437\flutter_windows.dll.rule;C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\CMakeFiles\77b99e7d5d69b9b1a24724144d2f909e\flutter_assemble.rule;C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\CMakeLists.txt' exited with code 1. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ] Done Building Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj" (default targets) -- FAILED.
+[   +1 ms] Done Building Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\audioplayers_windows\audioplayers_windows_plugin.vcxproj" (default targets) -- FAILED.
+[  +95 ms] Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ALL_BUILD.vcxproj" (3) is building "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\sqlite3.vcxproj" (9) on node 1 (default targets).
+[        ] PrepareForBuild:
+[        ]   Creating directory "sqlite3.dir\Release\".
+[   +3 ms]   Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+[        ]   Creating directory "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\Release\".
+[        ]   Creating directory "sqlite3.dir\Release\sqlite3.tlog\".
+[   +1 ms] InitializeBuildStatus:
+[        ]   Creating "sqlite3.dir\Release\sqlite3.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+[        ]   Touching "sqlite3.dir\Release\sqlite3.tlog\unsuccessfulbuild".
+[  +46 ms] CustomBuild:
+[        ]   Building Custom Rule C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/windows/flutter/ephemeral/.plugin_symlinks/sqlite3_flutter_libs/windows/CMakeLists.txt
+[ +101 ms] ClCompile:
+[        ]   C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\CL.exe /c /I"C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\_deps\sqlite3-src" /nologo /W3 /WX- /diagnostics:column /O2 /Ob2 /D _WINDLL /D _UNICODE /D UNICODE /D WIN32 /D _WINDOWS /D NDEBUG /D SQLITE_ENABLE_DBSTAT_VTAB /D SQLITE_ENABLE_FTS5 /D SQLITE_ENABLE_RTREE /D SQLITE_ENABLE_MATH_FUNCTIONS /D SQLITE_DQS=0 /D SQLITE_DEFAULT_MEMSTATUS=0 /D SQLITE_TEMP_STORE=2 /D SQLITE_MAX_EXPR_DEPTH=0 /D SQLITE_STRICT_SUBTYPE=1 /D SQLITE_OMIT_AUTHORIZATION /D SQLITE_OMIT_DECLTYPE /D SQLITE_OMIT_DEPRECATED /D SQLITE_OMIT_PROGRESS_CALLBACK /D SQLITE_OMIT_SHARED_CACHE /D SQLITE_OMIT_TCL_VARIABLE /D SQLITE_OMIT_TRACE /D SQLITE_USE_ALLOCA /D SQLITE_ENABLE_SESSION /D SQLITE_ENABLE_PREUPDATE_HOOK /D SQLITE_UNTESTABLE /D SQLITE_HAVE_ISNAN /D SQLITE_HAVE_LOCALTIME_R /D SQLITE_HAVE_LOCALTIME_S /D UNICODE /D _UNICODE /D "CMAKE_INTDIR=\"Release\"" /D sqlite3_EXPORTS /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"sqlite3.dir\Release\\" /Fd"sqlite3.dir\Release\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue  /w "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\ephemeral\.plugin_symlinks\sqlite3_flutter_libs\windows\sqlite3_flutter.c"
+[  +71 ms] cl : command line  warning D9025: overriding '/W3' with '/w' [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\sqlite3.vcxproj]
+[        ]   sqlite3_flutter.c
+[+13166 ms] Link:
+[        ]   C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\Release\sqlite3.dll" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/build/windows/x64/plugins/sqlite3_flutter_libs/Release/sqlite3.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/build/windows/x64/plugins/sqlite3_flutter_libs/Release/sqlite3.lib" /MACHINE:X64  /machine:x64 /DLL sqlite3.dir\Release\sqlite3_flutter.obj
+[  +70 ms]      Creating library C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/build/windows/x64/plugins/sqlite3_flutter_libs/Release/sqlite3.lib and object C:/Users/M S I/OneDrive/UTM FOLDER/UTM/Y3/yihua/build/windows/x64/plugins/sqlite3_flutter_libs/Release/sqlite3.exp
+[  +85 ms]   sqlite3.vcxproj -> C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\Release\sqlite3.dll
+[  +11 ms] FinalizeBuildStatus:
+[        ]   Deleting file "sqlite3.dir\Release\sqlite3.tlog\unsuccessfulbuild".
+[        ]   Touching "sqlite3.dir\Release\sqlite3.tlog\sqlite3.lastbuildstate".
+[        ] Done Building Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\sqlite3.vcxproj" (default targets).
+[  +66 ms] Done Building Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ALL_BUILD.vcxproj" (default targets) -- FAILED.
+[        ] Done Building Project "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\INSTALL.vcxproj" (default targets) -- FAILED.
+[   +1 ms] Build FAILED.
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\INSTALL.vcxproj" (default target) (1) ->
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ALL_BUILD.vcxproj" (default target) (3) ->
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\sqlite3.vcxproj" (default target) (9) ->
+[        ] (ClCompile target) -> 
+[        ]   cl : command line  warning D9025: overriding '/W3' with '/w' [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\sqlite3_flutter_libs\sqlite3.vcxproj]
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\INSTALL.vcxproj" (default target) (1) ->
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\ALL_BUILD.vcxproj" (default target) (3) ->
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\plugins\audioplayers_windows\audioplayers_windows_plugin.vcxproj" (default target) (4) ->
+[        ] "C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj" (default target) (5) ->
+[        ] (CustomBuild target) -> 
+[        ]   [+2662 ms] lib/main.dart(99,20): error GE5CFE876: The method 'CardThemeData' isn't defined for the class 'DebateTimerApp'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [  +33 ms] lib/database/app_database.g.dart(4847,37): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(4847,47): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$EventReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +2 ms] lib/database/app_database.g.dart(5105,41): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5105,51): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$DingAudioReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5303,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerTemplateReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5306,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5321,37): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5321,47): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerTemplateReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5336,37): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5336,47): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerTemplateReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +2 ms] lib/database/app_database.g.dart(5687,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$DingValueReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5690,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +1 ms] lib/database/app_database.g.dart(5938,38): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(5938,48): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowFolderReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +2 ms] lib/database/app_database.g.dart(6182,40): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6182,50): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PositionReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +4 ms] lib/database/app_database.g.dart(6196,40): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6196,50): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PositionReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +2 ms] lib/database/app_database.g.dart(6477,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$ImagesReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6480,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6494,41): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6494,51): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$ImagesReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +2 ms] lib/database/app_database.g.dart(6800,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$SchoolReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6803,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6814,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$SchoolReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(6817,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +1 ms] lib/database/app_database.g.dart(7139,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7142,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7153,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7156,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7167,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$FlowReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7170,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +4 ms] lib/database/app_database.g.dart(7683,35): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7683,45): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$BgmReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +1 ms] lib/database/app_database.g.dart(7912,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7915,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7927,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7930,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7942,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7945,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7957,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7960,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7974,36): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(7974,46): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$PageReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [   +7 ms] lib/database/app_database.g.dart(8723,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(8726,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(8737,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(8740,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(8751,22): error GE5CFE876: The method '$_itemColumn' isn't defined for the class '$TimerReferences'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   [        ] lib/database/app_database.g.dart(8754,29): error GE5CFE876: The method 'sqlEquals' isn't defined for the class 'ColumnFilters<int>'. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]   C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(254,5): error MSB8066: Custom build for 'C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\CMakeFiles\57c9dacafd00a3e849d9180bc980c437\flutter_windows.dll.rule;C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\CMakeFiles\77b99e7d5d69b9b1a24724144d2f909e\flutter_assemble.rule;C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\windows\flutter\CMakeLists.txt' exited with code 1. [C:\Users\M S I\OneDrive\UTM FOLDER\UTM\Y3\yihua\build\windows\x64\flutter\flutter_assemble.vcxproj]
+[        ]     1 Warning(s)
+[        ]     52 Error(s)
+[        ] Time Elapsed 00:00:28.96
+[  +22 ms] Building Windows application... (completed in 159.9s)
+[        ] "flutter windows" took 160,743ms.
+[  +15 ms] Build process failed.
+[        ] 
+           #0      throwToolExit (package:flutter_tools/src/base/common.dart:10:3)
+           #1      _runBuild (package:flutter_tools/src/windows/build_windows.dart:266:5)
+           <asynchronous suspension>
+           #2      buildWindows (package:flutter_tools/src/windows/build_windows.dart:111:5)
+           <asynchronous suspension>
+           #3      BuildWindowsCommand.runCommand (package:flutter_tools/src/commands/build_windows.dart:64:5)
+           <asynchronous suspension>
+           #4      FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1408:27)
+           <asynchronous suspension>
+           #5      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+           <asynchronous suspension>
+           #6      CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+           <asynchronous suspension>
+           #7      FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:420:9)
+           <asynchronous suspension>
+           #8      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+           <asynchronous suspension>
+           #9      FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:364:5)
+           <asynchronous suspension>
+           #10     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:130:9)
+           <asynchronous suspension>
+           #11     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+           <asynchronous suspension>
+           #12     main (package:flutter_tools/executable.dart:93:3)
+           <asynchronous suspension>
+
+
+[ +267 ms] ensureAnalyticsSent: 266ms
+[        ] Running 1 shutdown hook
+[   +1 ms] Shutdown hooks complete
+[ +262 ms] exiting with code 1

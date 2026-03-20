@@ -4844,7 +4844,7 @@ final class $EventReferences
 
   $SchoolProcessedTableManager get schoolRefs {
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.eventId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.eventId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_schoolRefsTable($_db));
     return ProcessedTableManager(
@@ -5053,7 +5053,7 @@ class $EventTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (schoolRefs)
-                    await $_getPrefetchedData<EventData, Event, SchoolData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $EventReferences._schoolRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -5102,7 +5102,7 @@ final class $DingAudioReferences
 
   $TimerTemplateProcessedTableManager get timerTemplateRefs {
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.dingAudioId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.dingAudioId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerTemplateRefsTable($_db));
     return ProcessedTableManager(
@@ -5249,8 +5249,7 @@ class $DingAudioTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (timerTemplateRefs)
-                    await $_getPrefetchedData<DingAudioData, DingAudio,
-                            TimerTemplateData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $DingAudioReferences._timerTemplateRefsTable(db),
@@ -5300,10 +5299,9 @@ final class $TimerTemplateReferences
           $_aliasNameGenerator(db.timerTemplate.dingAudioId, db.dingAudio.id));
 
   $DingAudioProcessedTableManager? get dingAudioId {
-    final $_column = $_itemColumn<int>('ding_audio_id');
-    if ($_column == null) return null;
+    if ($_item.dingAudioId == null) return null;
     final manager = $DingAudioTableManager($_db, $_db.dingAudio)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.dingAudioId!));
     final item = $_typedResult.readTableOrNull(_dingAudioIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5317,8 +5315,8 @@ final class $TimerTemplateReferences
                   db.timerTemplate.id, db.dingValue.timerTemplateId));
 
   $DingValueProcessedTableManager get dingValueRefs {
-    final manager = $DingValueTableManager($_db, $_db.dingValue).filter(
-        (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager = $DingValueTableManager($_db, $_db.dingValue)
+        .filter((f) => f.timerTemplateId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_dingValueRefsTable($_db));
     return ProcessedTableManager(
@@ -5332,8 +5330,8 @@ final class $TimerTemplateReferences
               db.timerTemplate.id, db.timer.timerTemplateId));
 
   $TimerProcessedTableManager get timerRefs {
-    final manager = $TimerTableManager($_db, $_db.timer).filter(
-        (f) => f.timerTemplateId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager = $TimerTableManager($_db, $_db.timer)
+        .filter((f) => f.timerTemplateId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -5618,8 +5616,7 @@ class $TimerTemplateTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (dingValueRefs)
-                    await $_getPrefetchedData<TimerTemplateData, TimerTemplate,
-                            DingValueData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $TimerTemplateReferences._dingValueRefsTable(db),
@@ -5631,8 +5628,7 @@ class $TimerTemplateTableManager extends RootTableManager<
                                 .where((e) => e.timerTemplateId == item.id),
                         typedResults: items),
                   if (timerRefs)
-                    await $_getPrefetchedData<TimerTemplateData, TimerTemplate,
-                            TimerData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $TimerTemplateReferences._timerRefsTable(db),
@@ -5684,10 +5680,9 @@ final class $DingValueReferences
           db.dingValue.timerTemplateId, db.timerTemplate.id));
 
   $TimerTemplateProcessedTableManager? get timerTemplateId {
-    final $_column = $_itemColumn<int>('timer_template_id');
-    if ($_column == null) return null;
+    if ($_item.timerTemplateId == null) return null;
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.timerTemplateId!));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5935,7 +5930,7 @@ final class $FlowFolderReferences
 
   $FlowProcessedTableManager get flowRefs {
     final manager = $FlowTableManager($_db, $_db.flow)
-        .filter((f) => f.folderId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.folderId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_flowRefsTable($_db));
     return ProcessedTableManager(
@@ -6124,8 +6119,7 @@ class $FlowFolderTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (flowRefs)
-                    await $_getPrefetchedData<FlowFolderData, FlowFolder,
-                            FlowData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $FlowFolderReferences._flowRefsTable(db),
@@ -6179,7 +6173,7 @@ final class $PositionReferences
 
   $ImagesProcessedTableManager get imagesRefs {
     final manager = $ImagesTableManager($_db, $_db.images)
-        .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.positionId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_imagesRefsTable($_db));
     return ProcessedTableManager(
@@ -6193,7 +6187,7 @@ final class $PositionReferences
 
   $TimerProcessedTableManager get timerRefs {
     final manager = $TimerTableManager($_db, $_db.timer)
-        .filter((f) => f.positionId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.positionId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -6409,8 +6403,7 @@ class $PositionTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (imagesRefs)
-                    await $_getPrefetchedData<PositionData, Position,
-                            ImagesData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $PositionReferences._imagesRefsTable(db),
@@ -6421,8 +6414,7 @@ class $PositionTableManager extends RootTableManager<
                                 .where((e) => e.positionId == item.id),
                         typedResults: items),
                   if (timerRefs)
-                    await $_getPrefetchedData<PositionData, Position,
-                            TimerData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $PositionReferences._timerRefsTable(db),
@@ -6474,10 +6466,9 @@ final class $ImagesReferences
       .createAlias($_aliasNameGenerator(db.images.positionId, db.position.id));
 
   $PositionProcessedTableManager? get positionId {
-    final $_column = $_itemColumn<int>('position_id');
-    if ($_column == null) return null;
+    if ($_item.positionId == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.positionId!));
     final item = $_typedResult.readTableOrNull(_positionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6491,7 +6482,7 @@ final class $ImagesReferences
 
   $SchoolProcessedTableManager get schoolRefs {
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.logoImageId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.logoImageId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_schoolRefsTable($_db));
     return ProcessedTableManager(
@@ -6748,7 +6739,7 @@ class $ImagesTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (schoolRefs)
-                    await $_getPrefetchedData<ImagesData, Images, SchoolData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $ImagesReferences._schoolRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -6797,10 +6788,8 @@ final class $SchoolReferences
       .createAlias($_aliasNameGenerator(db.school.eventId, db.event.id));
 
   $EventProcessedTableManager get eventId {
-    final $_column = $_itemColumn<int>('event_id')!;
-
     final manager = $EventTableManager($_db, $_db.event)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.eventId));
     final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -6811,10 +6800,9 @@ final class $SchoolReferences
       .createAlias($_aliasNameGenerator(db.school.logoImageId, db.images.id));
 
   $ImagesProcessedTableManager? get logoImageId {
-    final $_column = $_itemColumn<int>('logo_image_id');
-    if ($_column == null) return null;
+    if ($_item.logoImageId == null) return null;
     final manager = $ImagesTableManager($_db, $_db.images)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.logoImageId!));
     final item = $_typedResult.readTableOrNull(_logoImageIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7136,10 +7124,9 @@ final class $FlowReferences
       .createAlias($_aliasNameGenerator(db.flow.folderId, db.flowFolder.id));
 
   $FlowFolderProcessedTableManager? get folderId {
-    final $_column = $_itemColumn<int>('folder_id');
-    if ($_column == null) return null;
+    if ($_item.folderId == null) return null;
     final manager = $FlowFolderTableManager($_db, $_db.flowFolder)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.folderId!));
     final item = $_typedResult.readTableOrNull(_folderIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7150,10 +7137,9 @@ final class $FlowReferences
       .createAlias($_aliasNameGenerator(db.flow.schoolAId, db.school.id));
 
   $SchoolProcessedTableManager? get schoolAId {
-    final $_column = $_itemColumn<int>('school_a_id');
-    if ($_column == null) return null;
+    if ($_item.schoolAId == null) return null;
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.schoolAId!));
     final item = $_typedResult.readTableOrNull(_schoolAIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7164,10 +7150,9 @@ final class $FlowReferences
       .createAlias($_aliasNameGenerator(db.flow.schoolBId, db.school.id));
 
   $SchoolProcessedTableManager? get schoolBId {
-    final $_column = $_itemColumn<int>('school_b_id');
-    if ($_column == null) return null;
+    if ($_item.schoolBId == null) return null;
     final manager = $SchoolTableManager($_db, $_db.school)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.schoolBId!));
     final item = $_typedResult.readTableOrNull(_schoolBIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7679,8 +7664,8 @@ final class $BgmReferences extends BaseReferences<_$AppDatabase, Bgm, BgmData> {
           aliasName: $_aliasNameGenerator(db.bgm.id, db.page.bgmId));
 
   $PageProcessedTableManager get pageRefs {
-    final manager = $PageTableManager($_db, $_db.page)
-        .filter((f) => f.bgmId.id.sqlEquals($_itemColumn<int>('id')!));
+    final manager =
+        $PageTableManager($_db, $_db.page).filter((f) => f.bgmId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_pageRefsTable($_db));
     return ProcessedTableManager(
@@ -7824,7 +7809,7 @@ class $BgmTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (pageRefs)
-                    await $_getPrefetchedData<BgmData, Bgm, PageData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $BgmReferences._pageRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -7909,10 +7894,9 @@ final class $PageReferences
       db.bgm.createAlias($_aliasNameGenerator(db.page.bgmId, db.bgm.id));
 
   $BgmProcessedTableManager? get bgmId {
-    final $_column = $_itemColumn<int>('bgm_id');
-    if ($_column == null) return null;
-    final manager = $BgmTableManager($_db, $_db.bgm)
-        .filter((f) => f.id.sqlEquals($_column));
+    if ($_item.bgmId == null) return null;
+    final manager =
+        $BgmTableManager($_db, $_db.bgm).filter((f) => f.id($_item.bgmId!));
     final item = $_typedResult.readTableOrNull(_bgmIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7924,10 +7908,9 @@ final class $PageReferences
           $_aliasNameGenerator(db.page.sectionPositionId, db.position.id));
 
   $PositionProcessedTableManager? get sectionPositionId {
-    final $_column = $_itemColumn<int>('section_position_id');
-    if ($_column == null) return null;
+    if ($_item.sectionPositionId == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.sectionPositionId!));
     final item = $_typedResult.readTableOrNull(_sectionPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7939,10 +7922,9 @@ final class $PageReferences
           $_aliasNameGenerator(db.page.schoolAPositionId, db.position.id));
 
   $PositionProcessedTableManager? get schoolAPositionId {
-    final $_column = $_itemColumn<int>('school_a_position_id');
-    if ($_column == null) return null;
+    if ($_item.schoolAPositionId == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.schoolAPositionId!));
     final item = $_typedResult.readTableOrNull(_schoolAPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7954,10 +7936,9 @@ final class $PageReferences
           $_aliasNameGenerator(db.page.schoolBPositionId, db.position.id));
 
   $PositionProcessedTableManager? get schoolBPositionId {
-    final $_column = $_itemColumn<int>('school_b_position_id');
-    if ($_column == null) return null;
+    if ($_item.schoolBPositionId == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.schoolBPositionId!));
     final item = $_typedResult.readTableOrNull(_schoolBPositionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -7971,7 +7952,7 @@ final class $PageReferences
 
   $TimerProcessedTableManager get timerRefs {
     final manager = $TimerTableManager($_db, $_db.timer)
-        .filter((f) => f.pageId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.pageId.id($_item.id));
 
     final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
     return ProcessedTableManager(
@@ -8655,7 +8636,7 @@ class $PageTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (timerRefs)
-                    await $_getPrefetchedData<PageData, Page, TimerData>(
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $PageReferences._timerRefsTable(db),
                         managerFromTypedResult: (p0) =>
@@ -8720,10 +8701,9 @@ final class $TimerReferences
           $_aliasNameGenerator(db.timer.timerTemplateId, db.timerTemplate.id));
 
   $TimerTemplateProcessedTableManager? get timerTemplateId {
-    final $_column = $_itemColumn<int>('timer_template_id');
-    if ($_column == null) return null;
+    if ($_item.timerTemplateId == null) return null;
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.timerTemplateId!));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -8734,10 +8714,9 @@ final class $TimerReferences
       db.page.createAlias($_aliasNameGenerator(db.timer.pageId, db.page.id));
 
   $PageProcessedTableManager? get pageId {
-    final $_column = $_itemColumn<int>('page_id');
-    if ($_column == null) return null;
-    final manager = $PageTableManager($_db, $_db.page)
-        .filter((f) => f.id.sqlEquals($_column));
+    if ($_item.pageId == null) return null;
+    final manager =
+        $PageTableManager($_db, $_db.page).filter((f) => f.id($_item.pageId!));
     final item = $_typedResult.readTableOrNull(_pageIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -8748,10 +8727,9 @@ final class $TimerReferences
       .createAlias($_aliasNameGenerator(db.timer.positionId, db.position.id));
 
   $PositionProcessedTableManager? get positionId {
-    final $_column = $_itemColumn<int>('position_id');
-    if ($_column == null) return null;
+    if ($_item.positionId == null) return null;
     final manager = $PositionTableManager($_db, $_db.position)
-        .filter((f) => f.id.sqlEquals($_column));
+        .filter((f) => f.id($_item.positionId!));
     final item = $_typedResult.readTableOrNull(_positionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

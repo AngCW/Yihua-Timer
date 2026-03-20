@@ -81,12 +81,12 @@ class HotkeySettings {
       previousPage: HotkeyBinding(
         id: 'general_previous',
         label: '转至上个页面:',
-        key: 'N',
+        key: 'B',
       ),
       nextPage: HotkeyBinding(
         id: 'general_next',
         label: '转至下个页面:',
-        key: 'M',
+        key: 'N',
       ),
       specialPage: HotkeyBinding(
         id: 'general_special',

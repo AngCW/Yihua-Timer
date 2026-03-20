@@ -327,9 +327,10 @@ class EventTransfer {
         for (var bgmJson in importData['bgm'] ?? []) {
           final oldId = (bgmJson['id'] as num).toInt();
           final name = bgmJson['bgm_name']?.toString() ?? 'Unknown BGM';
-          final existing = await (database.select(database.bgm)
+          final existingList = await (database.select(database.bgm)
                 ..where((t) => t.bgmName.equals(name)))
-              .getSingleOrNull();
+              .get();
+          final existing = existingList.isNotEmpty ? existingList.first : null;
           if (existing == null) {
             final newId = await database
                 .into(database.bgm)
@@ -344,9 +345,10 @@ class EventTransfer {
         for (var daJson in importData['ding_audio'] ?? []) {
           final oldId = (daJson['id'] as num).toInt();
           final name = daJson['ding_name']?.toString() ?? 'Unknown Ding';
-          final existing = await (database.select(database.dingAudio)
+          final existingList = await (database.select(database.dingAudio)
                 ..where((t) => t.dingName.equals(name)))
-              .getSingleOrNull();
+              .get();
+          final existing = existingList.isNotEmpty ? existingList.first : null;
           if (existing == null) {
             final newId = await database
                 .into(database.dingAudio)
@@ -435,7 +437,15 @@ class EventTransfer {
             return null;
           }
           if (val is int) {
-            return DateTime.fromMillisecondsSinceEpoch(val * 1000, isUtc: true).toLocal();
+            int finalValue = val;
+            String s = val.abs().toString();
+            if (s.length <= 10) {
+              finalValue = val * 1000;
+            } else if (s.length > 13) {
+              String trimmed = s.substring(0, 13);
+              finalValue = int.parse(trimmed) * (val < 0 ? -1 : 1);
+            }
+            return DateTime.fromMillisecondsSinceEpoch(finalValue, isUtc: true).toLocal();
           }
           try {
             return DateTime.parse(val.toString());

@@ -1,12 +1,49 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Setting/hotkey_binding_model.dart';
 
-class ShortcutsSection extends StatelessWidget {
+class ShortcutsSection extends StatefulWidget {
   const ShortcutsSection({super.key});
 
   @override
+  State<ShortcutsSection> createState() => _ShortcutsSectionState();
+}
+
+class _ShortcutsSectionState extends State<ShortcutsSection> {
+  HotkeySettings? _hotkeySettings;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('hotkey_settings');
+      if (jsonString != null && mounted) {
+        setState(() {
+          _hotkeySettings = HotkeySettings.fromJson(jsonDecode(jsonString));
+        });
+      } else if (mounted) {
+        setState(() {
+          _hotkeySettings = HotkeySettings.defaultSettings();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hotkeySettings = HotkeySettings.defaultSettings();
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final hotkeySettings = HotkeySettings.defaultSettings();
+    final hotkeySettings = _hotkeySettings ?? HotkeySettings.defaultSettings();
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,23 +207,49 @@ class ShortcutsSection extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   )
-                : icon != null
-                    ? Icon(
-                        icon,
-                        color: const Color(0xFF374151),
-                        size: 20,
-                      )
-                    : Text(
-                        binding.key,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF374151),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    : icon != null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                icon,
+                                color: const Color(0xFF374151),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _getDisplayKey(binding.key),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Color(0xFF374151),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            _getDisplayKey(binding.key),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF374151),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
           ),
         ),
       ],
     );
+  }
+
+  String _getDisplayKey(String key) {
+    if (key == 'ARROW LEFT') return '←';
+    if (key == 'ARROW RIGHT') return '→';
+    if (key == 'ARROW UP') return '↑';
+    if (key == 'ARROW DOWN') return '↓';
+    if (key == 'PAGE UP') return 'PgUp';
+    if (key == 'PAGE DOWN') return 'PgDn';
+    if (key == 'HOME') return 'Home';
+    if (key == 'END') return 'End';
+    return key;
   }
 }

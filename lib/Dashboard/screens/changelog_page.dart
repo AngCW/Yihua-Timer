@@ -20,6 +20,27 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.02',
+    date: '2026-03-20',
+    changes: [
+      '修复了重复导入导出赛事导致的日期溢出错误 (RangeError)',
+      '修复了导入具有重复背景音乐/提示音的赛事时引发的崩溃问题 (Too many elements)',
+      '修复了保存导出赛事时，如果未手动保留后缀则不会自动补全为 .zip 的问题',
+      '修复了主页中的快捷键仅显示方向图标而不显示英文字母的 UI 问题',
+      '现在主页的快捷键显示会与设置页面的自定义快捷键完全同步渲染',
+      '更改了通用快捷键的默认值（上一页为 B，下一页为 N）',
+      '增加了 MSIX 安装包打包支持',
+    ],
+    changesEn: [
+      'Fixed a date overflow error (RangeError) caused by recursive event export/import',
+      'Fixed application crash (Too many elements) when importing events with duplicate audio names',
+      'Fixed an issue where exporting an event without appending .zip would result in an extensionless file',
+      'Dashboard shortcut display now automatically syncs with customized user settings',
+      'Changed default general hotkeys (Previous Page to B, Next Page to N)',
+      'Added support for MSIX installer packaging',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.01',
     date: '2026-03-16',
     changes: [

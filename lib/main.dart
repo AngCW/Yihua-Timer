@@ -96,7 +96,7 @@ class DebateTimerApp extends StatelessWidget {
           seedColor: const Color(0xFF4F46E5),
           brightness: Brightness.light,
         ),
-        cardTheme: CardThemeData(
+        cardTheme: CardTheme(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
