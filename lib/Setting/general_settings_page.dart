@@ -117,7 +117,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('分享选项'),
-          content: const Text('请选择您想要分享的内容：\n\n- 软件：仅分享软件程序本身。\n- 软件+数据：分享软件程序以及您当前的配置、快捷键和赛事数据。如果分享给其他人，他们可以直接使用您当前的配置。'),
+          content: const Text('请选择您想要分享的内容：\n\n- 软件：分享软件程序本身及快捷键配置。\n- 软件+数据：分享软件程序、当前的所有配置、快捷键和赛事数据。如果分享给其他人，他们可以直接完全使用您当前的应用状态。'),
           actions: [
             TextButton(
               onPressed: () {

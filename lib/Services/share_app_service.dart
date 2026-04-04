@@ -45,22 +45,31 @@ class ShareAppService {
       print('Staging application files from ${appDir.path}...');
       await _recursiveCopy(appDir, appCopyDir);
 
-      // 5. If withData, export data into '__yihua_import_data__'
-      if (withData) {
-        final Directory importDataDir = Directory(p.join(appCopyDir.path, '__yihua_import_data__'));
-        await importDataDir.create(recursive: true);
+      // 5. Export SharedPreferences (always) and data (if withData is true)
+      final Directory importDataDir = Directory(p.join(appCopyDir.path, '__yihua_import_data__'));
+      await importDataDir.create(recursive: true);
 
-        // a. Export SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        final keys = prefs.getKeys();
-        final Map<String, dynamic> prefsData = {};
+      // a. Export SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      final Map<String, dynamic> prefsData = {};
+      
+      if (withData) {
         for (String key in keys) {
           prefsData[key] = prefs.get(key);
         }
-        final File prefsFile = File(p.join(importDataDir.path, 'prefs.json'));
-        await prefsFile.writeAsString(jsonEncode(prefsData));
+      } else {
+        // Export only shortcut keys if not sharing all data
+        if (prefs.containsKey('hotkey_settings')) {
+          prefsData['hotkey_settings'] = prefs.get('hotkey_settings');
+        }
+      }
+      
+      final File prefsFile = File(p.join(importDataDir.path, 'prefs.json'));
+      await prefsFile.writeAsString(jsonEncode(prefsData));
 
-        // b. Export YiHuaTimer data directory (including DB and assets)
+      // b. Export YiHuaTimer data directory (including DB and assets)
+      if (withData) {
         final supportDir = await getApplicationSupportDirectory();
         final Directory dataDir = Directory(p.join(supportDir.path, 'YiHuaTimer'));
         if (await dataDir.exists()) {
