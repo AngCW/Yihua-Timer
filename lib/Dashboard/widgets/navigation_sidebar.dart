@@ -138,7 +138,7 @@ class NavigationSidebar extends StatelessWidget {
                                 border: Border.all(color: Colors.white24),
                               ),
                               child: const Text(
-                                'v1.02',
+                                'v1.5.0',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 11,

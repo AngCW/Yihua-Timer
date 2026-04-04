@@ -1,0 +1,5 @@
+{
+  "version": "1.5.0",
+  "changelog": "1. 增加了“在线检查更新”功能\n2. 修复了计时器详情页找不到子文件夹的 Bug\n3. 优化了分享导入逻辑，支持自动清理旧数据以确保资源同步完整\n4. 在通用设置中增加了“完全清除所有数据”按钮",
+  "downloadUrl": "https://drive.google.com/drive/folders/1ruV9Dsa2Ooz2SbNaF01XwH26vnGdUXt2"
+}

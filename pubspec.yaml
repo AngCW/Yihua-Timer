@@ -1,7 +1,7 @@
 name: debate_timer
 description: A debate timer application for Windows desktop
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.5.0+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -21,6 +21,9 @@ dependencies:
   window_manager: ^0.3.8
   archive: ^3.6.1
   reorderables: ^0.6.0
+  http: ^1.2.1
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.0
 dependency_overrides:
   path_provider_windows: 2.2.1
   path_provider_foundation: 2.3.0
@@ -33,6 +36,27 @@ dev_dependencies:
   drift_dev: ^2.20.0
   build_runner: ^2.4.0
   msix: ^3.16.13
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/LOGO.jpeg"
+  windows:
+    generate: true
+    image_path: "assets/images/LOGO.jpeg"
+    icon_size: 256 # Recommended size for Windows icons
+
+msix_config:
+  display_name: YiHuaTimer
+  publisher_display_name: YiHua
+  publisher: "CN=YiHua"
+  identity_name: YiHuaTimer
+  executable_name: yihua
+  logo_path: assets/images/LOGO.png
+  certificate_path: YiHuaTimer.pfx
+  certificate_password: "1234"
+  install_certificate: false
 
 flutter:
   uses-material-design: true

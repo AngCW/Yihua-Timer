@@ -33,6 +33,7 @@ class EventTransfer {
     final List<Map<String, dynamic>> pagesJson = [];
     final List<Map<String, dynamic>> timersJson = [];
     final List<Map<String, dynamic>> imagesJson = [];
+    final Set<int> exportedImageIds = {};
     final Set<int> positionIds = {};
     final Set<int> templateIds = {};
     final Set<int> bgmIds = {};
@@ -65,7 +66,10 @@ class EventTransfer {
               ..where((t) => t.pageId.equals(page.id)))
             .get();
         for (var img in pImages) {
-          imagesJson.add(img.toJson());
+          if (!exportedImageIds.contains(img.id)) {
+            imagesJson.add(img.toJson());
+            exportedImageIds.add(img.id);
+          }
           if (img.positionId != null) positionIds.add(img.positionId!);
         }
       }
@@ -77,8 +81,9 @@ class EventTransfer {
         final img = await (database.select(database.images)
               ..where((t) => t.id.equals(school.logoImageId!)))
             .getSingleOrNull();
-        if (img != null) {
+        if (img != null && !exportedImageIds.contains(img.id)) {
           imagesJson.add(img.toJson());
+          exportedImageIds.add(img.id);
           if (img.positionId != null) positionIds.add(img.positionId!);
         }
       }
@@ -142,34 +147,34 @@ class EventTransfer {
 
     // 3. Identify and pack physical files
     final supportDir = await getApplicationSupportDirectory();
+    final canonicalSupportPath = p.canonicalize(supportDir.path);
     final imagesDir = Directory(
         p.join(supportDir.path, 'YiHuaTimer', 'images', '${event.id}'));
     final bgmDir = Directory(p.join(supportDir.path, 'YiHuaTimer', 'bgm'));
     final dingDir = Directory(p.join(supportDir.path, 'YiHuaTimer', 'ding'));
 
-    // Pack event-specific images (relative to supportDir so path includes YiHuaTimer/images/<id>/)
+    // Pack event-specific images
     if (await imagesDir.exists()) {
+      print('Packing images from: ${imagesDir.path}');
       await for (var file in imagesDir.list(recursive: true)) {
         if (file is File) {
-          // Use supportDir as base so zip path = YiHuaTimer/images/<id>/filename
-          final relativePath = p
-              .relative(file.path, from: supportDir.path)
-              .replaceAll('\\', '/');
+          final relativePath = 'YiHuaTimer/images/${event.id}/${p.basename(file.path)}';
+          print('Adding to archive: $relativePath');
           final bytes = await file.readAsBytes();
           archive.addFile(ArchiveFile(relativePath, bytes.length, bytes));
         }
       }
     }
 
-    // Pack school logos (relative to supportDir so path includes YiHuaTimer/schools/<id>/)
+    // Pack school logos
     final schoolsDir = Directory(
         p.join(supportDir.path, 'YiHuaTimer', 'schools', '${event.id}'));
     if (await schoolsDir.exists()) {
+      print('Packing school logos from: ${schoolsDir.path}');
       await for (var file in schoolsDir.list(recursive: true)) {
         if (file is File) {
-          final relativePath = p
-              .relative(file.path, from: supportDir.path)
-              .replaceAll('\\', '/');
+          final relativePath = 'YiHuaTimer/schools/${event.id}/${p.basename(file.path)}';
+          print('Adding to archive: $relativePath');
           final bytes = await file.readAsBytes();
           archive.addFile(ArchiveFile(relativePath, bytes.length, bytes));
         }
@@ -184,9 +189,7 @@ class EventTransfer {
       final f = File(p.join(bgmDir.path, name));
       if (await f.exists()) {
         final bytes = await f.readAsBytes();
-        // Always use forward slashes in zip paths
-        archive
-            .addFile(ArchiveFile('YiHuaTimer/bgm/$name', bytes.length, bytes));
+        archive.addFile(ArchiveFile('YiHuaTimer/bgm/$name', bytes.length, bytes));
       }
     }
 
@@ -198,20 +201,18 @@ class EventTransfer {
       final f = File(p.join(dingDir.path, name));
       if (await f.exists()) {
         final bytes = await f.readAsBytes();
-        archive
-            .addFile(ArchiveFile('YiHuaTimer/ding/$name', bytes.length, bytes));
+        archive.addFile(ArchiveFile('YiHuaTimer/ding/$name', bytes.length, bytes));
       }
     }
 
     try {
-      // 4. Save Zip
       final zipEncoder = ZipEncoder();
       final zipData = zipEncoder.encode(archive);
       if (zipData != null) {
         final zipFile = File(outputPath);
         await zipFile.writeAsBytes(zipData);
       }
-      print('Export successful');
+      print('Export successful to $outputPath');
     } catch (e, stack) {
       print('Error during zip encoding or saving: $e');
       print(stack);
@@ -247,7 +248,7 @@ class EventTransfer {
             file.name.split('/').where((s) => s.isNotEmpty).toList();
 
         // Safety check: first segment must be 'YiHuaTimer' to prevent path traversal
-        if (segments.isEmpty || segments.first != 'YiHuaTimer') {
+        if (segments.isEmpty || segments.first.toLowerCase() != 'yihuatimer') {
           print('Skipping unexpected archive entry: ${file.name}');
           continue;
         }
@@ -257,6 +258,7 @@ class EventTransfer {
         if (!await destFile.parent.exists()) {
           await destFile.parent.create(recursive: true);
         }
+        print('Extracting: ${file.name} -> $destPath');
         await destFile.writeAsBytes(file.content as List<int>);
       }
 
@@ -472,11 +474,15 @@ class EventTransfer {
         final newImageDir = Directory(
             p.join(supportDir.path, 'YiHuaTimer', 'images', '$newEventId'));
         if (await extractedImageDir.exists()) {
+          print('Moving images from ${extractedImageDir.path} to ${newImageDir.path}');
           if (await newImageDir.exists())
             await newImageDir.delete(recursive: true);
           if (!await newImageDir.parent.exists())
             await newImageDir.parent.create(recursive: true);
-          await extractedImageDir.rename(newImageDir.path);
+          
+          await _recursiveCopy(extractedImageDir, newImageDir);
+        } else {
+          print('No images found in extraction dir: ${extractedImageDir.path}');
         }
 
         // After we have the new Event ID, we should rename the extracted schools directory from temp
@@ -485,11 +491,15 @@ class EventTransfer {
         final newSchoolDir = Directory(
             p.join(supportDir.path, 'YiHuaTimer', 'schools', '$newEventId'));
         if (await extractedSchoolDir.exists()) {
+          print('Moving school logos from ${extractedSchoolDir.path} to ${newSchoolDir.path}');
           if (await newSchoolDir.exists())
             await newSchoolDir.delete(recursive: true);
           if (!await newSchoolDir.parent.exists())
             await newSchoolDir.parent.create(recursive: true);
-          await extractedSchoolDir.rename(newSchoolDir.path);
+          
+          await _recursiveCopy(extractedSchoolDir, newSchoolDir);
+        } else {
+          print('No school logos found in extraction dir: ${extractedSchoolDir.path}');
         }
 
         // Images (Need to remap positions and page_id later)
@@ -673,6 +683,22 @@ class EventTransfer {
     } finally {
       if (await tempExtractDir.exists()) {
         await tempExtractDir.delete(recursive: true);
+      }
+    }
+  }
+
+  static Future<void> _recursiveCopy(Directory source, Directory destination) async {
+    if (!await destination.exists()) {
+      await destination.create(recursive: true);
+    }
+
+    await for (var entity in source.list(recursive: false)) {
+      final name = p.basename(entity.path);
+      final destPath = p.join(destination.path, name);
+      if (entity is Directory) {
+        await _recursiveCopy(entity, Directory(destPath));
+      } else if (entity is File) {
+        await entity.copy(destPath);
       }
     }
   }

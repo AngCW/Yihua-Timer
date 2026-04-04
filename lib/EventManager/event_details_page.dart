@@ -628,33 +628,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
     if (confirmed == true) {
       try {
-        final folderFlows = await (database.select(database.flow)
-              ..where((t) => t.folderId.equals(folder.id)))
-            .get();
-
-        for (final flow in folderFlows) {
-          final flowPages = await (database.select(database.page)
-                ..where((t) => t.flowId.equals(flow.id)))
-              .get();
-          for (final p in flowPages) {
-            await (database.delete(database.timer)
-                  ..where((t) => t.pageId.equals(p.id)))
-                .go();
-            await (database.delete(database.images)
-                  ..where((t) => t.pageId.equals(p.id)))
-                .go();
-            await (database.delete(database.page)
-                  ..where((t) => t.id.equals(p.id)))
-                .go();
-          }
-          await (database.delete(database.flow)
-                ..where((t) => t.id.equals(flow.id)))
-              .go();
-        }
-
-        await (database.delete(database.flowFolder)
-              ..where((t) => t.id.equals(folder.id)))
-            .go();
+        await FlowUtils.deleteFolderRecursive(folder.id);
 
         if (mounted) {
           ScaffoldMessenger.of(context)

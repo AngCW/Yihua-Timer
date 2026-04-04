@@ -34,7 +34,7 @@ class _TimerFolderDetailPageState extends State<TimerFolderDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('可用赛程 (Available Flows)'),
+            _buildSectionTitle('内容 (Content)'),
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
@@ -51,30 +51,143 @@ class _TimerFolderDetailPageState extends State<TimerFolderDetailPage> {
                   ),
                 ],
               ),
-              child: StreamBuilder<List<FlowData>>(
-                stream: (database.select(database.flow)
-                      ..where((t) => t.folderId.equals(widget.folder.id))
-                      ..orderBy([
-                        (t) => drift.OrderingTerm(expression: t.flowPosition)
-                      ]))
-                    .watch(),
-                builder: (context, snapshot) {
-                  final flows = snapshot.data ?? [];
-                  if (flows.isEmpty) {
-                    return const Center(child: Text('此文件夹暂无赛程'));
-                  }
-                  return Wrap(
-                    spacing: 16.0,
-                    runSpacing: 16.0,
-                    children: flows.map((flow) {
-                      return _buildFlowBox(context, flow);
-                    }).toList(),
-                  );
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Subfolders Section
+                  StreamBuilder<List<FlowFolderData>>(
+                    stream: (database.select(database.flowFolder)
+                          ..where((t) => t.parentFolderId.equals(widget.folder.id))
+                          ..orderBy([
+                            (t) => drift.OrderingTerm(expression: t.folderPosition)
+                          ]))
+                        .watch(),
+                    builder: (context, snapshot) {
+                      final subfolders = snapshot.data ?? [];
+                      if (subfolders.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('子文件夹',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 16.0,
+                            runSpacing: 16.0,
+                            children: subfolders.map((folder) {
+                              return _buildFolderBox(context, folder);
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      );
+                    },
+                  ),
+
+                  // Flows Section
+                  StreamBuilder<List<FlowData>>(
+                    stream: (database.select(database.flow)
+                          ..where((t) => t.folderId.equals(widget.folder.id))
+                          ..orderBy([
+                            (t) => drift.OrderingTerm(expression: t.flowPosition)
+                          ]))
+                        .watch(),
+                    builder: (context, snapshot) {
+                      final flows = snapshot.data ?? [];
+                      if (flows.isEmpty) {
+                        return const Center(child: Text('此文件夹暂无赛程'));
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('赛程',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 16.0,
+                            runSpacing: 16.0,
+                            children: flows.map((flow) {
+                              return _buildFlowBox(context, flow);
+                            }).toList(),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFolderBox(BuildContext context, FlowFolderData folder) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                TimerFolderDetailPage(event: widget.event, folder: folder),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Tooltip(
+            message: folder.folderName,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.amber.shade200,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.folder_rounded,
+                size: 40,
+                color: Colors.amber,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 90,
+            child: Tooltip(
+              message: folder.folderName,
+              child: Text(
+                folder.folderName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

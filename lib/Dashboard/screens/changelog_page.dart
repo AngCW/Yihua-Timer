@@ -20,6 +20,54 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.5.0',
+    date: '2026-03-26',
+    changes: [
+      '添加“在线检查更新”功能，支持从云端获取最新版本信息',
+      '修复了计时器详情页无法显示子文件夹的 Bug，现在支持无限级文件夹导航',
+      '优化了分享导入逻辑：导入新版本数据时会自动清理旧数据，确保资源（图片、字体）同步完整',
+      '在通用设置中增加了“完全清除所有数据”按钮，支持一键重置应用',
+    ],
+    changesEn: [
+      'Added "Online Update Check" feature to stay up-to-date with the latest versions',
+      'Fixed a bug where subfolders were not displayed in the Timer details page',
+      'Optimized shared data import: automatically cleans old data to ensure perfect asset synchronization',
+      'Added "Clear All Data" button in General Settings for a fresh start',
+    ],
+  ),
+  ChangelogEntry(
+    version: 'v1.04',
+    date: '2026-03-24',
+    changes: [
+      '修复了文件夹删除不完全导致“孤儿”赛程残留在数据库中的问题',
+      '优化了文件夹删除逻辑，现在支持彻底递归删除所有子文件夹及其关联的所有数据',
+      '修复了计时器选择界面（可用赛程）会显示已删除文件夹的问题，现在仅显示存在的顶层文件夹',
+    ],
+    changesEn: [
+      'Fixed an issue where partial folder deletion left orphaned flows and timers in the database',
+      'Implemented full recursive folder deletion to ensure all subfolders and their data are completely removed',
+      'Fixed UI bug in the timer selection screen where deleted folders were still visible',
+    ],
+  ),
+  ChangelogEntry(
+    version: 'v1.03',
+    date: '2026-03-23',
+    changes: [
+      '添加"分享软件"功能：可在通用设置中将应用打包为 ZIP 文件并保存至下载文件夹',
+      '支持"仅分享软件"与"分享软件+数据"两种模式',
+      '"软件+数据"模式会导出当前快捷键配置与全部赛事数据',
+      '分享后的 ZIP 解压运行时，将自动导入配置与数据，无需手动设置',
+      '更新应用图标为官方 LOGO',
+    ],
+    changesEn: [
+      'Added "Share App" feature: package the app as a ZIP from General Settings and save to Downloads folder',
+      'Supports two modes: "Software Only" and "Software + Data"',
+      '"Software + Data" mode exports current hotkey settings and all event data',
+      'When extracted and launched, the shared ZIP auto-imports all config and data with no setup required',
+      'Updated application icon to official LOGO',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.02',
     date: '2026-03-20',
     changes: [

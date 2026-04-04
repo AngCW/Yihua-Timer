@@ -2626,12 +2626,12 @@ class _PageManagerPageState extends State<PageManagerPage> {
       future: getApplicationSupportDirectory(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || logo?.imageName == null) {
-          return const Icon(Icons.school, size: 60, color: Colors.black54);
+          return const SizedBox.shrink();
         }
         final path = p.join(snapshot.data!.path, 'YiHuaTimer', 'schools',
             widget.event.id.toString(), logo!.imageName!);
         if (!File(path).existsSync()) {
-          return const Icon(Icons.school, size: 60, color: Colors.black54);
+          return const SizedBox.shrink();
         }
         return Image.file(File(path),
             width: 100, height: 100, fit: BoxFit.contain);

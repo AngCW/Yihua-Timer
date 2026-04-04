@@ -90,6 +90,7 @@ class _TimerEventDetailPageState extends State<TimerEventDetailPage> {
                   StreamBuilder<List<FlowFolderData>>(
                     stream: (database.select(database.flowFolder)
                           ..where((t) => t.eventId.equals(widget.event.id))
+                          ..where((t) => t.parentFolderId.isNull())
                           ..orderBy([
                             (t) =>
                                 drift.OrderingTerm(expression: t.folderPosition)
