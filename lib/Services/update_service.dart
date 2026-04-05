@@ -1,62 +1,44 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 
 class UpdateInfo {
   final String version;
   final String changelog;
   final String downloadUrl;
-  final String? assetName;
 
   UpdateInfo({
     required this.version,
     required this.changelog,
     required this.downloadUrl,
-    this.assetName,
   });
 
   factory UpdateInfo.fromJson(Map<String, dynamic> json) {
-    // GitHub Release JSON structure
-    final assets = json['assets'] as List?;
-    String downloadUrl = json['html_url'] ?? '';
-    String? assetName;
-
-    // Favor Windows executable (.exe or .msix)
-    if (assets != null && assets.isNotEmpty) {
-      final winAsset = assets.firstWhere(
-        (a) => a['name'].toString().toLowerCase().endsWith('.exe') || 
-               a['name'].toString().toLowerCase().endsWith('.zip') ||
-               a['name'].toString().toLowerCase().endsWith('.msix'),
-        orElse: () => assets.first,
-      );
-      downloadUrl = winAsset['browser_download_url'];
-      assetName = winAsset['name'];
-    }
-
     return UpdateInfo(
-      version: json['tag_name'] ?? '0.0.0',
-      changelog: json['body'] ?? '',
-      downloadUrl: downloadUrl,
-      assetName: assetName,
+      version: json['version'] ?? '0.0.0',
+      changelog: json['changelog'] ?? '',
+      downloadUrl: json['downloadUrl'] ?? '',
     );
   }
 }
 
 class UpdateService {
-  static const String _owner = 'AngCW';
-  static const String _repo = 'Yihua-Timer';
-  static const String _releasesApiUrl = 'https://api.github.com/repos/$_owner/$_repo/releases/latest';
+  // Use a direct download link for the version.json file on Google Drive
+  // The user must provide the file ID of the version.json file.
+  static const String _versionJsonUrl = 'https://drive.google.com/uc?export=download&id=12zYliIXyDuoVznHu3zSb1e-8VIsMvSyl';
+  
+  // The folder link for manual opening if update fails or for fallback
+  static const String _folderUrl = 'https://drive.google.com/drive/folders/1ruV9Dsa2Ooz2SbNaF01XwH26vnGdUXt2';
 
+  /// Compares version strings like 'v1.0.2' or '1.0.3'
   static int compareVersion(String v1, String v2) {
-    String cleanV1 = v1.replaceAll(RegExp(r'[^0-9.]'), '');
-    String cleanV2 = v2.replaceAll(RegExp(r'[^0-9.]'), '');
+    // Strip 'v' prefix if present
+    String cleanV1 = v1.startsWith('v') ? v1.substring(1) : v1;
+    String cleanV2 = v2.startsWith('v') ? v2.startsWith('v') ? v2.substring(1) : v2 : v2;
     
-    List<int> v1Parts = cleanV1.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    List<int> v2Parts = cleanV2.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    List<int> v1Parts = cleanV1.split('.').map(int.parse).toList();
+    List<int> v2Parts = cleanV2.split('.').map(int.parse).toList();
     
     for (int i = 0; i < 3; i++) {
        int p1 = i < v1Parts.length ? v1Parts[i] : 0;
@@ -69,10 +51,14 @@ class UpdateService {
 
   static Future<UpdateInfo?> checkForUpdate() async {
     try {
+      // 1. Get current app version
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
 
-      final response = await http.get(Uri.parse(_releasesApiUrl)).timeout(const Duration(seconds: 10));
+      // 2. Fetch remote version info
+      // Note: If direct link fails, we might need a different approach or ask user for API key.
+      // For now, we assume a publicly accessible JSON file.
+      final response = await http.get(Uri.parse(_versionJsonUrl)).timeout(const Duration(seconds: 10));
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -83,52 +69,15 @@ class UpdateService {
         }
       }
     } catch (e) {
-      print('GitHub check update failed: $e');
+      print('Check for update failed: $e');
     }
     return null;
   }
 
-  static Future<File?> downloadUpdate(
-    UpdateInfo info, 
-    Function(double)? onProgress
-  ) async {
-    try {
-      final response = await http.Client().send(http.Request('GET', Uri.parse(info.downloadUrl)));
-      final total = response.contentLength ?? 0;
-      int received = 0;
-
-      final tempDir = await getTemporaryDirectory();
-      final savePath = p.join(tempDir.path, info.assetName ?? 'update.zip');
-      final file = File(savePath);
-      final sink = file.openWrite();
-
-      await response.stream.map((chunk) {
-        received += chunk.length;
-        if (onProgress != null && total > 0) {
-          onProgress(received / total);
-        }
-        return chunk;
-      }).pipe(sink);
-
-      await sink.close();
-      return file;
-    } catch (e) {
-      print('Download update failed: $e');
-      return null;
-    }
-  }
-
   static Future<void> launchUpdateUrl(String? url) async {
-    final uri = Uri.parse(url ?? 'https://github.com/$_owner/$_repo/releases');
+    final uri = Uri.parse(url ?? _folderUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  static Future<void> installUpdate(File file) async {
-    if (Platform.isWindows) {
-      // Launch the installer (exe or msix or zip folder)
-      await Process.start('explorer.exe', [file.path]);
     }
   }
 }
