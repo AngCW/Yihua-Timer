@@ -23,6 +23,7 @@ final List<ChangelogEntry> _changelogData = [
     version: 'v1.6.0',
     date: '2026-04-05',
     changes: [
+      '在应用名称中加入了版本号',
       '修复了（希望啦）实际计时器界面中，因为屏幕尺寸不同导致计时器与环节名称位置发生偏移的问题',
       '允许用户在预览页面中编辑屏幕尺寸，以便在不同尺寸下查看页面',
       '在页面编辑器中新增了上一页和下一页按钮',
@@ -37,6 +38,7 @@ final List<ChangelogEntry> _changelogData = [
       '修复了窗口大小调整与初始显示状态的问题',
     ],
     changesEn: [
+      'changed application name to have the version numbering as well',
       'fixed(hopefully) issue where positions of timers and section names in the actual timer would change in different screen sizes',
       'allow users to edit screen sizes in preview pages to view the page in different sizes',
       'added next and previous page buttons in the page editor',
@@ -175,7 +177,8 @@ class ChangelogPage extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: const Color(0xFF312E81),
             foregroundColor: Colors.white,
-            title: const Text('更新日志 (Changelog)', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('更新日志 (Changelog)',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             actions: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
@@ -212,7 +215,8 @@ class ChangelogPage extends StatelessWidget {
                   children: [
                     // Header
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14),
                       decoration: BoxDecoration(
                         color: i == 0
                             ? const Color(0xFF6B46C1).withOpacity(0.07)
@@ -227,14 +231,18 @@ class ChangelogPage extends StatelessWidget {
                           if (i == 0)
                             Container(
                               margin: const EdgeInsets.only(right: 10),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF6B46C1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
                                 '最新 (Latest)',
-                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           Text(
@@ -242,13 +250,16 @@ class ChangelogPage extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
-                              color: i == 0 ? const Color(0xFF4F46E5) : const Color(0xFF374151),
+                              color: i == 0
+                                  ? const Color(0xFF4F46E5)
+                                  : const Color(0xFF374151),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Text(
                             entry.date,
-                            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade500),
                           ),
                         ],
                       ),
@@ -265,14 +276,20 @@ class ChangelogPage extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Colors.blue.withOpacity(0.03),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                              border: Border.all(
+                                  color: Colors.blue.withOpacity(0.1)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('中文更新', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 12)),
+                                const Text('中文更新',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.indigo,
+                                        fontSize: 12)),
                                 const SizedBox(height: 8),
-                                ...entry.changes.map((c) => _buildChangeItem(c, i == 0)),
+                                ...entry.changes
+                                    .map((c) => _buildChangeItem(c, i == 0)),
                               ],
                             ),
                           ),
@@ -284,14 +301,20 @@ class ChangelogPage extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Colors.indigo.withOpacity(0.03),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.indigo.withOpacity(0.1)),
+                              border: Border.all(
+                                  color: Colors.indigo.withOpacity(0.1)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('English Changelog', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 12)),
+                                const Text('English Changelog',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.indigo,
+                                        fontSize: 12)),
                                 const SizedBox(height: 8),
-                                ...entry.changesEn.map((c) => _buildChangeItem(c, i == 0)),
+                                ...entry.changesEn
+                                    .map((c) => _buildChangeItem(c, i == 0)),
                               ],
                             ),
                           ),
@@ -319,7 +342,8 @@ class ChangelogPage extends StatelessWidget {
               color: isLatest ? const Color(0xFF6B46C1) : Colors.grey.shade400),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: const TextStyle(fontSize: 13, height: 1.4)),
+            child:
+                Text(text, style: const TextStyle(fontSize: 13, height: 1.4)),
           ),
         ],
       ),
