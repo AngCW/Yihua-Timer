@@ -115,3 +115,11 @@ CREATE TABLE school (
     event_id INTEGER NOT NULL REFERENCES event(id),
     logo_image_id INTEGER REFERENCES images(id)
 ) AS SchoolData;
+
+CREATE TABLE hotkey_profile (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    profile_name VARCHAR NOT NULL,
+    hotkeys TEXT NOT NULL, -- JSON string of hotkeys
+    is_default BOOLEAN NOT NULL DEFAULT FALSE
+) AS HotkeyProfileData;
+

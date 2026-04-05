@@ -651,6 +651,23 @@ class EventTransfer {
           }
         }
 
+        // Second pass for Pages: Resolve inherit_timer_from_id
+        for (var pgJson in importData['page'] ?? []) {
+          final oldId = (pgJson['id'] as num).toInt();
+          final oldInheritId = pgJson['inherit_timer_from_id'];
+          if (oldInheritId != null) {
+            final newPageId = pageIdMap[oldId];
+            final newInheritId = pageIdMap[(oldInheritId as num).toInt()];
+            if (newPageId != null && newInheritId != null) {
+              await (database.update(database.page)
+                    ..where((t) => t.id.equals(newPageId)))
+                  .write(PageCompanion(
+                inheritTimerFromId: drift.Value(newInheritId),
+              ));
+            }
+          }
+        }
+
         // Timers
         for (var tmJson in importData['timer'] ?? []) {
           final oldTplId = tmJson['timer_template_id'];

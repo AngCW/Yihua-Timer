@@ -97,7 +97,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
   String? _sectionFontFamily;
   String? _timerFontFamily;
   String? _schoolFontFamily;
-
+  Size _simulationSize = const Size(1920, 1080);
+  
   // Manual values for preview tweaks
   double _sectionX = 0;
   double _sectionY = 0;
@@ -1511,6 +1512,46 @@ class _PageManagerPageState extends State<PageManagerPage> {
     }
   }
 
+  void _goToPreviousPage() {
+    final index = _allPagesInFlow.indexWhere((p) => p.id == _currentPage.id);
+    if (index > 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PageManagerPage(
+            event: widget.event,
+            flow: widget.flow,
+            page: _allPagesInFlow[index - 1],
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已经是第一页 (Already the first page)')),
+      );
+    }
+  }
+
+  void _goToNextPage() {
+    final index = _allPagesInFlow.indexWhere((p) => p.id == _currentPage.id);
+    if (index >= 0 && index < _allPagesInFlow.length - 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PageManagerPage(
+            event: widget.event,
+            flow: widget.flow,
+            page: _allPagesInFlow[index + 1],
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已经是最后一页 (Already the last page)')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -1524,6 +1565,17 @@ class _PageManagerPageState extends State<PageManagerPage> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF111827),
         actions: [
+          IconButton(
+            onPressed: _goToPreviousPage,
+            icon: const Icon(Icons.arrow_back_ios_rounded, size: 18),
+            tooltip: '上一页 (Previous Page)',
+          ),
+          IconButton(
+            onPressed: _goToNextPage,
+            icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+            tooltip: '下一页 (Next Page)',
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: OutlinedButton.icon(
@@ -1585,7 +1637,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                   _buildTextField(
                       controller: _pageNameController,
                       label: '页面名称 (Page Name)',
-                      hint: '例如: 第一页'),
+                      hint: '例如: 第一页',
+                      readOnly: _currentPage.isDefaultPage == true),
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
@@ -1692,7 +1745,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                       return ChoiceChip(
                         label: Text(type),
                         selected: isSelected,
-                        onSelected: (selected) {
+                        onSelected: _currentPage.isDefaultPage == true ? null : (selected) {
                           if (selected) {
                             setState(() => _selectedPageType = type);
                             _loadTimerData();
@@ -1719,7 +1772,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<int?>(
                     value: _selectedInheritFromId,
-                    onChanged: (val) =>
+                    onChanged: _currentPage.isDefaultPage == true ? null : (val) =>
                         setState(() => _selectedInheritFromId = val),
                     items: [
                       const DropdownMenuItem<int?>(
@@ -1750,7 +1803,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     _buildTextField(
                         controller: _sectionNameController,
                         label: '阶段标题内容',
-                        hint: '例如: 开场立论'),
+                        hint: '例如: 开场立论',
+                        readOnly: _currentPage.isDefaultPage == true),
                     const SizedBox(height: 16),
                     _buildPositionControl(
                       label: '标题位置与大小',
@@ -1916,34 +1970,78 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         padding: const EdgeInsets.all(48.0),
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            final screenSize = MediaQuery.of(context).size;
-                            final double designWidth = screenSize.width;
-                            final double designHeight = screenSize.height;
+                            final double designWidth = 1920.0;
+                            final double designHeight = 1080.0;
+
+                            final double frameTargetWidth = _simulationSize.width;
+                            final double frameTargetHeight = _simulationSize.height;
+
+                            // Subtract approximate height of the text and info bars around the preview
+                            final double availableWidth = constraints.maxWidth;
+                            final double availableHeight = (constraints.maxHeight - 200.0).clamp(0.0, double.infinity);
 
                             // Scale down the preview so it fits inside the constraints
                             // We compare the aspect ratios to decide the limiting factor
-                            final double scale =
-                                (constraints.maxWidth / designWidth) >
-                                        (constraints.maxHeight / designHeight)
-                                    ? (constraints.maxHeight / designHeight)
-                                        .clamp(0.1, 1.0)
-                                    : (constraints.maxWidth / designWidth)
-                                        .clamp(0.1, 1.0);
+                            final double frameScale =
+                                (availableWidth / frameTargetWidth) >
+                                        (availableHeight / frameTargetHeight)
+                                    ? (availableHeight / frameTargetHeight)
+                                        .clamp(0.01, 1.0)
+                                    : (availableWidth / frameTargetWidth)
+                                        .clamp(0.01, 1.0);
+                                        
+                            final double frameW = frameTargetWidth * frameScale;
+                            final double frameH = frameTargetHeight * frameScale;
 
                             return Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('实时画面预览 (Live Preview)',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF374151))),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text('实时画面预览 (Live Preview)',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF374151))),
+                                    const SizedBox(width: 16),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.grey.shade300),
+                                      ),
+                                      child: DropdownButton<Size>(
+                                        value: _simulationSize,
+                                        underline: const SizedBox(),
+                                        isDense: true,
+                                        items: const [
+                                          DropdownMenuItem(value: Size(1920, 1080), child: Text('1920x1080 (16:9 标准)', style: TextStyle(fontSize: 14))),
+                                          DropdownMenuItem(value: Size(1366, 768), child: Text('1366x768 (16:9 笔电)', style: TextStyle(fontSize: 14))),
+                                          DropdownMenuItem(value: Size(1600, 900), child: Text('1600x900 (16:9)', style: TextStyle(fontSize: 14))),
+                                          DropdownMenuItem(value: Size(1920, 1200), child: Text('1920x1200 (16:10)', style: TextStyle(fontSize: 14))),
+                                          DropdownMenuItem(value: Size(2560, 1440), child: Text('2560x1440 (16:9 2K)', style: TextStyle(fontSize: 14))),
+                                          DropdownMenuItem(value: Size(1024, 768), child: Text('1024x768 (4:3 投影仪)', style: TextStyle(fontSize: 14))),
+                                          DropdownMenuItem(value: Size(1280, 1024), child: Text('1280x1024 (5:4 投影仪)', style: TextStyle(fontSize: 14))),
+                                        ],
+                                        onChanged: (val) {
+                                          if (val != null) {
+                                            setState(() {
+                                              _simulationSize = val;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 24),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
                                   child: Container(
-                                    width: designWidth * scale,
-                                    height: designHeight * scale,
+                                    width: frameW,
+                                    height: frameH,
                                     decoration: BoxDecoration(
                                       color: Colors.black,
                                       boxShadow: [

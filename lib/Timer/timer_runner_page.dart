@@ -696,8 +696,13 @@ class _TimerPageViewState extends State<_TimerPageView> {
           _toggleR();
           if (!_isRunningL) _toggleL();
         } else {
-          // If neither is running, maybe start left by default
-          _toggleL();
+          if (_secL == 0 && _secR > 0) {
+            _toggleR();
+          } else if (_secR == 0 && _secL > 0) {
+            _toggleL();
+          } else {
+            _toggleL();
+          }
         }
       }
     }
@@ -736,7 +741,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         if (parentTimers.isNotEmpty) {
           final parentVal = widget.sessionTimerSeconds[parentTimers.first.id];
           if (parentVal != null) {
-            currentSec = parentVal;
+            currentSec = parentVal > initSec ? initSec : parentVal;
             widget.sessionTimerSeconds[t.id] = currentSec;
           }
         }
@@ -1092,12 +1097,11 @@ class _TimerPageViewState extends State<_TimerPageView> {
 
           // Scale the content from the application's native screen bounds
           LayoutBuilder(builder: (context, constraints) {
-            final screenSize = MediaQuery.of(context).size;
             return FittedBox(
               fit: BoxFit.contain,
               child: SizedBox(
-                width: screenSize.width,
-                height: screenSize.height,
+                width: 1920,
+                height: 1080,
                 child: Stack(
                   children: [
                     // Content

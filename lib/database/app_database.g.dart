@@ -4779,6 +4779,272 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
   }
 }
 
+class HotkeyProfile extends Table
+    with TableInfo<HotkeyProfile, HotkeyProfileData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  HotkeyProfile(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+  static const VerificationMeta _profileNameMeta =
+      const VerificationMeta('profileName');
+  late final GeneratedColumn<String> profileName = GeneratedColumn<String>(
+      'profile_name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  static const VerificationMeta _hotkeysMeta =
+      const VerificationMeta('hotkeys');
+  late final GeneratedColumn<String> hotkeys = GeneratedColumn<String>(
+      'hotkeys', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  static const VerificationMeta _isDefaultMeta =
+      const VerificationMeta('isDefault');
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+      'is_default', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL DEFAULT FALSE',
+      defaultValue: const CustomExpression('FALSE'));
+  @override
+  List<GeneratedColumn> get $columns => [id, profileName, hotkeys, isDefault];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'hotkey_profile';
+  @override
+  VerificationContext validateIntegrity(Insertable<HotkeyProfileData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('profile_name')) {
+      context.handle(
+          _profileNameMeta,
+          profileName.isAcceptableOrUnknown(
+              data['profile_name']!, _profileNameMeta));
+    } else if (isInserting) {
+      context.missing(_profileNameMeta);
+    }
+    if (data.containsKey('hotkeys')) {
+      context.handle(_hotkeysMeta,
+          hotkeys.isAcceptableOrUnknown(data['hotkeys']!, _hotkeysMeta));
+    } else if (isInserting) {
+      context.missing(_hotkeysMeta);
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(_isDefaultMeta,
+          isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HotkeyProfileData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HotkeyProfileData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      profileName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}profile_name'])!,
+      hotkeys: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}hotkeys'])!,
+      isDefault: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_default'])!,
+    );
+  }
+
+  @override
+  HotkeyProfile createAlias(String alias) {
+    return HotkeyProfile(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class HotkeyProfileData extends DataClass
+    implements Insertable<HotkeyProfileData> {
+  final int id;
+  final String profileName;
+  final String hotkeys;
+
+  /// JSON string of hotkeys
+  final bool isDefault;
+  const HotkeyProfileData(
+      {required this.id,
+      required this.profileName,
+      required this.hotkeys,
+      required this.isDefault});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['profile_name'] = Variable<String>(profileName);
+    map['hotkeys'] = Variable<String>(hotkeys);
+    map['is_default'] = Variable<bool>(isDefault);
+    return map;
+  }
+
+  HotkeyProfileCompanion toCompanion(bool nullToAbsent) {
+    return HotkeyProfileCompanion(
+      id: Value(id),
+      profileName: Value(profileName),
+      hotkeys: Value(hotkeys),
+      isDefault: Value(isDefault),
+    );
+  }
+
+  factory HotkeyProfileData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HotkeyProfileData(
+      id: serializer.fromJson<int>(json['id']),
+      profileName: serializer.fromJson<String>(json['profile_name']),
+      hotkeys: serializer.fromJson<String>(json['hotkeys']),
+      isDefault: serializer.fromJson<bool>(json['is_default']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'profile_name': serializer.toJson<String>(profileName),
+      'hotkeys': serializer.toJson<String>(hotkeys),
+      'is_default': serializer.toJson<bool>(isDefault),
+    };
+  }
+
+  HotkeyProfileData copyWith(
+          {int? id, String? profileName, String? hotkeys, bool? isDefault}) =>
+      HotkeyProfileData(
+        id: id ?? this.id,
+        profileName: profileName ?? this.profileName,
+        hotkeys: hotkeys ?? this.hotkeys,
+        isDefault: isDefault ?? this.isDefault,
+      );
+  HotkeyProfileData copyWithCompanion(HotkeyProfileCompanion data) {
+    return HotkeyProfileData(
+      id: data.id.present ? data.id.value : this.id,
+      profileName:
+          data.profileName.present ? data.profileName.value : this.profileName,
+      hotkeys: data.hotkeys.present ? data.hotkeys.value : this.hotkeys,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HotkeyProfileData(')
+          ..write('id: $id, ')
+          ..write('profileName: $profileName, ')
+          ..write('hotkeys: $hotkeys, ')
+          ..write('isDefault: $isDefault')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, profileName, hotkeys, isDefault);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HotkeyProfileData &&
+          other.id == this.id &&
+          other.profileName == this.profileName &&
+          other.hotkeys == this.hotkeys &&
+          other.isDefault == this.isDefault);
+}
+
+class HotkeyProfileCompanion extends UpdateCompanion<HotkeyProfileData> {
+  final Value<int> id;
+  final Value<String> profileName;
+  final Value<String> hotkeys;
+  final Value<bool> isDefault;
+  const HotkeyProfileCompanion({
+    this.id = const Value.absent(),
+    this.profileName = const Value.absent(),
+    this.hotkeys = const Value.absent(),
+    this.isDefault = const Value.absent(),
+  });
+  HotkeyProfileCompanion.insert({
+    this.id = const Value.absent(),
+    required String profileName,
+    required String hotkeys,
+    this.isDefault = const Value.absent(),
+  })  : profileName = Value(profileName),
+        hotkeys = Value(hotkeys);
+  static Insertable<HotkeyProfileData> custom({
+    Expression<int>? id,
+    Expression<String>? profileName,
+    Expression<String>? hotkeys,
+    Expression<bool>? isDefault,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (profileName != null) 'profile_name': profileName,
+      if (hotkeys != null) 'hotkeys': hotkeys,
+      if (isDefault != null) 'is_default': isDefault,
+    });
+  }
+
+  HotkeyProfileCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? profileName,
+      Value<String>? hotkeys,
+      Value<bool>? isDefault}) {
+    return HotkeyProfileCompanion(
+      id: id ?? this.id,
+      profileName: profileName ?? this.profileName,
+      hotkeys: hotkeys ?? this.hotkeys,
+      isDefault: isDefault ?? this.isDefault,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (profileName.present) {
+      map['profile_name'] = Variable<String>(profileName.value);
+    }
+    if (hotkeys.present) {
+      map['hotkeys'] = Variable<String>(hotkeys.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HotkeyProfileCompanion(')
+          ..write('id: $id, ')
+          ..write('profileName: $profileName, ')
+          ..write('hotkeys: $hotkeys, ')
+          ..write('isDefault: $isDefault')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4794,6 +5060,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Bgm bgm = Bgm(this);
   late final Page page = Page(this);
   late final Timer timer = Timer(this);
+  late final HotkeyProfile hotkeyProfile = HotkeyProfile(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4810,7 +5077,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         flow,
         bgm,
         page,
-        timer
+        timer,
+        hotkeyProfile
       ];
 }
 
@@ -6787,9 +7055,10 @@ final class $SchoolReferences
   static Event _eventIdTable(_$AppDatabase db) => db.event
       .createAlias($_aliasNameGenerator(db.school.eventId, db.event.id));
 
-  $EventProcessedTableManager get eventId {
+  $EventProcessedTableManager? get eventId {
+    if ($_item.eventId == null) return null;
     final manager = $EventTableManager($_db, $_db.event)
-        .filter((f) => f.id($_item.eventId));
+        .filter((f) => f.id($_item.eventId!));
     final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -9135,6 +9404,156 @@ typedef $TimerProcessedTableManager = ProcessedTableManager<
     TimerData,
     PrefetchHooks Function(
         {bool timerTemplateId, bool pageId, bool positionId})>;
+typedef $HotkeyProfileCreateCompanionBuilder = HotkeyProfileCompanion Function({
+  Value<int> id,
+  required String profileName,
+  required String hotkeys,
+  Value<bool> isDefault,
+});
+typedef $HotkeyProfileUpdateCompanionBuilder = HotkeyProfileCompanion Function({
+  Value<int> id,
+  Value<String> profileName,
+  Value<String> hotkeys,
+  Value<bool> isDefault,
+});
+
+class $HotkeyProfileFilterComposer
+    extends Composer<_$AppDatabase, HotkeyProfile> {
+  $HotkeyProfileFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get profileName => $composableBuilder(
+      column: $table.profileName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get hotkeys => $composableBuilder(
+      column: $table.hotkeys, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+      column: $table.isDefault, builder: (column) => ColumnFilters(column));
+}
+
+class $HotkeyProfileOrderingComposer
+    extends Composer<_$AppDatabase, HotkeyProfile> {
+  $HotkeyProfileOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get profileName => $composableBuilder(
+      column: $table.profileName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get hotkeys => $composableBuilder(
+      column: $table.hotkeys, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+      column: $table.isDefault, builder: (column) => ColumnOrderings(column));
+}
+
+class $HotkeyProfileAnnotationComposer
+    extends Composer<_$AppDatabase, HotkeyProfile> {
+  $HotkeyProfileAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get profileName => $composableBuilder(
+      column: $table.profileName, builder: (column) => column);
+
+  GeneratedColumn<String> get hotkeys =>
+      $composableBuilder(column: $table.hotkeys, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+}
+
+class $HotkeyProfileTableManager extends RootTableManager<
+    _$AppDatabase,
+    HotkeyProfile,
+    HotkeyProfileData,
+    $HotkeyProfileFilterComposer,
+    $HotkeyProfileOrderingComposer,
+    $HotkeyProfileAnnotationComposer,
+    $HotkeyProfileCreateCompanionBuilder,
+    $HotkeyProfileUpdateCompanionBuilder,
+    (
+      HotkeyProfileData,
+      BaseReferences<_$AppDatabase, HotkeyProfile, HotkeyProfileData>
+    ),
+    HotkeyProfileData,
+    PrefetchHooks Function()> {
+  $HotkeyProfileTableManager(_$AppDatabase db, HotkeyProfile table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $HotkeyProfileFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $HotkeyProfileOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $HotkeyProfileAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> profileName = const Value.absent(),
+            Value<String> hotkeys = const Value.absent(),
+            Value<bool> isDefault = const Value.absent(),
+          }) =>
+              HotkeyProfileCompanion(
+            id: id,
+            profileName: profileName,
+            hotkeys: hotkeys,
+            isDefault: isDefault,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String profileName,
+            required String hotkeys,
+            Value<bool> isDefault = const Value.absent(),
+          }) =>
+              HotkeyProfileCompanion.insert(
+            id: id,
+            profileName: profileName,
+            hotkeys: hotkeys,
+            isDefault: isDefault,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $HotkeyProfileProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    HotkeyProfile,
+    HotkeyProfileData,
+    $HotkeyProfileFilterComposer,
+    $HotkeyProfileOrderingComposer,
+    $HotkeyProfileAnnotationComposer,
+    $HotkeyProfileCreateCompanionBuilder,
+    $HotkeyProfileUpdateCompanionBuilder,
+    (
+      HotkeyProfileData,
+      BaseReferences<_$AppDatabase, HotkeyProfile, HotkeyProfileData>
+    ),
+    HotkeyProfileData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9156,4 +9575,6 @@ class $AppDatabaseManager {
   $BgmTableManager get bgm => $BgmTableManager(_db, _db.bgm);
   $PageTableManager get page => $PageTableManager(_db, _db.page);
   $TimerTableManager get timer => $TimerTableManager(_db, _db.timer);
+  $HotkeyProfileTableManager get hotkeyProfile =>
+      $HotkeyProfileTableManager(_db, _db.hotkeyProfile);
 }

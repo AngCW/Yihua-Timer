@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -43,13 +44,14 @@ class WindowStateListener extends WindowListener {
 
 Future<void> _configureInitialWindow() async {
   final prefs = await SharedPreferences.getInstance();
-  
+
   // Register the listener to track future changes
   windowManager.addListener(WindowStateListener());
 
   // 默认使用 1920 × 1080 窗口化
   final mode = prefs.getString('window_mode') ?? 'windowed_1920';
-  final wasMaximized = prefs.getBool('is_maximized') ?? (mode == 'windowed_1920');
+  final wasMaximized =
+      prefs.getBool('is_maximized') ?? (mode == 'windowed_1920');
 
   final isFull = await windowManager.isFullScreen();
 
@@ -104,7 +106,7 @@ class DebateTimerApp extends StatelessWidget {
           seedColor: const Color(0xFF4F46E5),
           brightness: Brightness.light,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -117,43 +119,108 @@ class DebateTimerApp extends StatelessWidget {
   }
 }
 
+Future<bool> _directoryHasFiles(Directory dir) async {
+  try {
+    return !(await dir.list(recursive: false).isEmpty);
+  } catch (_) {}
+  return false;
+}
+
+Future<bool?> _showImportPrompt() {
+  final completer = Completer<bool?>();
+
+  runApp(
+    MaterialApp(
+      title: 'YiHuaTimer 数据导入',
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: AlertDialog(
+              title: const Text('发现新的导入数据', style: TextStyle(fontWeight: FontWeight.bold)),
+              content: const Text(
+                  '检测到此程序附带了新的赛事数据和配置。\n'
+                  '但是，您的系统上已经存在旧的 YiHuaTimer 数据。\n\n'
+                  '您是否要完全清除旧数据，并导入这个包里的新数据？\n'
+                  '(注：如果选择“否”，将保留您的旧数据并自动永久忽略此次导入)'),
+              actions: [
+                TextButton(
+                  onPressed: () => completer.complete(false),
+                  child: const Text('否，保留旧数据'),
+                ),
+                ElevatedButton(
+                  onPressed: () => completer.complete(true),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                  child: const Text('是，覆盖所有数据'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  return completer.future;
+}
+
 Future<void> _importSharedDataIfNeeded() async {
   if (!Platform.isWindows) return;
 
   try {
     final appDir = File(Platform.resolvedExecutable).parent;
     final importDir = Directory(p.join(appDir.path, '__yihua_import_data__'));
-    
+
     if (await importDir.exists()) {
       if (kDebugMode) {
-        print('Found import data folder. Importing shared data...');
+        print('Found import data folder. Checking conditions...');
       }
 
-      // 1. Import SharedPreferences
-      final prefsFile = File(p.join(importDir.path, 'prefs.json'));
+      final supportDir = await getApplicationSupportDirectory();
+      final targetAppFolder = Directory(p.join(supportDir.path, 'YiHuaTimer'));
+
+      bool shouldImport = true;
+
+      // Check if target directory already has data
+      if (await targetAppFolder.exists() && await _directoryHasFiles(targetAppFolder)) {
+        final userChoice = await _showImportPrompt();
+        if (userChoice != true) {
+          shouldImport = false;
+        }
+      }
+
+      if (shouldImport) {
+        // 1. Import SharedPreferences
+        final prefsFile = File(p.join(importDir.path, 'prefs.json'));
       if (await prefsFile.exists()) {
         final prefs = await SharedPreferences.getInstance();
         final String content = await prefsFile.readAsString();
         final Map<String, dynamic> data = jsonDecode(content);
-        
+
         for (final entry in data.entries) {
           final key = entry.key;
           final value = entry.value;
-          if (value is String) await prefs.setString(key, value);
-          else if (value is int) await prefs.setInt(key, value);
-          else if (value is double) await prefs.setDouble(key, value);
-          else if (value is bool) await prefs.setBool(key, value);
-          else if (value is List) await prefs.setStringList(key, (value).cast<String>());
+          if (value is String)
+            await prefs.setString(key, value);
+          else if (value is int)
+            await prefs.setInt(key, value);
+          else if (value is double)
+            await prefs.setDouble(key, value);
+          else if (value is bool)
+            await prefs.setBool(key, value);
+          else if (value is List)
+            await prefs.setStringList(key, (value).cast<String>());
         }
       }
 
       // 2. Import YiHuaTimer data directory (Database + Assets)
-      final importDataChildDir = Directory(p.join(importDir.path, 'YiHuaTimer'));
-      final supportDir = await getApplicationSupportDirectory();
-      final targetAppFolder = Directory(p.join(supportDir.path, 'YiHuaTimer'));
+      final importDataChildDir =
+          Directory(p.join(importDir.path, 'YiHuaTimer'));
 
       if (await importDataChildDir.exists()) {
-        print('Import folder "YiHuaTimer" found. Performing clean overwrite...');
+        print(
+            'Import folder "YiHuaTimer" found. Performing clean overwrite...');
         // [CLEAN OVERWRITE] Delete existing data to ensure a fresh start as requested by user
         if (await targetAppFolder.exists()) {
           try {
@@ -165,21 +232,26 @@ Future<void> _importSharedDataIfNeeded() async {
         await targetAppFolder.create(recursive: true);
 
         // Copy everything from import folder to app support folder
-        print('Copying data from ${importDataChildDir.path} to ${targetAppFolder.path}');
+        print(
+            'Copying data from ${importDataChildDir.path} to ${targetAppFolder.path}');
         await _copyDirectory(importDataChildDir, targetAppFolder);
       } else {
-        print('Import folder "YiHuaTimer" NOT found. Looking for legacy db file...');
+        print(
+            'Import folder "YiHuaTimer" NOT found. Looking for legacy db file...');
         // Fallback for older ZIPs that only have the .db file in the root of importDir
         final dbFile = File(p.join(importDir.path, 'yihua_timer.db'));
         if (await dbFile.exists()) {
           if (!await targetAppFolder.exists()) {
             await targetAppFolder.create(recursive: true);
           }
-          final targetDbFile = File(p.join(targetAppFolder.path, 'yihua_timer.db'));
+          final targetDbFile =
+              File(p.join(targetAppFolder.path, 'yihua_timer.db'));
           await dbFile.copy(targetDbFile.path);
           print('Legacy db file imported.');
         }
       }
+      
+      } // End of shouldImport check
 
       // 3. Rename import folder to prevent re-importing on next launch
       try {
@@ -188,7 +260,7 @@ Future<void> _importSharedDataIfNeeded() async {
         // Fallback: delete if rename fails
         await importDir.delete(recursive: true);
       }
-      
+
       if (kDebugMode) {
         print('Shared data successfully imported!');
       }

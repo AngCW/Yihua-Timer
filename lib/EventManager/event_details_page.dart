@@ -1444,6 +1444,21 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     if (confirmed == true) {
       try {
         await database.transaction(() async {
+          // Clear flow references to avoid FK constraint error
+          await (database.update(database.flow)
+                ..where((t) => t.schoolAId.equals(school.id)))
+              .write(const FlowCompanion(schoolAId: drift.Value(null)));
+
+          await (database.update(database.flow)
+                ..where((t) => t.schoolBId.equals(school.id)))
+              .write(const FlowCompanion(schoolBId: drift.Value(null)));
+
+          // Delete school mapping first to release the foreign key lock on the image
+          await (database.delete(database.school)
+                ..where((t) => t.id.equals(school.id)))
+              .go();
+
+          // Now safely delete the image and position
           if (school.logoImageId != null) {
             final img = await (database.select(database.images)
                   ..where((t) => t.id.equals(school.logoImageId!)))
@@ -1473,11 +1488,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               if (await file.exists()) await file.delete();
             }
           }
-
-          // Finally delete school mapping
-          await (database.delete(database.school)
-                ..where((t) => t.id.equals(school.id)))
-              .go();
         });
         setState(() {});
       } catch (e) {

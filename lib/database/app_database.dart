@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   // ─────────────────────────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration {
@@ -85,6 +85,9 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 15) {
           await m.addColumn(flowFolder, flowFolder.parentFolderId);
+        }
+        if (from < 16) {
+          await m.createTable(hotkeyProfile);
         }
         // ── add new `if (from < N)` blocks above this line ───────────────
       },

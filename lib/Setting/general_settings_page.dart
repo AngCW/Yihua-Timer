@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:window_manager/window_manager.dart';
 import '../Services/update_service.dart';
 import '../Services/share_app_service.dart';
@@ -86,14 +87,29 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   }
 
   Future<void> _handleShareApp(bool withData) async {
+    String defaultName = withData ? "YiHuaTimer_App_With_Data.zip" : "YiHuaTimer_App.zip";
+
+    String? outputFile = await FilePicker.platform.saveFile(
+      dialogTitle: '保存分享包',
+      fileName: defaultName,
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+    );
+
+    if (outputFile == null) return;
+
+    if (!outputFile.toLowerCase().endsWith('.zip')) {
+      outputFile += '.zip';
+    }
+
     setState(() {
       _isSharing = true;
     });
     try {
-      await ShareAppService.shareApp(withData: withData);
+      await ShareAppService.shareApp(withData: withData, outZipPath: outputFile);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('软件分享成功，已保存到下载文件夹！(Saved to Downloads)')),
+          SnackBar(content: Text('软件分享成功，已保存到: ${p.basename(outputFile)}')),
         );
       }
     } catch (e) {

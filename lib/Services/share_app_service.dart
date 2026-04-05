@@ -11,8 +11,8 @@ class ShareAppService {
   /// Packages the application into a ZIP file and saves it to the Downloads directory.
   /// If [withData] is true, it exports current SharedPreferences and Drift database
   /// into a special folder `__yihua_import_data__` inside the zip, which the app
-  /// will automatically import on its next launch.
-  static Future<void> shareApp({required bool withData}) async {
+  /// automatically import on its next launch.
+  static Future<void> shareApp({required bool withData, required String outZipPath}) async {
     try {
       // 1. Get the current application directory
       final String executablePath = Platform.resolvedExecutable;
@@ -21,13 +21,7 @@ class ShareAppService {
       }
       final Directory appDir = File(executablePath).parent;
 
-      // 2. Get Downloads directory
-      final Directory? downloadsDir = await getDownloadsDirectory();
-      if (downloadsDir == null) {
-        throw Exception("无法找到下载文件夹 (Cannot find Downloads folder).");
-      }
-
-      // 3. Create a temporary staging directory
+      // 2. Create a temporary staging directory
       final tempBase = await getTemporaryDirectory();
       final String tempDirName = "YiHuaTimer_Export_${DateTime.now().millisecondsSinceEpoch}";
       final Directory stagingDir = Directory(p.join(tempBase.path, tempDirName));
@@ -36,16 +30,15 @@ class ShareAppService {
       }
       await stagingDir.create(recursive: true);
 
-      // We want the zip to extract into a folder "YiHuaTimer", so we create it inside the staging dir.
       final Directory appCopyDir = Directory(p.join(stagingDir.path, "YiHuaTimer"));
       await appCopyDir.create(recursive: true);
 
-      // 4. Copy app files to staging directory
+      // 3. Copy app files to staging directory
       // On Windows, the application consists of the exe, data folder, and dlls.
       print('Staging application files from ${appDir.path}...');
       await _recursiveCopy(appDir, appCopyDir);
 
-      // 5. Export SharedPreferences (always) and data (if withData is true)
+      // 4. Export SharedPreferences (always) and data (if withData is true)
       final Directory importDataDir = Directory(p.join(appCopyDir.path, '__yihua_import_data__'));
       await importDataDir.create(recursive: true);
 
@@ -79,9 +72,7 @@ class ShareAppService {
         }
       }
 
-      // 6. Zip the directory
-      final String zipFileName = withData ? "YiHuaTimer_App_With_Data.zip" : "YiHuaTimer_App.zip";
-      final String outZipPath = p.join(downloadsDir.path, zipFileName);
+      // 5. Zip the directory
 
       // If a zip with the same name already exists, delete it
       final File existingZip = File(outZipPath);
@@ -92,7 +83,7 @@ class ShareAppService {
       // Run zipping in an isolate to prevent UI freeze
       await compute(_createZipIsolate, {'source': appCopyDir.path, 'dest': outZipPath});
 
-      // 7. Cleanup temp folder
+      // 6. Cleanup temp folder
       await stagingDir.delete(recursive: true);
 
       if (kDebugMode) {
