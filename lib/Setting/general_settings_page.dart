@@ -23,6 +23,8 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   String _windowMode = 'windowed_1920';
 
   bool _isSharing = false;
+  bool _isDownloading = false;
+  double _downloadProgress = 0;
 
   @override
   void initState() {
@@ -273,33 +275,113 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   void _showUpdateDialog(UpdateInfo info) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('新版本可用: v${info.version}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('更新日志 (Changelog):', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(info.changelog),
+      barrierDismissible: !_isDownloading,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('发现新版本: v${info.version}'),
+          content: SizedBox(
+            width: 500,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('更新日志 (Changelog):',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 12),
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      info.changelog,
+                      style: const TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                  ),
+                ),
+                if (_isDownloading) ...[
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: LinearProgressIndicator(
+                          value: _downloadProgress,
+                          backgroundColor: Colors.grey.shade200,
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4F46E5)),
+                          minHeight: 8,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text('${(_downloadProgress * 100).toInt()}%',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Center(
+                    child: Text('正在下载更新包 (Downloading update)...',
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            if (!_isDownloading) ...[
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('以后再说 (Later)'),
+              ),
+              ElevatedButton(
+                onPressed: () => _handleDownloadAndInstall(info, setDialogState),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F46E5)),
+                child: const Text('下载并安装 (Download & Install)',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ] else
+              const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('下载中，请稍候...', style: TextStyle(color: Colors.grey)),
+              ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('以后再说 (Later)'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              UpdateService.launchUpdateUrl(info.downloadUrl);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F46E5)),
-            child: const Text('立即去更新 (Update Now)', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
+  }
+
+  Future<void> _handleDownloadAndInstall(UpdateInfo info, StateSetter setDialogState) async {
+    setState(() => _isDownloading = true);
+    setDialogState(() => _isDownloading = true);
+
+    try {
+      final file = await UpdateService.downloadUpdate(info, (progress) {
+        setState(() => _downloadProgress = progress);
+        setDialogState(() => _downloadProgress = progress);
+      });
+
+      if (file != null) {
+        if (mounted) Navigator.pop(context);
+        await UpdateService.installUpdate(file);
+      } else {
+        throw Exception('File download failed');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('下载失败 (Download failed): $e')),
+        );
+      }
+    } finally {
+      setState(() {
+        _isDownloading = false;
+        _downloadProgress = 0;
+      });
+    }
   }
 
   Widget _buildCleanupCard() {

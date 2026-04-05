@@ -20,6 +20,24 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.6.1',
+    date: '2026-04-05',
+    changes: [
+      '新增了 GitHub 自动检查与自动下载更新的功能',
+      '简化了窗口设置，改为单键全屏开关',
+      '统一了快捷键显示的字体样式，并为空格键设置了“SPACE”标签',
+      '在仪表盘快捷键中新增了音量控制显示',
+      '修复了 Windows 启动时的窗口显示比例与状态同步问题',
+    ],
+    changesEn: [
+      'added GitHub auto-checking and auto-downloading for updates',
+      'simplified window settings to a single Fullscreen toggle',
+      'standardized hotkey display fonts and added "SPACE" label for the spacebar',
+      'added volume controls to the dashboard shortcuts reference',
+      'fixed window resizing and initialization issues on Windows startup',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.6.0',
     date: '2026-04-05',
     changes: [
@@ -35,7 +53,6 @@ final List<ChangelogEntry> _changelogData = [
       '修复了当一个计时器归零时，启动一个计时器并停止另一个计时器的快捷键失效的问题',
       '修复了快捷键配置无法导入到新应用实例的问题',
       '新增了快捷键配置文件机制，使用户更容易理解和管理快捷键设置',
-      '修复了窗口大小调整与初始显示状态的问题',
     ],
     changesEn: [
       'changed application name to have the version numbering as well',
@@ -50,7 +67,6 @@ final List<ChangelogEntry> _changelogData = [
       'fixed issue with start one timer stop the other hotkey which would not work when one timer reaches zero',
       'fixed issue where hotkeys would not be imported into a new app instance',
       'added hotkey profiing for easier understanding of hotkey settings',
-      'fixed window resizing issues',
     ],
   ),
   ChangelogEntry(
