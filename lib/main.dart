@@ -23,7 +23,14 @@ Future<void> main() async {
 
   // Initialize window manager and apply saved window mode (Windows only)
   await windowManager.ensureInitialized();
-  await _configureInitialWindow();
+
+  WindowOptions windowOptions = const WindowOptions(
+    title: 'YiHuaTimer',
+  );
+
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await _configureInitialWindow();
+  });
 
   runApp(const DebateTimerApp());
 }

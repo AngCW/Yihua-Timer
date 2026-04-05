@@ -20,6 +20,31 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.6.0',
+    date: '2026-04-05',
+    changes: [
+      '在环节属性配置页新增了 "模拟屏幕尺寸 (Simulate Screen Size)" 功能，支持预览多种屏幕分辨率比例呈现效果',
+      '在环节属性配置页新增了 "上一页" 与 "下一页" 快捷跳转按钮，方便连续编辑',
+      '强化了默认系统的编辑保护：核心页面的名称、类型等关键属性已被锁定防改',
+      '添加了快捷键冲突检测机制：同页面内绑定的相同冲突快捷键将高亮报错',
+      '修复了继承上一页计时器时，时间超过本页最高上限的问题',
+      '修复了因数据库关联依赖冲突导致的学校无法删除的问题',
+      '完善了解压应用数据环境时会提醒覆盖与自动清除旧缓存系统，解决残留错误',
+      '修复了连击空格键导致定时器逻辑未正常停止的竞态Bug',
+    ],
+    changesEn: [
+      '',
+      'allow users to edit screen sizes in preview pages to view the page in different sizes',
+      'added next and previous page buttons in the page editor',
+      'remove permissions for users to change some values of the default shortcut pages',
+      'added highlighting to hotkeys if they are the same key in the same hotkey section',
+      'fixed issue where imported pages with inherited timers would not save the page that they inherited',
+      'Fixed issue where schools could not be deleted from events',
+      'added option to remove old data in local storages to ensure no leftover data is in the device',
+      'fixed issue with start one timer stop the other hotkey which would not work when one timer reaches zero',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.5.0',
     date: '2026-03-26',
     changes: [

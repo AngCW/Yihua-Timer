@@ -53,6 +53,8 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
 
     if (mode == 'borderless') {
       await windowManager.setFullScreen(true);
+      await Future.delayed(const Duration(milliseconds: 100));
+      await windowManager.focus();
       return;
     }
 
@@ -84,6 +86,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
         await windowManager.center();
         break;
     }
+    
+    await Future.delayed(const Duration(milliseconds: 50));
+    await windowManager.focus();
   }
 
   Future<void> _handleShareApp(bool withData) async {
