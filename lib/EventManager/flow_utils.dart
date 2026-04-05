@@ -177,4 +177,45 @@ class FlowUtils {
     }
     return newFlow;
   }
+
+  static Future<void> deleteFolderRecursive(int folderId) async {
+    // 1. Recursive call for subfolders
+    final subfolders = await (database.select(database.flowFolder)
+          ..where((t) => t.parentFolderId.equals(folderId)))
+        .get();
+    for (final sub in subfolders) {
+      await deleteFolderRecursive(sub.id);
+    }
+
+    // 2. Delete flows within this folder
+    final folderFlows = await (database.select(database.flow)
+          ..where((t) => t.folderId.equals(folderId)))
+        .get();
+    for (final flow in folderFlows) {
+      final flowPages = await (database.select(database.page)
+            ..where((t) => t.flowId.equals(flow.id)))
+          .get();
+      for (final p in flowPages) {
+        // Delete associated records for each page
+        await (database.delete(database.timer)
+              ..where((t) => t.pageId.equals(p.id)))
+            .go();
+        await (database.delete(database.images)
+              ..where((t) => t.pageId.equals(p.id)))
+            .go();
+        await (database.delete(database.page)
+              ..where((t) => t.id.equals(p.id)))
+            .go();
+      }
+      // Delete the flow itself
+      await (database.delete(database.flow)
+            ..where((t) => t.id.equals(flow.id)))
+          .go();
+    }
+
+    // 3. Finally delete the folder itself
+    await (database.delete(database.flowFolder)
+          ..where((t) => t.id.equals(folderId)))
+        .go();
+  }
 }

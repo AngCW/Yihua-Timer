@@ -494,30 +494,7 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
 
     if (confirmed == true) {
       try {
-        Future<void> deleteRecursively(int folderId) async {
-          final subfolders = await (database.select(database.flowFolder)
-                ..where((t) => t.parentFolderId.equals(folderId)))
-              .get();
-          for (final sub in subfolders) {
-            await deleteRecursively(sub.id);
-          }
-          final folderFlows = await (database.select(database.flow)
-                ..where((t) => t.folderId.equals(folderId)))
-              .get();
-          for (final flow in folderFlows) {
-            final flowPages = await (database.select(database.page)
-                  ..where((t) => t.flowId.equals(flow.id)))
-                .get();
-            for (final p in flowPages) {
-              await (database.delete(database.timer)..where((t) => t.pageId.equals(p.id))).go();
-              await (database.delete(database.images)..where((t) => t.pageId.equals(p.id))).go();
-              await (database.delete(database.page)..where((t) => t.id.equals(p.id))).go();
-            }
-            await (database.delete(database.flow)..where((t) => t.id.equals(flow.id))).go();
-          }
-          await (database.delete(database.flowFolder)..where((t) => t.id.equals(folderId))).go();
-        }
-        await deleteRecursively(folder.id);
+        await FlowUtils.deleteFolderRecursive(folder.id);
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('文件夹已删除')));
       } catch (e) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败: $e')));
