@@ -468,83 +468,32 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          DropdownButtonFormField<String>(
-            value: _windowMode,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+          SwitchListTile(
+            title: const Text(
+              '全屏模式 (Fullscreen)',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF374151),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                borderSide: BorderSide(color: Color(0xFF4F46E5), width: 2),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            items: const [
-              DropdownMenuItem(
-                value: 'windowed_1920',
-                child: Text('最大化窗口 (默认)'),
-              ),
-              DropdownMenuItem(
-                value: 'windowed',
-                child: Text('窗口化'),
-              ),
-              DropdownMenuItem(
-                value: 'borderless',
-                child: Text('无边框全屏'),
-              ),
-              DropdownMenuItem(
-                value: 'windowed_1280',
-                child: Text('窗口化 1280 × 720'),
-              ),
-              DropdownMenuItem(
-                value: 'windowed_1600',
-                child: Text('窗口化 1600 × 900'),
-              ),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
+            subtitle: const Text('开启后应用将以无边框全屏模式运行。'),
+            value: _windowMode == 'borderless',
+            activeColor: const Color(0xFF4F46E5),
+            onChanged: (bool value) {
+              final newMode = value ? 'borderless' : 'windowed_1920';
               setState(() {
-                _windowMode = value;
+                _windowMode = newMode;
               });
-              _saveSettings(value);
+              _saveSettings(newMode);
             },
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '当前选择：${_getModeLabel(_windowMode)}',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF4B5563),
-            ),
           ),
         ],
       ),
     );
   }
 
-  String _getModeLabel(String value) {
-    switch (value) {
-      case 'windowed_1920':
-        return '最大化窗口 (默认)';
-      case 'borderless':
-        return '无边框全屏';
-      case 'windowed_1280':
-        return '窗口化 1280 × 720';
-      case 'windowed_1600':
-        return '窗口化 1600 × 900';
-      case 'windowed':
-      default:
-        return '窗口化';
-    }
-  }
+
 
   Widget _buildShareAppCard() {
     return Container(

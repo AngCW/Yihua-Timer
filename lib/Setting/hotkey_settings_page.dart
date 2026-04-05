@@ -436,22 +436,18 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
             children: [
               _buildHotkeyRow(
                 binding: _hotkeySettings.bgmVolumeUp,
-                customText: _getDisplayKey(_hotkeySettings.bgmVolumeUp.key),
               ),
               const Divider(height: 20),
               _buildHotkeyRow(
                 binding: _hotkeySettings.bgmVolumeDown,
-                customText: _getDisplayKey(_hotkeySettings.bgmVolumeDown.key),
               ),
               const Divider(height: 20),
               _buildHotkeyRow(
                 binding: _hotkeySettings.dingVolumeUp,
-                customText: _getDisplayKey(_hotkeySettings.dingVolumeUp.key),
               ),
               const Divider(height: 20),
               _buildHotkeyRow(
                 binding: _hotkeySettings.dingVolumeDown,
-                customText: _getDisplayKey(_hotkeySettings.dingVolumeDown.key),
               ),
             ],
           ),
@@ -649,6 +645,8 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
     if (key == 'PAGE DOWN') return 'PgDn';
     if (key == 'HOME') return 'Home';
     if (key == 'END') return 'End';
+    if (key == ' ') return 'SPACE';
+    if (key.length == 1) return key.toUpperCase();
     return key;
   }
 

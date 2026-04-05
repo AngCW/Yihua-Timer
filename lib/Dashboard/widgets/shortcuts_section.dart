@@ -131,6 +131,27 @@ class _ShortcutsSectionState extends State<ShortcutsSection> {
               _buildHotkeyRow(
                 binding: hotkeySettings.pageA2RightReset,
               ),
+              
+              const SizedBox(height: 32),
+              
+              // Audio Section
+              _buildSectionTitle('音量控制'),
+              const SizedBox(height: 16),
+              _buildHotkeyRow(
+                binding: hotkeySettings.bgmVolumeUp,
+              ),
+              const Divider(height: 24),
+              _buildHotkeyRow(
+                binding: hotkeySettings.bgmVolumeDown,
+              ),
+              const Divider(height: 24),
+              _buildHotkeyRow(
+                binding: hotkeySettings.dingVolumeUp,
+              ),
+              const Divider(height: 24),
+              _buildHotkeyRow(
+                binding: hotkeySettings.dingVolumeDown,
+              ),
             ],
           ),
         ),
@@ -207,34 +228,27 @@ class _ShortcutsSectionState extends State<ShortcutsSection> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   )
-                    : icon != null
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                icon,
-                                color: const Color(0xFF374151),
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _getDisplayKey(binding.key),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  color: Color(0xFF374151),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          )
-                        : Text(
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (icon != null) ...[
+                            Icon(
+                              icon,
+                              color: const Color(0xFF374151),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
                             _getDisplayKey(binding.key),
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               color: Color(0xFF374151),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ],
+                      ),
           ),
         ),
       ],
@@ -250,6 +264,8 @@ class _ShortcutsSectionState extends State<ShortcutsSection> {
     if (key == 'PAGE DOWN') return 'PgDn';
     if (key == 'HOME') return 'Home';
     if (key == 'END') return 'End';
+    if (key == ' ') return 'SPACE';
+    if (key.length == 1) return key.toUpperCase();
     return key;
   }
 }
