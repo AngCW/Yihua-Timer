@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:drift/drift.dart' as drift;
 import '../database/app_database.dart';
 import '../main.dart';
+import '../app_config.dart';
 
 class EventTransfer {
   static Future<void> exportEvent(EventData event, String outputPath) async {
@@ -149,9 +150,9 @@ class EventTransfer {
     final supportDir = await getApplicationSupportDirectory();
     final canonicalSupportPath = p.canonicalize(supportDir.path);
     final imagesDir = Directory(
-        p.join(supportDir.path, 'YiHuaTimer', 'images', '${event.id}'));
-    final bgmDir = Directory(p.join(supportDir.path, 'YiHuaTimer', 'bgm'));
-    final dingDir = Directory(p.join(supportDir.path, 'YiHuaTimer', 'ding'));
+        p.join(AppConfig.dataPath(supportDir.path), 'images', '${event.id}'));
+    final bgmDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'bgm'));
+    final dingDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
 
     // Pack event-specific images
     if (await imagesDir.exists()) {
@@ -168,7 +169,7 @@ class EventTransfer {
 
     // Pack school logos
     final schoolsDir = Directory(
-        p.join(supportDir.path, 'YiHuaTimer', 'schools', '${event.id}'));
+        p.join(AppConfig.dataPath(supportDir.path), 'schools', '${event.id}'));
     if (await schoolsDir.exists()) {
       print('Packing school logos from: ${schoolsDir.path}');
       await for (var file in schoolsDir.list(recursive: true)) {
@@ -235,7 +236,7 @@ class EventTransfer {
     final Map<String, dynamic> importData = jsonDecode(jsonStr);
 
     final supportDir = await getApplicationSupportDirectory();
-    final tempExtractDir = Directory(p.join(supportDir.path, 'YiHuaTimer',
+    final tempExtractDir = Directory(p.join(AppConfig.dataPath(supportDir.path),
         'temp_import_${DateTime.now().millisecondsSinceEpoch}'));
 
     try {
@@ -266,7 +267,8 @@ class EventTransfer {
       final tempBgm =
           Directory(p.join(tempExtractDir.path, 'YiHuaTimer', 'bgm'));
       if (await tempBgm.exists()) {
-        final realBgm = Directory(p.join(supportDir.path, 'YiHuaTimer', 'bgm'));
+        final realBgm =
+            Directory(p.join(AppConfig.dataPath(supportDir.path), 'bgm'));
         if (!await realBgm.exists()) await realBgm.create(recursive: true);
         await for (var srcFile in tempBgm.list(recursive: true)) {
           if (srcFile is File) {
@@ -283,7 +285,7 @@ class EventTransfer {
           Directory(p.join(tempExtractDir.path, 'YiHuaTimer', 'ding'));
       if (await tempDing.exists()) {
         final realDing =
-            Directory(p.join(supportDir.path, 'YiHuaTimer', 'ding'));
+            Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
         if (!await realDing.exists()) await realDing.create(recursive: true);
         await for (var srcFile in tempDing.list(recursive: true)) {
           if (srcFile is File) {
@@ -472,7 +474,7 @@ class EventTransfer {
         final extractedImageDir = Directory(
             p.join(tempExtractDir.path, 'YiHuaTimer', 'images', '$oldEventId'));
         final newImageDir = Directory(
-            p.join(supportDir.path, 'YiHuaTimer', 'images', '$newEventId'));
+            p.join(AppConfig.dataPath(supportDir.path), 'images', '$newEventId'));
         if (await extractedImageDir.exists()) {
           print('Moving images from ${extractedImageDir.path} to ${newImageDir.path}');
           if (await newImageDir.exists())
@@ -489,7 +491,7 @@ class EventTransfer {
         final extractedSchoolDir = Directory(p.join(
             tempExtractDir.path, 'YiHuaTimer', 'schools', '$oldEventId'));
         final newSchoolDir = Directory(
-            p.join(supportDir.path, 'YiHuaTimer', 'schools', '$newEventId'));
+            p.join(AppConfig.dataPath(supportDir.path), 'schools', '$newEventId'));
         if (await extractedSchoolDir.exists()) {
           print('Moving school logos from ${extractedSchoolDir.path} to ${newSchoolDir.path}');
           if (await newSchoolDir.exists())

@@ -811,29 +811,9 @@ class _EventFolderDetailPageState extends State<EventFolderDetailPage> {
           return;
         }
 
-        final folders = await (database.select(database.flowFolder)
-              ..where((t) => t.eventId.equals(widget.event.id))
-              ..where((t) => t.parentFolderId.equals(widget.folder.id)))
-            .get();
-
-        final newFolder = await database.into(database.flowFolder).insertReturning(
-              FlowFolderCompanion.insert(
-                folderName: '${ClipboardManager.copiedFolder!.folderName} (副本)',
-                eventId: widget.event.id,
-                folderPosition: folders.length + 1,
-                parentFolderId: drift.Value(widget.folder.id),
-              ),
-            );
-
-        // Recursive duplication logic is simplified to just direct flows for now
-        final flowsInFolder = await (database.select(database.flow)
-              ..where((t) => t.folderId.equals(ClipboardManager.copiedFolder!.id)))
-            .get();
-
-        for (final flow in flowsInFolder) {
-          await FlowUtils.duplicateFlow(flow, widget.event.id,
-              folderId: newFolder.id, position: flow.flowPosition!);
-        }
+        await FlowUtils.duplicateFolder(
+            ClipboardManager.copiedFolder!, widget.event.id,
+            parentFolderId: widget.folder.id);
         setState(() {});
       },
       borderRadius: BorderRadius.circular(12),

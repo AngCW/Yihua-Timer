@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
+import 'app_config.dart';
 import 'Dashboard/screens/dashboard_screen.dart';
 import 'database/app_database.dart';
 
@@ -15,6 +16,9 @@ late AppDatabase database;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Read the real version from pubspec.yaml before any paths are resolved.
+  await AppConfig.init();
 
   await _importSharedDataIfNeeded();
 
@@ -151,7 +155,7 @@ Future<void> _importSharedDataIfNeeded() async {
       }
 
       final supportDir = await getApplicationSupportDirectory();
-      final targetAppFolder = Directory(p.join(supportDir.path, 'YiHuaTimer'));
+      final targetAppFolder = Directory(AppConfig.dataPath(supportDir.path));
 
       bool shouldImport = true;
 

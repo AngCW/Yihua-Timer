@@ -12,6 +12,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:reorderables/reorderables.dart';
 import 'clipboard_manager.dart';
 import 'flow_utils.dart';
+import '../app_config.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final EventData event;
@@ -967,29 +968,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     return InkWell(
       onTap: () async {
         if (ClipboardManager.copiedFolder == null) return;
-        final folders = await (database.select(database.flowFolder)
-              ..where((t) => t.eventId.equals(widget.event.id)))
-            .get();
-
-        final newFolder = await database
-            .into(database.flowFolder)
-            .insertReturning(
-              FlowFolderCompanion.insert(
-                folderName: '${ClipboardManager.copiedFolder!.folderName} (副本)',
-                eventId: widget.event.id,
-                folderPosition: folders.length + 1,
-              ),
-            );
-
-        final flowsInFolder = await (database.select(database.flow)
-              ..where(
-                  (t) => t.folderId.equals(ClipboardManager.copiedFolder!.id)))
-            .get();
-
-        for (final flow in flowsInFolder) {
-          await FlowUtils.duplicateFlow(flow, widget.event.id,
-              folderId: newFolder.id, position: flow.flowPosition!);
-        }
+        await FlowUtils.duplicateFolder(
+            ClipboardManager.copiedFolder!, widget.event.id);
         setState(() {});
       },
       borderRadius: BorderRadius.circular(12),
@@ -1162,8 +1142,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                               return const SizedBox.shrink();
                             }
                             final path = p.join(
-                              dirSnapshot.data!.path,
-                              'YiHuaTimer',
+                              AppConfig.dataPath(dirSnapshot.data!.path),
                               'schools',
                               widget.event.id.toString(),
                               img.imageName!,
@@ -1317,8 +1296,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                 if (!dirSnapshot.hasData)
                                   return const SizedBox();
                                 final path = p.join(
-                                  dirSnapshot.data!.path,
-                                  'YiHuaTimer',
+                                  AppConfig.dataPath(dirSnapshot.data!.path),
                                   'schools',
                                   widget.event.id.toString(),
                                   currentLogo!.imageName!,
@@ -1361,8 +1339,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
                   if (pickedLogo != null) {
                     final supportDir = await getApplicationSupportDirectory();
-                    final schoolDir = Directory(p.join(supportDir.path,
-                        'YiHuaTimer', 'schools', widget.event.id.toString()));
+                    final schoolDir = Directory(p.join(
+                        AppConfig.dataPath(supportDir.path), 'schools', widget.event.id.toString()));
                     if (!await schoolDir.exists()) {
                       await schoolDir.create(recursive: true);
                     }
@@ -1478,8 +1456,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               // Delete file
               final supportDir = await getApplicationSupportDirectory();
               final path = p.join(
-                supportDir.path,
-                'YiHuaTimer',
+                AppConfig.dataPath(supportDir.path),
                 'schools',
                 widget.event.id.toString(),
                 img.imageName!,
@@ -1605,8 +1582,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   int? imgId;
                   if (pickedLogo != null) {
                     final supportDir = await getApplicationSupportDirectory();
-                    final schoolDir = Directory(p.join(supportDir.path,
-                        'YiHuaTimer', 'schools', widget.event.id.toString()));
+                    final schoolDir = Directory(p.join(
+                        AppConfig.dataPath(supportDir.path), 'schools', widget.event.id.toString()));
                     if (!await schoolDir.exists()) {
                       await schoolDir.create(recursive: true);
                     }

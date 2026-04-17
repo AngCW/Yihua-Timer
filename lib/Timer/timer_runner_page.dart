@@ -12,6 +12,7 @@ import '../Setting/hotkey_binding_model.dart';
 import '../database/app_database.dart';
 import '../main.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../app_config.dart';
 
 class TimerRunnerPage extends StatefulWidget {
   final EventData event;
@@ -122,7 +123,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
   Future<void> _loadFlowData() async {
     final supportDir = await getApplicationSupportDirectory();
     final imagesDir = Directory(
-        p.join(supportDir.path, 'YiHuaTimer', 'images', '${widget.event.id}'));
+        p.join(AppConfig.dataPath(supportDir.path), 'images', '${widget.event.id}'));
     _imagesDirPath = imagesDir.path;
 
     // Load flow-level fonts
@@ -173,7 +174,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
       if (bgm != null) {
         final supportDir = await getApplicationSupportDirectory();
         final bgmPath =
-            p.join(supportDir.path, 'YiHuaTimer', 'bgm', bgm.bgmName);
+            p.join(AppConfig.dataPath(supportDir.path), 'bgm', bgm.bgmName);
         if (await File(bgmPath).exists()) {
           await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
           await _bgmPlayer.setSource(DeviceFileSource(bgmPath));
@@ -200,7 +201,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
   Future<void> _loadFont(String fileName, String type) async {
     final supportDir = await getApplicationSupportDirectory();
     final imagesDir = Directory(
-        p.join(supportDir.path, 'YiHuaTimer', 'images', '${widget.event.id}'));
+        p.join(AppConfig.dataPath(supportDir.path), 'images', '${widget.event.id}'));
     final fontFile = File(p.join(imagesDir.path, fileName));
     if (await fontFile.exists()) {
       final family = 'Font_${type}_${widget.flow.id}';
@@ -334,10 +335,12 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
               controller: _pageController,
               itemCount: _pages.length,
               onPageChanged: (index) {
-                _currentPageIndex = index;
-                if (_activeExtraPage == null) {
-                  _updateBgm(_pages[index]);
-                }
+                setState(() {
+                  _currentPageIndex = index;
+                  if (_activeExtraPage == null) {
+                    _updateBgm(_pages[index]);
+                  }
+                });
               },
               itemBuilder: (context, index) {
                 return _TimerPageView(
@@ -351,8 +354,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   flowTimerFont: _timerFontFamily,
                    hotkeys: _hotkeySettings,
                   sessionTimerSeconds: _sessionTimerSeconds,
-                  isActive: _activeExtraPage ==
-                      null, // Main page only active if no extra page
+                  isActive: _activeExtraPage == null && index == _currentPageIndex,
                   allPages: _pages,
                   dingVolume: _dingVolume,
                 );
@@ -638,6 +640,56 @@ class _TimerPageViewState extends State<_TimerPageView> {
     _keySub = widget.keyStream.listen(_onKey);
   }
 
+  @override
+  void didUpdateWidget(covariant _TimerPageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // When this page becomes the active page and it inherits, re-apply
+    // inheritance so the timer values reflect the parent's latest state.
+    if (widget.pageData.inheritTimerFromId != null &&
+        !oldWidget.isActive &&
+        widget.isActive) {
+      _reapplyInheritance();
+    }
+  }
+
+  /// Re-reads the parent timer values and updates local state without
+  /// reloading the full timer configuration (positions, dings, etc.)
+  Future<void> _reapplyInheritance() async {
+    if (widget.pageData.inheritTimerFromId == null) return;
+
+    final timers = await (database.select(database.timer)
+          ..where((t) => t.pageId.equals(widget.pageData.id)))
+        .get();
+
+    for (var t in timers) {
+      final parts = (t.startTime ?? '0:0').split(':');
+      final m = int.tryParse(parts[0]) ?? 0;
+      final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+      final initSec = m * 60 + s;
+
+      final parentTimers = await (database.select(database.timer)
+            ..where((pt) =>
+                pt.pageId.equals(widget.pageData.inheritTimerFromId!))
+            ..where((pt) => pt.timerType.equals(t.timerType!)))
+          .get();
+
+      if (parentTimers.isNotEmpty) {
+        final parentVal = widget.sessionTimerSeconds[parentTimers.first.id];
+        if (parentVal != null) {
+          final newSec = parentVal > initSec ? initSec : parentVal;
+          widget.sessionTimerSeconds[t.id] = newSec;
+          if (mounted) {
+            setState(() {
+              if (t.timerType == 'single') _secondsC = newSec;
+              if (t.timerType == 'doubleL') _secL = newSec;
+              if (t.timerType == 'doubleR') _secR = newSec;
+            });
+          }
+        }
+      }
+    }
+  }
+
   void _onKey(String key) {
     if (!mounted || !widget.isActive) return;
 
@@ -730,9 +782,11 @@ class _TimerPageViewState extends State<_TimerPageView> {
       final initSec = m * 60 + s;
       int currentSec = initSec;
 
-      if (widget.sessionTimerSeconds.containsKey(t.id)) {
-        currentSec = widget.sessionTimerSeconds[t.id]!;
-      } else if (widget.pageData.inheritTimerFromId != null) {
+      // If this page inherits from another, always re-read the parent's
+      // current value — even if we already have a cached entry for this timer.
+      // This fixes stale inheritance when navigating back to this page
+      // after the parent timer has been running.
+      if (widget.pageData.inheritTimerFromId != null) {
         final parentTimers = await (database.select(database.timer)
               ..where(
                   (pt) => pt.pageId.equals(widget.pageData.inheritTimerFromId!))
@@ -745,6 +799,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
             widget.sessionTimerSeconds[t.id] = currentSec;
           }
         }
+      } else if (widget.sessionTimerSeconds.containsKey(t.id)) {
+        currentSec = widget.sessionTimerSeconds[t.id]!;
       }
 
       if (t.timerType == 'single') {
@@ -876,7 +932,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
       final fileName = widget.flow.fontName!;
       final supportDir = await getApplicationSupportDirectory();
       final imagesDir = Directory(p.join(
-          supportDir.path, 'YiHuaTimer', 'images', '${widget.flow.eventId}'));
+          AppConfig.dataPath(supportDir.path), 'images', '${widget.flow.eventId}'));
       final fontFile = File(p.join(imagesDir.path, fileName));
 
       if (await fontFile.exists()) {
@@ -893,7 +949,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
   Future<void> _loadPageFont(String fileName, String type) async {
     final supportDir = await getApplicationSupportDirectory();
     final imagesDir = Directory(p.join(
-        supportDir.path, 'YiHuaTimer', 'images', '${widget.flow.eventId}'));
+        AppConfig.dataPath(supportDir.path), 'images', '${widget.flow.eventId}'));
     final fontFile = File(p.join(imagesDir.path, fileName));
     if (await fontFile.exists()) {
       final family = 'Font_${type}_${widget.pageData.id}';
@@ -956,7 +1012,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
     if (fileName == null || fileName.isEmpty) return;
 
     final supportDir = await getApplicationSupportDirectory();
-    final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'ding', fileName);
+    final audioPath = p.join(AppConfig.dataPath(supportDir.path), 'ding', fileName);
 
     if (!await File(audioPath).exists()) return;
 
@@ -1287,7 +1343,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         if (!snapshot.hasData || logo?.imageName == null) {
           return const SizedBox.shrink();
         }
-        final path = p.join(snapshot.data!.path, 'YiHuaTimer', 'schools',
+        final path = p.join(AppConfig.dataPath(snapshot.data!.path), 'schools',
             widget.flow.eventId.toString(), logo!.imageName!);
         if (!File(path).existsSync()) {
           return const SizedBox.shrink();

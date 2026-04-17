@@ -27,12 +27,18 @@ class FlowUtils {
             backgroundName: drift.Value(flow.backgroundName),
             sectionFontColor: drift.Value(flow.sectionFontColor),
             timerFontColor: drift.Value(flow.timerFontColor),
+            schoolAId: drift.Value(flow.schoolAId),
+            schoolBId: drift.Value(flow.schoolBId),
+            positionConfig: drift.Value(flow.positionConfig),
           ),
         );
 
     final pages = await (database.select(database.page)
           ..where((t) => t.flowId.equals(flow.id)))
         .get();
+
+    final Map<int, int> pageIdMap = {};
+    final List<PageData> newPages = [];
 
     for (final page in pages) {
       // Deep copy positions if they exist
@@ -106,8 +112,12 @@ class FlowUtils {
               schoolBPositionId: drift.Value(newSbPosId),
               sectionFontColor: drift.Value(page.sectionFontColor),
               timerFontColor: drift.Value(page.timerFontColor),
+              inheritTimerFromId: const drift.Value.absent(), // Will update in second pass
             ),
           );
+
+      pageIdMap[page.id] = newPage.id;
+      newPages.add(newPage);
 
       // Copy timers
       final timers = await (database.select(database.timer)
@@ -175,7 +185,62 @@ class FlowUtils {
             );
       }
     }
+
+    // Pass 2: Re-link inheritance within the new flow
+    for (int i = 0; i < pages.length; i++) {
+      final oldPage = pages[i];
+      if (oldPage.inheritTimerFromId != null) {
+        final oldInheritId = oldPage.inheritTimerFromId!;
+        final newInheritId = pageIdMap[oldInheritId];
+        if (newInheritId != null) {
+          await (database.update(database.page)
+                ..where((t) => t.id.equals(newPages[i].id)))
+              .write(PageCompanion(
+            inheritTimerFromId: drift.Value(newInheritId),
+          ));
+        }
+      }
+    }
     return newFlow;
+  }
+
+  static Future<FlowFolderData> duplicateFolder(
+      FlowFolderData folder, int eventId,
+      {int? parentFolderId}) async {
+    final folders = await (database.select(database.flowFolder)
+          ..where((t) => t.eventId.equals(eventId))
+          ..where((t) => parentFolderId != null
+              ? t.parentFolderId.equals(parentFolderId)
+              : t.parentFolderId.isNull()))
+        .get();
+
+    final newFolder = await database.into(database.flowFolder).insertReturning(
+          FlowFolderCompanion.insert(
+            folderName: '${folder.folderName} (副本)',
+            eventId: eventId,
+            folderPosition: folders.length + 1,
+            parentFolderId: drift.Value(parentFolderId),
+          ),
+        );
+
+    // Duplicate flows in this folder
+    final flows = await (database.select(database.flow)
+          ..where((t) => t.folderId.equals(folder.id)))
+        .get();
+    for (final flow in flows) {
+      await duplicateFlow(flow, eventId,
+          folderId: newFolder.id, position: flow.flowPosition);
+    }
+
+    // Recursively duplicate subfolders
+    final subfolders = await (database.select(database.flowFolder)
+          ..where((t) => t.parentFolderId.equals(folder.id)))
+        .get();
+    for (final sub in subfolders) {
+      await duplicateFolder(sub, eventId, parentFolderId: newFolder.id);
+    }
+
+    return newFolder;
   }
 
   static Future<void> deleteFolderRecursive(int folderId) async {

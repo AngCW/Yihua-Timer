@@ -82,6 +82,7 @@ class PageUtils {
             schoolBPositionId: drift.Value(newSbPosId),
             sectionFontColor: drift.Value(page.sectionFontColor),
             timerFontColor: drift.Value(page.timerFontColor),
+            inheritTimerFromId: drift.Value(page.inheritTimerFromId),
           ),
         );
 

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../app_config.dart';
 
 class ShareAppService {
   /// Packages the application into a ZIP file and saves it to the Downloads directory.
@@ -64,7 +65,7 @@ class ShareAppService {
       // b. Export YiHuaTimer data directory (including DB and assets)
       if (withData) {
         final supportDir = await getApplicationSupportDirectory();
-        final Directory dataDir = Directory(p.join(supportDir.path, 'YiHuaTimer'));
+        final Directory dataDir = Directory(AppConfig.dataPath(supportDir.path));
         if (await dataDir.exists()) {
           final Directory destDataDir = Directory(p.join(importDataDir.path, 'YiHuaTimer'));
           print('Staging data directory from ${dataDir.path} to ${destDataDir.path}');

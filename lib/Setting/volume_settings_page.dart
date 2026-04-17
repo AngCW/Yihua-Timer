@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
 import '../main.dart';
 import 'timer_template_settings_page.dart';
+import '../app_config.dart';
 
 class VolumeSettingsPage extends StatefulWidget {
   const VolumeSettingsPage({super.key});
@@ -81,7 +82,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
       if (_selectedBgm == null) return;
       
       final supportDir = await getApplicationSupportDirectory();
-      final path = p.join(supportDir.path, 'YiHuaTimer', 'bgm', _selectedBgm!.bgmName);
+      final path = p.join(AppConfig.dataPath(supportDir.path), 'bgm', _selectedBgm!.bgmName);
       
       if (File(path).existsSync()) {
         final player = AudioPlayer();
@@ -105,7 +106,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
       if (_selectedDing == null) return;
       
       final supportDir = await getApplicationSupportDirectory();
-      final path = p.join(supportDir.path, 'YiHuaTimer', 'ding', _selectedDing!.dingName);
+      final path = p.join(AppConfig.dataPath(supportDir.path), 'ding', _selectedDing!.dingName);
       
       if (File(path).existsSync()) {
         final player = AudioPlayer();

@@ -20,6 +20,20 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.7.0',
+    date: '2026-04-17',
+    changes: [
+      '（希望）修复了即使已设置继承计时器，页面有时也无法正确继承的问题',
+      '修复了复制赛程或赛程文件夹时，未能正确保留页面继承计时器关联的问题',
+      '添加了版本数据库控制机制，现各版本的数据库和资源将完全分离互不干扰',
+    ],
+    changesEn: [
+      'Hopefully fixed the issue where pages do not inherit the timers of other pages even when they should have',
+      'Fixed the issue where copying a flow or flow folder does not copy the inherited page timer values',
+      'Added version database control; now databases and asset directories are cleanly isolated by version',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.6.0',
     date: '2026-04-05',
     changes: [

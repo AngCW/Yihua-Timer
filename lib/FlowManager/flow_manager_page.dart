@@ -11,6 +11,7 @@ import '../main.dart';
 import 'page_manager_page.dart';
 import '../EventManager/clipboard_manager.dart';
 import 'page_utils.dart';
+import '../app_config.dart';
 
 class FlowManagerPage extends StatefulWidget {
   final EventData event;
@@ -42,7 +43,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
   Future<void> _loadFlow() async {
     final supportDir = await getApplicationSupportDirectory();
     _imagesDirPath = p.join(
-        supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
+        AppConfig.dataPath(supportDir.path), 'images', widget.event.id.toString());
 
     if (widget.initialFlow != null) {
       _currentFlow = widget.initialFlow;
@@ -77,7 +78,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
     if (_currentFlow?.fontName == null) return null;
     try {
       final supportDir = await getApplicationSupportDirectory();
-      final filePath = p.join(supportDir.path, 'YiHuaTimer', 'images',
+      final filePath = p.join(AppConfig.dataPath(supportDir.path), 'images',
           widget.event.id.toString(), _currentFlow!.fontName!);
       if (await File(filePath).exists()) {
         return _currentFlow!.fontName;
@@ -97,7 +98,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
 
     try {
       final supportDir = await getApplicationSupportDirectory();
-      final filePath = p.join(supportDir.path, 'YiHuaTimer', 'images',
+      final filePath = p.join(AppConfig.dataPath(supportDir.path), 'images',
           widget.event.id.toString(), fileName);
       if (await File(filePath).exists()) {
         return fileName;
@@ -128,7 +129,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
 
       try {
         final supportDir = await getApplicationSupportDirectory();
-        final imagesDir = Directory(p.join(supportDir.path, 'YiHuaTimer',
+        final imagesDir = Directory(p.join(AppConfig.dataPath(supportDir.path),
             'images', widget.event.id.toString()));
 
         if (!await imagesDir.exists()) {
@@ -1375,7 +1376,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                   future: getApplicationSupportDirectory(),
                   builder: (context, dirSnap) {
                     if (!dirSnap.hasData) return const SizedBox.shrink();
-                    final path = p.join(dirSnap.data!.path, 'YiHuaTimer',
+                    final path = p.join(AppConfig.dataPath(dirSnap.data!.path),
                         'schools', widget.event.id.toString(), img.imageName!);
                     if (!File(path).existsSync()) {
                       return const Icon(Icons.school, size: 14);
@@ -1464,8 +1465,8 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                 int? imgId;
                 if (pickedLogo != null) {
                   final supportDir = await getApplicationSupportDirectory();
-                  final schoolDir = Directory(p.join(supportDir.path,
-                      'YiHuaTimer', 'schools', widget.event.id.toString()));
+                  final schoolDir = Directory(p.join(
+                      AppConfig.dataPath(supportDir.path), 'schools', widget.event.id.toString()));
                   if (!await schoolDir.exists())
                     await schoolDir.create(recursive: true);
 

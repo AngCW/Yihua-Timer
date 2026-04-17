@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 import '../database/app_database.dart';
 import '../main.dart';
 import '../EventManager/clipboard_manager.dart';
+import '../app_config.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:convert';
 
@@ -250,7 +251,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _timerFontFamily = null;
     final supportDir = await getApplicationSupportDirectory();
     final imagesPath = p.join(
-        supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
+        AppConfig.dataPath(supportDir.path), 'images', widget.event.id.toString());
 
     // Image logic: choose background or frontpage based on user choice
     String? selectedImageName;
@@ -304,7 +305,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   Future<String?> _loadCustomFont(String fileName) async {
     final supportDir = await getApplicationSupportDirectory();
     final imagesPath = p.join(
-        supportDir.path, 'YiHuaTimer', 'images', widget.event.id.toString());
+        AppConfig.dataPath(supportDir.path), 'images', widget.event.id.toString());
     final file = File(p.join(imagesPath, fileName));
 
     if (await file.exists()) {
@@ -335,7 +336,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
       try {
         final supportDir = await getApplicationSupportDirectory();
-        final imagesDir = Directory(p.join(supportDir.path, 'YiHuaTimer',
+        final imagesDir = Directory(p.join(AppConfig.dataPath(supportDir.path),
             'images', widget.event.id.toString()));
         if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
 
@@ -430,7 +431,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   Future<void> _playPreviewSound(String fileName, int amount) async {
     try {
       final supportDir = await getApplicationSupportDirectory();
-      final audioPath = p.join(supportDir.path, 'YiHuaTimer', 'ding', fileName);
+      final audioPath = p.join(AppConfig.dataPath(supportDir.path), 'ding', fileName);
 
       if (!await File(audioPath).exists()) return;
 
@@ -981,7 +982,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
       try {
         final supportDir = await getApplicationSupportDirectory();
         final dingDir =
-            Directory(p.join(supportDir.path, 'YiHuaTimer', 'ding'));
+            Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
         if (!await dingDir.exists()) await dingDir.create(recursive: true);
 
         final targetPath = p.join(dingDir.path, fileName);
@@ -1123,7 +1124,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
       try {
         final supportDir = await getApplicationSupportDirectory();
-        final bgmDir = Directory(p.join(supportDir.path, 'YiHuaTimer', 'bgm'));
+        final bgmDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'bgm'));
         if (!await bgmDir.exists()) await bgmDir.create(recursive: true);
 
         final targetPath = p.join(bgmDir.path, fileName);
@@ -2726,7 +2727,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
         if (!snapshot.hasData || logo?.imageName == null) {
           return const SizedBox.shrink();
         }
-        final path = p.join(snapshot.data!.path, 'YiHuaTimer', 'schools',
+        final path = p.join(AppConfig.dataPath(snapshot.data!.path), 'schools',
             widget.event.id.toString(), logo!.imageName!);
         if (!File(path).existsSync()) {
           return const SizedBox.shrink();

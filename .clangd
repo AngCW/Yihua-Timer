@@ -1,0 +1,14 @@
+CompileFlags:
+  Add:
+    - "-ID:/debate 2025/Yihua-Timer/windows/flutter/ephemeral/cpp_client_wrapper/include"
+    - "-ID:/debate 2025/Yihua-Timer/windows/flutter/ephemeral"
+    - "-ID:/debate 2025/Yihua-Timer/windows"
+    - "--target=x86_64-pc-windows-msvc"
+    - "-std=c++17"
+    - "-DUNICODE"
+    - "-D_UNICODE"
+    - "-DNOMINMAX"
+
+Diagnostics:
+  Suppress:
+    - "pp_file_not_found"

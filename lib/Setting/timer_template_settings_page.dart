@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' as drift;
 import '../database/app_database.dart';
 import '../main.dart';
+import '../app_config.dart';
 
 class TimerTemplateSettingsPage extends StatefulWidget {
   const TimerTemplateSettingsPage({super.key});
@@ -487,7 +488,7 @@ class _TimerTemplateSettingsPageState extends State<TimerTemplateSettingsPage> {
       final file = File(result.files.single.path!);
       final fileName = result.files.single.name;
       final supportDir = await getApplicationSupportDirectory();
-      final dingDir = Directory(p.join(supportDir.path, 'YiHuaTimer', 'ding'));
+      final dingDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
       if (!await dingDir.exists()) await dingDir.create(recursive: true);
       final destPath = p.join(dingDir.path, fileName);
       await file.copy(destPath);

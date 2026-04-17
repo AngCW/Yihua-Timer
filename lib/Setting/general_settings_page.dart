@@ -9,6 +9,7 @@ import 'package:window_manager/window_manager.dart';
 import '../Services/update_service.dart';
 import '../Services/share_app_service.dart';
 import '../main.dart'; // To access global database
+import '../app_config.dart';
 
 class GeneralSettingsPage extends StatefulWidget {
   const GeneralSettingsPage({super.key});
@@ -382,7 +383,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   Future<void> _handleClearAllData() async {
     try {
       final supportDir = await getApplicationSupportDirectory();
-      final dataDir = Directory(p.join(supportDir.path, 'YiHuaTimer'));
+      final dataDir = Directory(AppConfig.dataPath(supportDir.path));
       
       // Release database lock on Windows
       await database.close();

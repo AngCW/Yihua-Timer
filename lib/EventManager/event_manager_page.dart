@@ -9,6 +9,7 @@ import '../database/app_database.dart';
 import '../database/event_transfer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:drift/drift.dart' as drift;
+import '../app_config.dart';
 
 class EventManagerPage extends StatefulWidget {
   const EventManagerPage({super.key});
@@ -152,9 +153,9 @@ class _EventManagerPageState extends State<EventManagerPage> {
       // 2. Delete folders
       final supportDir = await getApplicationSupportDirectory();
       final imagesDir = Directory(
-          p.join(supportDir.path, 'YiHuaTimer', 'images', '${event.id}'));
+          p.join(AppConfig.dataPath(supportDir.path), 'images', '${event.id}'));
       final schoolsDir = Directory(
-          p.join(supportDir.path, 'YiHuaTimer', 'schools', '${event.id}'));
+          p.join(AppConfig.dataPath(supportDir.path), 'schools', '${event.id}'));
 
       if (await imagesDir.exists()) await imagesDir.delete(recursive: true);
       if (await schoolsDir.exists()) await schoolsDir.delete(recursive: true);
