@@ -28,6 +28,7 @@ final List<ChangelogEntry> _changelogData = [
       '在音量设置中新增了“延时测试”功能，支持自定义间隔进行连响测试',
       '修复了快捷键设置界面在绑定长字符键名时的显示溢出问题',
       '新增从旧版本自动迁移数据库的功能',
+      '新增继承计时器值的范围限制（最小和最大时间）',
     ],
     changesEn: [
       'Allow user to update and delete bgm and ding sounds',
@@ -35,6 +36,7 @@ final List<ChangelogEntry> _changelogData = [
       'added delay tester below ding volume slider to test for delay on user pc',
       'fixed hotkey UI overflow issue',
       'added database migration from previous versions',
+      'added function for user to set minimum and maximum time for an inherited timer value',
     ],
   ),
   ChangelogEntry(
