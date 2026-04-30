@@ -106,7 +106,10 @@ CREATE TABLE page (
     show_schools BOOLEAN DEFAULT TRUE,
     inherit_timer_from_id INTEGER REFERENCES page(id),
     section_font_color VARCHAR,
-    timer_font_color VARCHAR
+    timer_font_color VARCHAR,
+    inherit_timer_range_enabled BOOLEAN DEFAULT FALSE,
+    inherit_timer_min INTEGER,
+    inherit_timer_max INTEGER
 );
 
 CREATE TABLE school (

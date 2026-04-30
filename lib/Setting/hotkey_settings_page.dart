@@ -553,8 +553,12 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
             }
           },
           child: Container(
-            width: 80,
-            height: 40,
+            constraints: const BoxConstraints(
+              minWidth: 80,
+              maxWidth: 150,
+              minHeight: 40,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isEditing
                   ? const Color(0xFF6B46C1).withOpacity(0.1)
@@ -583,51 +587,54 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
                 return KeyEventResult.ignored;
               },
               child: Center(
-                child: isEditing
-                    ? const Text(
-                        '按任意键...',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF6B46C1),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    : customText != null
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(
-                              customText,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (icon != null) ...[
-                                Icon(
-                                  icon,
-                                  color: const Color(0xFF374151),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                              ],
-                              Text(
-                                _getDisplayKey(binding.key),
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: hasConflict ? Colors.red : const Color(0xFF374151),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: isEditing
+                      ? const Text(
+                          '按任意键...',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B46C1),
+                            fontWeight: FontWeight.w500,
                           ),
+                        )
+                      : customText != null
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text(
+                                customText,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (icon != null) ...[
+                                  Icon(
+                                    icon,
+                                    color: const Color(0xFF374151),
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
+                                  _getDisplayKey(binding.key),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: hasConflict ? Colors.red : const Color(0xFF374151),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                ),
               ),
             ),
           ),

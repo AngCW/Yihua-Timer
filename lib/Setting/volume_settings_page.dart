@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
@@ -24,11 +26,13 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
   List<DingAudioData> _dings = [];
   BgmData? _selectedBgm;
   DingAudioData? _selectedDing;
-  List<String> _ringtones = ['默认铃声'];
+
   AudioPlayer? _bgmTestPlayer;
   AudioPlayer? _dingTestPlayer; // Separate player for ding testing
   bool _isBgmTesting = false;
   bool _isDingTesting = false;
+  bool _isDingDelayTesting = false;
+  double _testIntervalSeconds = 0.5;
 
   @override
   void initState() {
@@ -131,6 +135,30 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
     _dingTestPlayer?.setVolume(val);
   }
 
+  Future<void> _testDingDelay() async {
+    if (_selectedDing == null || _isDingDelayTesting) return;
+    
+    setState(() => _isDingDelayTesting = true);
+    
+    final supportDir = await getApplicationSupportDirectory();
+    final path = p.join(AppConfig.dataPath(supportDir.path), 'ding', _selectedDing!.dingName);
+    
+    if (File(path).existsSync()) {
+      // Play 3 dings with dynamic interval to test for delay consistency
+      for (int i = 0; i < 3; i++) {
+        final player = AudioPlayer();
+        player.setVolume(_ringtoneVolume);
+        await player.play(DeviceFileSource(path));
+        // We don't wait for completion here to simulate the real-world scenario
+        // but we wait for the interval.
+        player.onPlayerComplete.listen((_) => player.dispose());
+        await Future.delayed(Duration(milliseconds: (_testIntervalSeconds * 1000).toInt()));
+      }
+    }
+    
+    if (mounted) setState(() => _isDingDelayTesting = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -153,7 +181,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<DingAudioData>(
-                      value: _selectedDing,
+                      initialValue: _selectedDing,
                       isExpanded: true,
                       decoration: InputDecoration(
                         isDense: true,
@@ -173,6 +201,87 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
                     style: TextButton.styleFrom(
                       foregroundColor: _isDingTesting ? Colors.red : const Color(0xFF6B46C1),
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: _showDingManagementDialog,
+                    icon: const Icon(Icons.settings_suggest_outlined, size: 16),
+                    label: const Text('管理'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF6B46C1),
+                    ),
+                  ),
+                ],
+              ),
+              bottomWidget: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '延时测试 (连响测试)',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '测试是否存在播放延迟导致的重叠',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _isDingDelayTesting ? null : _testDingDelay,
+                        icon: _isDingDelayTesting 
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.timer_outlined, size: 16),
+                        label: Text(_isDingDelayTesting ? '测试中...' : '开始测试'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6B46C1),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        width: 140,
+                        child: Text(
+                          '连响间隔: ${_testIntervalSeconds.toStringAsFixed(1)}秒',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: _testIntervalSeconds,
+                          min: 0.1,
+                          max: 2.0,
+                          divisions: 19,
+                          label: '${_testIntervalSeconds.toStringAsFixed(1)}s',
+                          onChanged: _isDingDelayTesting ? null : (val) => setState(() => _testIntervalSeconds = val),
+                          activeColor: const Color(0xFF6B46C1),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -194,7 +303,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<BgmData>(
-                      value: _selectedBgm,
+                      initialValue: _selectedBgm,
                       isExpanded: true,
                       decoration: InputDecoration(
                         isDense: true,
@@ -213,6 +322,15 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
                     label: Text(_isBgmTesting ? '停止' : '测试'),
                     style: TextButton.styleFrom(
                       foregroundColor: _isBgmTesting ? Colors.red : const Color(0xFF6B46C1),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: _showBgmManagementDialog,
+                    icon: const Icon(Icons.settings_suggest_outlined, size: 16),
+                    label: const Text('管理'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF6B46C1),
                     ),
                   ),
                 ],
@@ -235,6 +353,7 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
     required double value,
     required ValueChanged<double> onChanged,
     Widget? topWidget,
+    Widget? bottomWidget,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -284,680 +403,381 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
             min: 0.0,
             max: 1.0,
           ),
+          if (bottomWidget != null) ...[
+            const SizedBox(height: 12),
+            bottomWidget,
+          ],
         ],
       ),
     );
   }
   
-  void _showEditRingtoneDialog(BuildContext context, String ringtoneName) {
-    final TextEditingController nameController = TextEditingController(text: ringtoneName);
-    String? selectedFile;
-    List<Map<String, dynamic>> timePoints = [
-      {'minutes': 0, 'seconds': 30, 'times': 1},
-      {'minutes': 0, 'seconds': 5, 'times': 1},
-      {'minutes': 0, 'seconds': 0, 'times': 2},
-    ];
-    
+  // --- Management Dialogs ---
+
+  void _showBgmManagementDialog() {
     showDialog(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(40),
-          child: Container(
-            width: 600,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6B46C1),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          ringtoneName,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Content
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Ringtone Sound Section
-                        const Text(
-                          '铃声声音',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.add, color: Color(0xFF6B46C1), size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  selectedFile ?? '可以拖拽文件或点击上传 (MP3)',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: selectedFile != null ? Colors.black : Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Time Points Section
-                        const Text(
-                          '铃声响的:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          '时间点',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ...timePoints.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final point = entry.value;
-                          final minutesController = TextEditingController(
-                            text: point['minutes'].toString(),
-                          );
-                          final secondsController = TextEditingController(
-                            text: point['seconds'].toString().padLeft(2, '0'),
-                          );
-                          final timesController = TextEditingController(
-                            text: point['times'].toString(),
-                          );
-                          
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildTimePointItem(
-                              minutesController: minutesController,
-                              secondsController: secondsController,
-                              timesController: timesController,
-                              onDelete: () {
-                                setDialogState(() {
-                                  timePoints.removeAt(index);
-                                });
-                              },
-                              onChanged: () {
-                                setDialogState(() {
-                                  point['minutes'] = int.tryParse(minutesController.text) ?? 0;
-                                  point['seconds'] = int.tryParse(secondsController.text) ?? 0;
-                                  point['times'] = int.tryParse(timesController.text) ?? 1;
-                                });
-                              },
-                            ),
-                          );
-                        }),
-                        // Add Time Point Button
-                        InkWell(
-                          onTap: () {
-                            setDialogState(() {
-                              timePoints.add({
-                                'minutes': 0,
-                                'seconds': 0,
-                                'times': 1,
-                              });
-                            });
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Color(0xFF6B46C1),
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Footer Buttons
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: const Text('取消'),
-                      ),
-                      const SizedBox(width: 12),
-                      FilledButton(
-                        onPressed: () {
-                          // TODO: Save ringtone changes
-                          Navigator.of(dialogContext).pop();
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF6B46C1),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        child: const Text('保存'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('管理背景音乐'),
+              IconButton(
+                onPressed: () async {
+                  await _uploadBgm();
+                  setDialogState(() {});
+                },
+                icon: const Icon(Icons.add, color: Color(0xFF6B46C1)),
+                tooltip: '添加 BGM',
+              ),
+            ],
           ),
+          content: SizedBox(
+            width: 400,
+            height: 400,
+            child: _bgms.isEmpty
+                ? const Center(child: Text('暂无 BGM'))
+                : ListView.builder(
+                    itemCount: _bgms.length,
+                    itemBuilder: (context, index) {
+                      final bgm = _bgms[index];
+                      return ListTile(
+                        title: Text(bgm.bgmName, overflow: TextOverflow.ellipsis),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              onPressed: () => _showRenameDialog(
+                                context: context,
+                                currentName: bgm.bgmName,
+                                onRename: (newName) async {
+                                  await _renameBgm(bgm, newName);
+                                  setDialogState(() {});
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                              onPressed: () => _confirmDeleteBgm(bgm, () {
+                                setDialogState(() {});
+                              }),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('关闭')),
+          ],
         ),
       ),
     );
   }
-  
-  void _showAddRingtoneDialog(BuildContext context) {
-    final TextEditingController nameController = TextEditingController();
-    String? selectedFile;
-    List<Map<String, dynamic>> timePoints = [];
-    
+
+  void _showDingManagementDialog() {
     showDialog(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(40),
-          child: Container(
-            width: 600,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6B46C1),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          '添加铃声',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Content
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Ringtone Name Section
-                        const Text(
-                          '铃声名称',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: nameController,
-                          decoration: InputDecoration(
-                            hintText: '请输入铃声名称',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 1.2),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Ringtone Sound Section
-                        const Text(
-                          '铃声声音',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.add, color: Color(0xFF6B46C1), size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  selectedFile ?? '可以拖拽文件或点击上传 (MP3)',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: selectedFile != null ? Colors.black : Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Time Points Section
-                        const Text(
-                          '铃声响的:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          '时间点',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ...timePoints.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final point = entry.value;
-                          final minutesController = TextEditingController(
-                            text: point['minutes'].toString(),
-                          );
-                          final secondsController = TextEditingController(
-                            text: point['seconds'].toString().padLeft(2, '0'),
-                          );
-                          final timesController = TextEditingController(
-                            text: point['times'].toString(),
-                          );
-                          
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildTimePointItem(
-                              minutesController: minutesController,
-                              secondsController: secondsController,
-                              timesController: timesController,
-                              onDelete: () {
-                                setDialogState(() {
-                                  timePoints.removeAt(index);
-                                });
-                              },
-                              onChanged: () {
-                                setDialogState(() {
-                                  point['minutes'] = int.tryParse(minutesController.text) ?? 0;
-                                  point['seconds'] = int.tryParse(secondsController.text) ?? 0;
-                                  point['times'] = int.tryParse(timesController.text) ?? 1;
-                                });
-                              },
-                            ),
-                          );
-                        }),
-                        // Add Time Point Button
-                        InkWell(
-                          onTap: () {
-                            setDialogState(() {
-                              timePoints.add({
-                                'minutes': 0,
-                                'seconds': 0,
-                                'times': 1,
-                              });
-                            });
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Color(0xFF6B46C1),
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Footer Buttons
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: const Text('取消'),
-                      ),
-                      const SizedBox(width: 12),
-                      FilledButton(
-                        onPressed: () {
-                          if (nameController.text.trim().isNotEmpty) {
-                            setState(() {
-                              _ringtones.add(nameController.text.trim());
-                            });
-                            Navigator.of(dialogContext).pop();
-                          }
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF6B46C1),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        child: const Text('保存'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('管理提示音'),
+              IconButton(
+                onPressed: () async {
+                  await _uploadDingAudio();
+                  setDialogState(() {});
+                },
+                icon: const Icon(Icons.add, color: Color(0xFF6B46C1)),
+                tooltip: '添加提示音',
+              ),
+            ],
           ),
+          content: SizedBox(
+            width: 400,
+            height: 400,
+            child: _dings.isEmpty
+                ? const Center(child: Text('暂无提示音'))
+                : ListView.builder(
+                    itemCount: _dings.length,
+                    itemBuilder: (context, index) {
+                      final ding = _dings[index];
+                      return ListTile(
+                        title: Text(ding.dingName, overflow: TextOverflow.ellipsis),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              onPressed: () => _showRenameDialog(
+                                context: context,
+                                currentName: ding.dingName,
+                                onRename: (newName) async {
+                                  await _renameDing(ding, newName);
+                                  setDialogState(() {});
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                              onPressed: () => _confirmDeleteDing(ding, () {
+                                setDialogState(() {});
+                              }),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('关闭')),
+          ],
         ),
       ),
     );
   }
-  
-  Widget _buildTimePointItem({
-    required TextEditingController minutesController,
-    required TextEditingController secondsController,
-    required TextEditingController timesController,
-    VoidCallback? onDelete,
-    VoidCallback? onChanged,
+
+  void _showRenameDialog({
+    required BuildContext context,
+    required String currentName,
+    required Function(String) onRename,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          // Minutes input
-          SizedBox(
-            width: 50,
-            child: TextFormField(
-              controller: minutesController,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(2),
-              ],
-              onChanged: (_) => onChanged?.call(),
-              onEditingComplete: () {
-                if (minutesController.text.isEmpty) {
-                  minutesController.text = '0';
-                  onChanged?.call();
-                }
-              },
-              onTapOutside: (_) {
-                if (minutesController.text.isEmpty) {
-                  minutesController.text = '0';
-                  onChanged?.call();
-                }
-              },
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 1.2),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              ':',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ),
-          // Seconds input
-          SizedBox(
-            width: 50,
-            child: TextFormField(
-              controller: secondsController,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(2),
-              ],
-              onChanged: (_) {
-                onChanged?.call();
-              },
-              onEditingComplete: () {
-                if (secondsController.text.isEmpty) {
-                  secondsController.text = '00';
-                  onChanged?.call();
-                } else {
-                  // Pad with zero if single digit
-                  final value = int.tryParse(secondsController.text) ?? 0;
-                  secondsController.text = value.toString().padLeft(2, '0');
-                  onChanged?.call();
-                }
-              },
-              onTapOutside: (_) {
-                if (secondsController.text.isEmpty) {
-                  secondsController.text = '00';
-                  onChanged?.call();
-                } else {
-                  // Pad with zero if single digit
-                  final value = int.tryParse(secondsController.text) ?? 0;
-                  secondsController.text = value.toString().padLeft(2, '0');
-                  onChanged?.call();
-                }
-              },
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 1.2),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Text(
-            '时, 响',
-            style: TextStyle(fontSize: 14),
-          ),
-          const SizedBox(width: 8),
-          // Times input
-          SizedBox(
-            width: 50,
-            child: TextFormField(
-              controller: timesController,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(2),
-              ],
-              onChanged: (_) => onChanged?.call(),
-              onEditingComplete: () {
-                if (timesController.text.isEmpty) {
-                  timesController.text = '1';
-                  onChanged?.call();
-                }
-              },
-              onTapOutside: (_) {
-                if (timesController.text.isEmpty) {
-                  timesController.text = '1';
-                  onChanged?.call();
-                }
-              },
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: const BorderSide(color: Color(0xFF6B46C1), width: 1.2),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Text(
-            '下',
-            style: TextStyle(fontSize: 14),
-          ),
-          const Spacer(),
-          if (onDelete != null)
-            IconButton(
-              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-              onPressed: onDelete,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+    final controller = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('重命名'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: '名称'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          FilledButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty && newName != currentName) {
+                onRename(newName);
+              }
+              Navigator.pop(context);
+            },
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6B46C1)),
+            child: const Text('保存'),
           ),
         ],
       ),
     );
+  }
+
+  // --- BGM Operations ---
+
+  Future<void> _uploadBgm() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      final fileName = result.files.single.name;
+      try {
+        final supportDir = await getApplicationSupportDirectory();
+        final bgmDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'bgm'));
+        if (!await bgmDir.exists()) await bgmDir.create(recursive: true);
+
+        final targetPath = p.join(bgmDir.path, fileName);
+        await file.copy(targetPath);
+
+        await database.into(database.bgm).insert(BgmCompanion.insert(bgmName: fileName));
+        await _loadAudioData();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('上传失败: $e')));
+        }
+      }
+    }
+  }
+
+  Future<void> _renameBgm(BgmData bgm, String newName) async {
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final bgmDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'bgm'));
+      final oldFile = File(p.join(bgmDir.path, bgm.bgmName));
+      final newFile = File(p.join(bgmDir.path, newName));
+
+      if (await oldFile.exists()) {
+        await oldFile.rename(newFile.path);
+      }
+
+      await (database.update(database.bgm)..where((t) => t.id.equals(bgm.id)))
+          .write(BgmCompanion(bgmName: drift.Value(newName)));
+      
+      await _loadAudioData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteBgm(BgmData bgm, VoidCallback onSuccess) async {
+    // Check usage
+    final usages = await (database.select(database.page)..where((t) => t.bgmId.equals(bgm.id))).get();
+    
+    if (!mounted) return;
+    
+    String message = '确定要删除 "${bgm.bgmName}" 吗？';
+    if (usages.isNotEmpty) {
+      message += '\n\n此 BGM 正在被 ${usages.length} 个页面使用。删除后这些页面将没有背景音乐。';
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteBgm(bgm);
+              onSuccess();
+            },
+            child: const Text('删除', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteBgm(BgmData bgm) async {
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final bgmDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'bgm'));
+      final file = File(p.join(bgmDir.path, bgm.bgmName));
+
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      // Nullify references in page table (drift handle references if set up, but let's be explicit if needed)
+      // Actually, standard behavior is usually SET NULL if configured, but we'll manually ensure it if it doesn't.
+      await (database.update(database.page)..where((t) => t.bgmId.equals(bgm.id)))
+          .write(PageCompanion(bgmId: const drift.Value(null)));
+
+      await (database.delete(database.bgm)..where((t) => t.id.equals(bgm.id))).go();
+      
+      await _loadAudioData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+      }
+    }
+  }
+
+  // --- Ding Operations ---
+
+  Future<void> _uploadDingAudio() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      final fileName = result.files.single.name;
+      try {
+        final supportDir = await getApplicationSupportDirectory();
+        final dingDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
+        if (!await dingDir.exists()) await dingDir.create(recursive: true);
+
+        final targetPath = p.join(dingDir.path, fileName);
+        await file.copy(targetPath);
+
+        await database.into(database.dingAudio).insert(DingAudioCompanion.insert(dingName: fileName));
+        await _loadAudioData();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('上传失败: $e')));
+        }
+      }
+    }
+  }
+
+  Future<void> _renameDing(DingAudioData ding, String newName) async {
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final dingDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
+      final oldFile = File(p.join(dingDir.path, ding.dingName));
+      final newFile = File(p.join(dingDir.path, newName));
+
+      if (await oldFile.exists()) {
+        await oldFile.rename(newFile.path);
+      }
+
+      await (database.update(database.dingAudio)..where((t) => t.id.equals(ding.id)))
+          .write(DingAudioCompanion(dingName: drift.Value(newName)));
+      
+      await _loadAudioData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteDing(DingAudioData ding, VoidCallback onSuccess) async {
+    // Check usage in timer_template
+    final usages = await (database.select(database.timerTemplate)..where((t) => t.dingAudioId.equals(ding.id))).get();
+    
+    if (!mounted) return;
+    
+    String message = '确定要删除 "${ding.dingName}" 吗？';
+    if (usages.isNotEmpty) {
+      message += '\n\n此提示音正在被 ${usages.length} 个计时器模板使用。删除后这些模板将没有提示音。';
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteDing(ding);
+              onSuccess();
+            },
+            child: const Text('删除', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteDing(DingAudioData ding) async {
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final dingDir = Directory(p.join(AppConfig.dataPath(supportDir.path), 'ding'));
+      final file = File(p.join(dingDir.path, ding.dingName));
+
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      // Nullify references in timer_template table
+      await (database.update(database.timerTemplate)..where((t) => t.dingAudioId.equals(ding.id)))
+          .write(TimerTemplateCompanion(dingAudioId: const drift.Value(null)));
+
+      await (database.delete(database.dingAudio)..where((t) => t.id.equals(ding.id))).go();
+      
+      await _loadAudioData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+      }
+    }
   }
 }
 

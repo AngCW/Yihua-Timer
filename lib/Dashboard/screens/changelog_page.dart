@@ -20,6 +20,24 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.8.0',
+    date: '2026-04-30',
+    changes: [
+      '新增背景音乐（BGM）与提示音的完整 CRUD 管理功能，支持上传、重命名与删除',
+      '优化了提示音播放逻辑，通过预加载播放池解决了连续播放时的延迟与重叠问题',
+      '在音量设置中新增了“延时测试”功能，支持自定义间隔进行连响测试',
+      '修复了快捷键设置界面在绑定长字符键名时的显示溢出问题',
+      '新增从旧版本自动迁移数据库的功能',
+    ],
+    changesEn: [
+      'Allow user to update and delete bgm and ding sounds',
+      'Fixed issue where user may encounter potential delay from ding sounds',
+      'added delay tester below ding volume slider to test for delay on user pc',
+      'fixed hotkey UI overflow issue',
+      'added database migration from previous versions',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.7.0',
     date: '2026-04-17',
     changes: [
@@ -212,13 +230,13 @@ class ChangelogPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: i == 0
-                        ? const Color(0xFF6B46C1).withOpacity(0.4)
+                        ? const Color(0xFF6B46C1).withValues(alpha: 0.4)
                         : Colors.grey.shade200,
                     width: i == 0 ? 2 : 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -233,7 +251,7 @@ class ChangelogPage extends StatelessWidget {
                           horizontal: 20, vertical: 14),
                       decoration: BoxDecoration(
                         color: i == 0
-                            ? const Color(0xFF6B46C1).withOpacity(0.07)
+                            ? const Color(0xFF6B46C1).withValues(alpha: 0.07)
                             : Colors.grey.shade50,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(11),
@@ -288,10 +306,10 @@ class ChangelogPage extends StatelessWidget {
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.03),
+                              color: Colors.blue.withValues(alpha: 0.03),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: Colors.blue.withOpacity(0.1)),
+                                  color: Colors.blue.withValues(alpha: 0.1)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,10 +331,10 @@ class ChangelogPage extends StatelessWidget {
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.indigo.withOpacity(0.03),
+                              color: Colors.indigo.withValues(alpha: 0.03),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: Colors.indigo.withOpacity(0.1)),
+                                  color: Colors.indigo.withValues(alpha: 0.1)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

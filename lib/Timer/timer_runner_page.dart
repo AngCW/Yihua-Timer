@@ -388,7 +388,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Text(
@@ -454,7 +454,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (context) {
         // Auto-dismiss after 6 seconds
         async.Timer? timer;
@@ -473,10 +473,10 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1F2937),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.amber.shade400.withOpacity(0.5), width: 2),
+                border: Border.all(color: Colors.amber.shade400.withValues(alpha: 0.5), width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     blurRadius: 30,
                     spreadRadius: 5,
                     offset: const Offset(0, 10),
@@ -489,7 +489,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
+                      color: Colors.amber.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.keyboard_outlined, color: Colors.amber.shade400, size: 48),
@@ -616,7 +616,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
 
   final Map<int, List<DingValueData>> _dingValues = {};
   final Map<int, String> _timerAudioFiles = {};
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final List<AudioPlayer> _dingPool = List.generate(3, (_) => AudioPlayer());
+  int _nextPoolIndex = 0;
   final Map<String, int> _timerIdsByType = {};
 
   PositionData? _sectionPos;
@@ -676,7 +677,19 @@ class _TimerPageViewState extends State<_TimerPageView> {
       if (parentTimers.isNotEmpty) {
         final parentVal = widget.sessionTimerSeconds[parentTimers.first.id];
         if (parentVal != null) {
-          final newSec = parentVal > initSec ? initSec : parentVal;
+          int newSec = parentVal;
+          if (widget.pageData.inheritTimerRangeEnabled == true) {
+            final minVal = widget.pageData.inheritTimerMin ?? 0;
+            final maxVal = widget.pageData.inheritTimerMax ?? 0;
+            if (maxVal > 0 && newSec > maxVal) {
+              newSec = maxVal;
+            }
+            if (newSec < minVal) {
+              newSec = minVal;
+            }
+          } else {
+            newSec = parentVal > initSec ? initSec : parentVal;
+          }
           widget.sessionTimerSeconds[t.id] = newSec;
           if (mounted) {
             setState(() {
@@ -766,7 +779,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
     _timerC?.cancel();
     _timerL?.cancel();
     _timerR?.cancel();
-    _audioPlayer.dispose();
+    for (var p in _dingPool) p.dispose();
     super.dispose();
   }
 
@@ -795,7 +808,19 @@ class _TimerPageViewState extends State<_TimerPageView> {
         if (parentTimers.isNotEmpty) {
           final parentVal = widget.sessionTimerSeconds[parentTimers.first.id];
           if (parentVal != null) {
-            currentSec = parentVal > initSec ? initSec : parentVal;
+            currentSec = parentVal;
+            if (widget.pageData.inheritTimerRangeEnabled == true) {
+              final minVal = widget.pageData.inheritTimerMin ?? 0;
+              final maxVal = widget.pageData.inheritTimerMax ?? 0;
+              if (maxVal > 0 && currentSec > maxVal) {
+                currentSec = maxVal;
+              }
+              if (currentSec < minVal) {
+                currentSec = minVal;
+              }
+            } else {
+              currentSec = parentVal > initSec ? initSec : parentVal;
+            }
             widget.sessionTimerSeconds[t.id] = currentSec;
           }
         }
@@ -978,7 +1003,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
             setState(() {
               _secondsC--;
               final tid = _timerIdsByType['single'];
-              if (tid != null) widget.sessionTimerSeconds[tid] = _secondsC;
+              if (tid != null) {
+                widget.sessionTimerSeconds[tid] = _secondsC;
+              }
             });
             _checkDings('single', _secondsC);
           } else {
@@ -1027,12 +1054,15 @@ class _TimerPageViewState extends State<_TimerPageView> {
     }
   }
 
-  /// Creates a short-lived AudioPlayer, plays once, then disposes itself.
-   void _spawnPlay(String audioPath) {
-    final player = AudioPlayer();
-    player.setVolume(widget.dingVolume);
-    player.play(DeviceFileSource(audioPath));
-    player.onPlayerComplete.listen((_) => player.dispose());
+  /// Uses a pool of AudioPlayers to minimize playback delay and support overlapping.
+  void _spawnPlay(String audioPath) {
+    final player = _dingPool[_nextPoolIndex];
+    _nextPoolIndex = (_nextPoolIndex + 1) % _dingPool.length;
+    
+    // Stop and play again (this is faster than creating a new instance)
+    player.stop().then((_) {
+      player.play(DeviceFileSource(audioPath), volume: widget.dingVolume);
+    });
   }
 
   void _toggleL() {
@@ -1054,7 +1084,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
             setState(() {
               _secL--;
               final tid = _timerIdsByType['doubleL'];
-              if (tid != null) widget.sessionTimerSeconds[tid] = _secL;
+              if (tid != null) {
+                widget.sessionTimerSeconds[tid] = _secL;
+              }
             });
             _checkDings('doubleL', _secL);
           } else {
@@ -1085,7 +1117,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
             setState(() {
               _secR--;
               final tid = _timerIdsByType['doubleR'];
-              if (tid != null) widget.sessionTimerSeconds[tid] = _secR;
+              if (tid != null) {
+                widget.sessionTimerSeconds[tid] = _secR;
+              }
             });
             _checkDings('doubleR', _secR);
           } else {
@@ -1195,7 +1229,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
                                           _pageSectionFont ?? widget.fontFamily,
                                       shadows: [
                                         Shadow(
-                                          color: Colors.white.withOpacity(0.5),
+                                          color: Colors.black.withValues(alpha: 0.6),
                                           blurRadius: 15,
                                           offset: const Offset(0, 6),
                                         )
@@ -1362,7 +1396,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         fontFamily: _schoolFontFamily,
         shadows: [
           Shadow(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -1452,7 +1486,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
           fontFeatures: const [ui.FontFeature.tabularFigures()],
           shadows: [
             Shadow(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               blurRadius: 20,
               offset: const Offset(0, 10),
             )

@@ -3355,6 +3355,28 @@ class Page extends Table with TableInfo<Page, PageData> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
+  static const VerificationMeta _inheritTimerRangeEnabledMeta =
+      const VerificationMeta('inheritTimerRangeEnabled');
+  late final GeneratedColumn<bool> inheritTimerRangeEnabled =
+      GeneratedColumn<bool>('inherit_timer_range_enabled', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          $customConstraints: 'DEFAULT FALSE',
+          defaultValue: const CustomExpression('FALSE'));
+  static const VerificationMeta _inheritTimerMinMeta =
+      const VerificationMeta('inheritTimerMin');
+  late final GeneratedColumn<int> inheritTimerMin = GeneratedColumn<int>(
+      'inherit_timer_min', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _inheritTimerMaxMeta =
+      const VerificationMeta('inheritTimerMax');
+  late final GeneratedColumn<int> inheritTimerMax = GeneratedColumn<int>(
+      'inherit_timer_max', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -3378,7 +3400,10 @@ class Page extends Table with TableInfo<Page, PageData> {
         showSchools,
         inheritTimerFromId,
         sectionFontColor,
-        timerFontColor
+        timerFontColor,
+        inheritTimerRangeEnabled,
+        inheritTimerMin,
+        inheritTimerMax
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3513,6 +3538,25 @@ class Page extends Table with TableInfo<Page, PageData> {
           timerFontColor.isAcceptableOrUnknown(
               data['timer_font_color']!, _timerFontColorMeta));
     }
+    if (data.containsKey('inherit_timer_range_enabled')) {
+      context.handle(
+          _inheritTimerRangeEnabledMeta,
+          inheritTimerRangeEnabled.isAcceptableOrUnknown(
+              data['inherit_timer_range_enabled']!,
+              _inheritTimerRangeEnabledMeta));
+    }
+    if (data.containsKey('inherit_timer_min')) {
+      context.handle(
+          _inheritTimerMinMeta,
+          inheritTimerMin.isAcceptableOrUnknown(
+              data['inherit_timer_min']!, _inheritTimerMinMeta));
+    }
+    if (data.containsKey('inherit_timer_max')) {
+      context.handle(
+          _inheritTimerMaxMeta,
+          inheritTimerMax.isAcceptableOrUnknown(
+              data['inherit_timer_max']!, _inheritTimerMaxMeta));
+    }
     return context;
   }
 
@@ -3566,6 +3610,13 @@ class Page extends Table with TableInfo<Page, PageData> {
           DriftSqlType.string, data['${effectivePrefix}section_font_color']),
       timerFontColor: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}timer_font_color']),
+      inheritTimerRangeEnabled: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}inherit_timer_range_enabled']),
+      inheritTimerMin: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}inherit_timer_min']),
+      inheritTimerMax: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}inherit_timer_max']),
     );
   }
 
@@ -3603,6 +3654,9 @@ class PageData extends DataClass implements Insertable<PageData> {
   final int? inheritTimerFromId;
   final String? sectionFontColor;
   final String? timerFontColor;
+  final bool? inheritTimerRangeEnabled;
+  final int? inheritTimerMin;
+  final int? inheritTimerMax;
   const PageData(
       {required this.id,
       this.pageName,
@@ -3625,7 +3679,10 @@ class PageData extends DataClass implements Insertable<PageData> {
       this.showSchools,
       this.inheritTimerFromId,
       this.sectionFontColor,
-      this.timerFontColor});
+      this.timerFontColor,
+      this.inheritTimerRangeEnabled,
+      this.inheritTimerMin,
+      this.inheritTimerMax});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3692,6 +3749,16 @@ class PageData extends DataClass implements Insertable<PageData> {
     }
     if (!nullToAbsent || timerFontColor != null) {
       map['timer_font_color'] = Variable<String>(timerFontColor);
+    }
+    if (!nullToAbsent || inheritTimerRangeEnabled != null) {
+      map['inherit_timer_range_enabled'] =
+          Variable<bool>(inheritTimerRangeEnabled);
+    }
+    if (!nullToAbsent || inheritTimerMin != null) {
+      map['inherit_timer_min'] = Variable<int>(inheritTimerMin);
+    }
+    if (!nullToAbsent || inheritTimerMax != null) {
+      map['inherit_timer_max'] = Variable<int>(inheritTimerMax);
     }
     return map;
   }
@@ -3760,6 +3827,15 @@ class PageData extends DataClass implements Insertable<PageData> {
       timerFontColor: timerFontColor == null && nullToAbsent
           ? const Value.absent()
           : Value(timerFontColor),
+      inheritTimerRangeEnabled: inheritTimerRangeEnabled == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inheritTimerRangeEnabled),
+      inheritTimerMin: inheritTimerMin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inheritTimerMin),
+      inheritTimerMax: inheritTimerMax == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inheritTimerMax),
     );
   }
 
@@ -3793,6 +3869,10 @@ class PageData extends DataClass implements Insertable<PageData> {
       sectionFontColor:
           serializer.fromJson<String?>(json['section_font_color']),
       timerFontColor: serializer.fromJson<String?>(json['timer_font_color']),
+      inheritTimerRangeEnabled:
+          serializer.fromJson<bool?>(json['inherit_timer_range_enabled']),
+      inheritTimerMin: serializer.fromJson<int?>(json['inherit_timer_min']),
+      inheritTimerMax: serializer.fromJson<int?>(json['inherit_timer_max']),
     );
   }
   @override
@@ -3821,6 +3901,10 @@ class PageData extends DataClass implements Insertable<PageData> {
       'inherit_timer_from_id': serializer.toJson<int?>(inheritTimerFromId),
       'section_font_color': serializer.toJson<String?>(sectionFontColor),
       'timer_font_color': serializer.toJson<String?>(timerFontColor),
+      'inherit_timer_range_enabled':
+          serializer.toJson<bool?>(inheritTimerRangeEnabled),
+      'inherit_timer_min': serializer.toJson<int?>(inheritTimerMin),
+      'inherit_timer_max': serializer.toJson<int?>(inheritTimerMax),
     };
   }
 
@@ -3846,7 +3930,10 @@ class PageData extends DataClass implements Insertable<PageData> {
           Value<bool?> showSchools = const Value.absent(),
           Value<int?> inheritTimerFromId = const Value.absent(),
           Value<String?> sectionFontColor = const Value.absent(),
-          Value<String?> timerFontColor = const Value.absent()}) =>
+          Value<String?> timerFontColor = const Value.absent(),
+          Value<bool?> inheritTimerRangeEnabled = const Value.absent(),
+          Value<int?> inheritTimerMin = const Value.absent(),
+          Value<int?> inheritTimerMax = const Value.absent()}) =>
       PageData(
         id: id ?? this.id,
         pageName: pageName.present ? pageName.value : this.pageName,
@@ -3888,6 +3975,15 @@ class PageData extends DataClass implements Insertable<PageData> {
             : this.sectionFontColor,
         timerFontColor:
             timerFontColor.present ? timerFontColor.value : this.timerFontColor,
+        inheritTimerRangeEnabled: inheritTimerRangeEnabled.present
+            ? inheritTimerRangeEnabled.value
+            : this.inheritTimerRangeEnabled,
+        inheritTimerMin: inheritTimerMin.present
+            ? inheritTimerMin.value
+            : this.inheritTimerMin,
+        inheritTimerMax: inheritTimerMax.present
+            ? inheritTimerMax.value
+            : this.inheritTimerMax,
       );
   PageData copyWithCompanion(PageCompanion data) {
     return PageData(
@@ -3943,6 +4039,15 @@ class PageData extends DataClass implements Insertable<PageData> {
       timerFontColor: data.timerFontColor.present
           ? data.timerFontColor.value
           : this.timerFontColor,
+      inheritTimerRangeEnabled: data.inheritTimerRangeEnabled.present
+          ? data.inheritTimerRangeEnabled.value
+          : this.inheritTimerRangeEnabled,
+      inheritTimerMin: data.inheritTimerMin.present
+          ? data.inheritTimerMin.value
+          : this.inheritTimerMin,
+      inheritTimerMax: data.inheritTimerMax.present
+          ? data.inheritTimerMax.value
+          : this.inheritTimerMax,
     );
   }
 
@@ -3970,7 +4075,10 @@ class PageData extends DataClass implements Insertable<PageData> {
           ..write('showSchools: $showSchools, ')
           ..write('inheritTimerFromId: $inheritTimerFromId, ')
           ..write('sectionFontColor: $sectionFontColor, ')
-          ..write('timerFontColor: $timerFontColor')
+          ..write('timerFontColor: $timerFontColor, ')
+          ..write('inheritTimerRangeEnabled: $inheritTimerRangeEnabled, ')
+          ..write('inheritTimerMin: $inheritTimerMin, ')
+          ..write('inheritTimerMax: $inheritTimerMax')
           ..write(')'))
         .toString();
   }
@@ -3998,7 +4106,10 @@ class PageData extends DataClass implements Insertable<PageData> {
         showSchools,
         inheritTimerFromId,
         sectionFontColor,
-        timerFontColor
+        timerFontColor,
+        inheritTimerRangeEnabled,
+        inheritTimerMin,
+        inheritTimerMax
       ]);
   @override
   bool operator ==(Object other) =>
@@ -4025,7 +4136,10 @@ class PageData extends DataClass implements Insertable<PageData> {
           other.showSchools == this.showSchools &&
           other.inheritTimerFromId == this.inheritTimerFromId &&
           other.sectionFontColor == this.sectionFontColor &&
-          other.timerFontColor == this.timerFontColor);
+          other.timerFontColor == this.timerFontColor &&
+          other.inheritTimerRangeEnabled == this.inheritTimerRangeEnabled &&
+          other.inheritTimerMin == this.inheritTimerMin &&
+          other.inheritTimerMax == this.inheritTimerMax);
 }
 
 class PageCompanion extends UpdateCompanion<PageData> {
@@ -4051,6 +4165,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
   final Value<int?> inheritTimerFromId;
   final Value<String?> sectionFontColor;
   final Value<String?> timerFontColor;
+  final Value<bool?> inheritTimerRangeEnabled;
+  final Value<int?> inheritTimerMin;
+  final Value<int?> inheritTimerMax;
   const PageCompanion({
     this.id = const Value.absent(),
     this.pageName = const Value.absent(),
@@ -4074,6 +4191,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.inheritTimerFromId = const Value.absent(),
     this.sectionFontColor = const Value.absent(),
     this.timerFontColor = const Value.absent(),
+    this.inheritTimerRangeEnabled = const Value.absent(),
+    this.inheritTimerMin = const Value.absent(),
+    this.inheritTimerMax = const Value.absent(),
   });
   PageCompanion.insert({
     this.id = const Value.absent(),
@@ -4098,6 +4218,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     this.inheritTimerFromId = const Value.absent(),
     this.sectionFontColor = const Value.absent(),
     this.timerFontColor = const Value.absent(),
+    this.inheritTimerRangeEnabled = const Value.absent(),
+    this.inheritTimerMin = const Value.absent(),
+    this.inheritTimerMax = const Value.absent(),
   });
   static Insertable<PageData> custom({
     Expression<int>? id,
@@ -4122,6 +4245,9 @@ class PageCompanion extends UpdateCompanion<PageData> {
     Expression<int>? inheritTimerFromId,
     Expression<String>? sectionFontColor,
     Expression<String>? timerFontColor,
+    Expression<bool>? inheritTimerRangeEnabled,
+    Expression<int>? inheritTimerMin,
+    Expression<int>? inheritTimerMax,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4147,6 +4273,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
         'inherit_timer_from_id': inheritTimerFromId,
       if (sectionFontColor != null) 'section_font_color': sectionFontColor,
       if (timerFontColor != null) 'timer_font_color': timerFontColor,
+      if (inheritTimerRangeEnabled != null)
+        'inherit_timer_range_enabled': inheritTimerRangeEnabled,
+      if (inheritTimerMin != null) 'inherit_timer_min': inheritTimerMin,
+      if (inheritTimerMax != null) 'inherit_timer_max': inheritTimerMax,
     });
   }
 
@@ -4172,7 +4302,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
       Value<bool?>? showSchools,
       Value<int?>? inheritTimerFromId,
       Value<String?>? sectionFontColor,
-      Value<String?>? timerFontColor}) {
+      Value<String?>? timerFontColor,
+      Value<bool?>? inheritTimerRangeEnabled,
+      Value<int?>? inheritTimerMin,
+      Value<int?>? inheritTimerMax}) {
     return PageCompanion(
       id: id ?? this.id,
       pageName: pageName ?? this.pageName,
@@ -4196,6 +4329,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
       inheritTimerFromId: inheritTimerFromId ?? this.inheritTimerFromId,
       sectionFontColor: sectionFontColor ?? this.sectionFontColor,
       timerFontColor: timerFontColor ?? this.timerFontColor,
+      inheritTimerRangeEnabled:
+          inheritTimerRangeEnabled ?? this.inheritTimerRangeEnabled,
+      inheritTimerMin: inheritTimerMin ?? this.inheritTimerMin,
+      inheritTimerMax: inheritTimerMax ?? this.inheritTimerMax,
     );
   }
 
@@ -4268,6 +4405,16 @@ class PageCompanion extends UpdateCompanion<PageData> {
     if (timerFontColor.present) {
       map['timer_font_color'] = Variable<String>(timerFontColor.value);
     }
+    if (inheritTimerRangeEnabled.present) {
+      map['inherit_timer_range_enabled'] =
+          Variable<bool>(inheritTimerRangeEnabled.value);
+    }
+    if (inheritTimerMin.present) {
+      map['inherit_timer_min'] = Variable<int>(inheritTimerMin.value);
+    }
+    if (inheritTimerMax.present) {
+      map['inherit_timer_max'] = Variable<int>(inheritTimerMax.value);
+    }
     return map;
   }
 
@@ -4295,7 +4442,10 @@ class PageCompanion extends UpdateCompanion<PageData> {
           ..write('showSchools: $showSchools, ')
           ..write('inheritTimerFromId: $inheritTimerFromId, ')
           ..write('sectionFontColor: $sectionFontColor, ')
-          ..write('timerFontColor: $timerFontColor')
+          ..write('timerFontColor: $timerFontColor, ')
+          ..write('inheritTimerRangeEnabled: $inheritTimerRangeEnabled, ')
+          ..write('inheritTimerMin: $inheritTimerMin, ')
+          ..write('inheritTimerMax: $inheritTimerMax')
           ..write(')'))
         .toString();
   }
@@ -8129,6 +8279,9 @@ typedef $PageCreateCompanionBuilder = PageCompanion Function({
   Value<int?> inheritTimerFromId,
   Value<String?> sectionFontColor,
   Value<String?> timerFontColor,
+  Value<bool?> inheritTimerRangeEnabled,
+  Value<int?> inheritTimerMin,
+  Value<int?> inheritTimerMax,
 });
 typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int> id,
@@ -8153,6 +8306,9 @@ typedef $PageUpdateCompanionBuilder = PageCompanion Function({
   Value<int?> inheritTimerFromId,
   Value<String?> sectionFontColor,
   Value<String?> timerFontColor,
+  Value<bool?> inheritTimerRangeEnabled,
+  Value<int?> inheritTimerMin,
+  Value<int?> inheritTimerMax,
 });
 
 final class $PageReferences
@@ -8293,6 +8449,18 @@ class $PageFilterComposer extends Composer<_$AppDatabase, Page> {
 
   ColumnFilters<String> get timerFontColor => $composableBuilder(
       column: $table.timerFontColor,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get inheritTimerRangeEnabled => $composableBuilder(
+      column: $table.inheritTimerRangeEnabled,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get inheritTimerMin => $composableBuilder(
+      column: $table.inheritTimerMin,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get inheritTimerMax => $composableBuilder(
+      column: $table.inheritTimerMax,
       builder: (column) => ColumnFilters(column));
 
   $BgmFilterComposer get bgmId {
@@ -8468,6 +8636,18 @@ class $PageOrderingComposer extends Composer<_$AppDatabase, Page> {
       column: $table.timerFontColor,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get inheritTimerRangeEnabled => $composableBuilder(
+      column: $table.inheritTimerRangeEnabled,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get inheritTimerMin => $composableBuilder(
+      column: $table.inheritTimerMin,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get inheritTimerMax => $composableBuilder(
+      column: $table.inheritTimerMax,
+      builder: (column) => ColumnOrderings(column));
+
   $BgmOrderingComposer get bgmId {
     final $BgmOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -8610,6 +8790,15 @@ class $PageAnnotationComposer extends Composer<_$AppDatabase, Page> {
 
   GeneratedColumn<String> get timerFontColor => $composableBuilder(
       column: $table.timerFontColor, builder: (column) => column);
+
+  GeneratedColumn<bool> get inheritTimerRangeEnabled => $composableBuilder(
+      column: $table.inheritTimerRangeEnabled, builder: (column) => column);
+
+  GeneratedColumn<int> get inheritTimerMin => $composableBuilder(
+      column: $table.inheritTimerMin, builder: (column) => column);
+
+  GeneratedColumn<int> get inheritTimerMax => $composableBuilder(
+      column: $table.inheritTimerMax, builder: (column) => column);
 
   $BgmAnnotationComposer get bgmId {
     final $BgmAnnotationComposer composer = $composerBuilder(
@@ -8763,6 +8952,9 @@ class $PageTableManager extends RootTableManager<
             Value<int?> inheritTimerFromId = const Value.absent(),
             Value<String?> sectionFontColor = const Value.absent(),
             Value<String?> timerFontColor = const Value.absent(),
+            Value<bool?> inheritTimerRangeEnabled = const Value.absent(),
+            Value<int?> inheritTimerMin = const Value.absent(),
+            Value<int?> inheritTimerMax = const Value.absent(),
           }) =>
               PageCompanion(
             id: id,
@@ -8787,6 +8979,9 @@ class $PageTableManager extends RootTableManager<
             inheritTimerFromId: inheritTimerFromId,
             sectionFontColor: sectionFontColor,
             timerFontColor: timerFontColor,
+            inheritTimerRangeEnabled: inheritTimerRangeEnabled,
+            inheritTimerMin: inheritTimerMin,
+            inheritTimerMax: inheritTimerMax,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -8811,6 +9006,9 @@ class $PageTableManager extends RootTableManager<
             Value<int?> inheritTimerFromId = const Value.absent(),
             Value<String?> sectionFontColor = const Value.absent(),
             Value<String?> timerFontColor = const Value.absent(),
+            Value<bool?> inheritTimerRangeEnabled = const Value.absent(),
+            Value<int?> inheritTimerMin = const Value.absent(),
+            Value<int?> inheritTimerMax = const Value.absent(),
           }) =>
               PageCompanion.insert(
             id: id,
@@ -8835,6 +9033,9 @@ class $PageTableManager extends RootTableManager<
             inheritTimerFromId: inheritTimerFromId,
             sectionFontColor: sectionFontColor,
             timerFontColor: timerFontColor,
+            inheritTimerRangeEnabled: inheritTimerRangeEnabled,
+            inheritTimerMin: inheritTimerMin,
+            inheritTimerMax: inheritTimerMax,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $PageReferences(db, table, e)))

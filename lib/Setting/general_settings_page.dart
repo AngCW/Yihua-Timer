@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:window_manager/window_manager.dart';
 import '../Services/update_service.dart';
 import '../Services/share_app_service.dart';
+import '../Services/migration_service.dart';
 import '../main.dart'; // To access global database
 import '../app_config.dart';
 
@@ -24,11 +25,23 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   String _windowMode = 'windowed_1920';
 
   bool _isSharing = false;
+  List<PreviousVersionInfo> _previousVersions = [];
+  bool _isMigrating = false;
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _detectPreviousVersions();
+  }
+
+  Future<void> _detectPreviousVersions() async {
+    final versions = await MigrationService.detectPreviousVersions();
+    if (mounted) {
+      setState(() {
+        _previousVersions = versions;
+      });
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -176,6 +189,10 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
           children: [
             _buildWindowModeCard(),
             const SizedBox(height: 24),
+            if (_previousVersions.isNotEmpty) ...[
+              _buildMigrationCard(),
+              const SizedBox(height: 24),
+            ],
             _buildShareAppCard(),
             const SizedBox(height: 24),
             _buildUpdateCard(),
@@ -562,5 +579,194 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildMigrationCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF10B981).withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded, color: Color(0xFF10B981), size: 24),
+              SizedBox(width: 8),
+              Text(
+                '数据迁移 (Data Migration)',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '检测到旧版本的数据。您可以将旧版本的赛事数据导入到当前版本中。',
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xFF4B5563),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ..._previousVersions.map((info) => _buildVersionItem(info)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionItem(PreviousVersionInfo info) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '版本 ${info.version}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF059669),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '路径: ${p.basename(info.path)}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text('包含赛事预览:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                ...info.eventNames.map((name) => Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 2),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.circle, size: 4, color: Colors.grey),
+                      const SizedBox(width: 6),
+                      Text(name, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          ElevatedButton(
+            onPressed: _isMigrating ? null : () => _showMigrationConfirm(info),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            child: const Text('导入数据'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMigrationConfirm(PreviousVersionInfo info) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认导入？'),
+        content: Text('您确定要将版本 ${info.version} 的赛事数据导入到当前版本吗？\n\n注意：此操作将把旧版本中的所有赛事、学校、流程、图片和音频合并到当前版本。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _performMigration(info);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+            child: const Text('确定导入', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performMigration(PreviousVersionInfo info) async {
+    setState(() {
+      _isMigrating = true;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('正在迁移数据，请稍候...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      await MigrationService.migrateFrom(info);
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('数据迁移成功！')),
+        );
+        _detectPreviousVersions(); // Refresh list
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('迁移失败: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isMigrating = false;
+        });
+      }
+    }
   }
 }

@@ -14,6 +14,7 @@ part 'app_database.g.dart';
 @DriftDatabase(include: {'tables.drift'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  AppDatabase.forFile(File file) : super(NativeDatabase(file));
 
   // ─────────────────────────────────────────────────────────────────────────
   // HOW TO ADD A SCHEMA CHANGE:
@@ -31,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   // ─────────────────────────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration {
@@ -89,6 +90,11 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 16) {
           await m.createTable(hotkeyProfile);
+        }
+        if (from < 17) {
+          await m.addColumn(page, page.inheritTimerRangeEnabled);
+          await m.addColumn(page, page.inheritTimerMin);
+          await m.addColumn(page, page.inheritTimerMax);
         }
         // ── add new `if (from < N)` blocks above this line ───────────────
       },

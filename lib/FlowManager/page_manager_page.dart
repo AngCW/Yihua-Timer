@@ -143,6 +143,12 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
   bool _useFrontpage = false;
 
+  bool _inheritTimerRangeEnabled = false;
+  final _inheritMinMinController = TextEditingController(text: '0');
+  final _inheritMinSecController = TextEditingController(text: '0');
+  final _inheritMaxMinController = TextEditingController(text: '0');
+  final _inheritMaxSecController = TextEditingController(text: '0');
+
   // Position Data
   PositionData? _sectionPos;
   PositionData? _t1Pos;
@@ -523,6 +529,13 @@ class _PageManagerPageState extends State<PageManagerPage> {
         _dingAudioList = dingAudios;
         _allPagesInFlow = allPages;
         _selectedInheritFromId = _currentPage.inheritTimerFromId;
+        _inheritTimerRangeEnabled = _currentPage.inheritTimerRangeEnabled ?? false;
+        final minSecs = _currentPage.inheritTimerMin ?? 0;
+        _inheritMinMinController.text = (minSecs ~/ 60).toString();
+        _inheritMinSecController.text = (minSecs % 60).toString();
+        final maxSecs = _currentPage.inheritTimerMax ?? 0;
+        _inheritMaxMinController.text = (maxSecs ~/ 60).toString();
+        _inheritMaxSecController.text = (maxSecs % 60).toString();
       });
     }
   }
@@ -1245,6 +1258,9 @@ class _PageManagerPageState extends State<PageManagerPage> {
         schoolBPositionId: drift.Value(sbPosId),
         showSchools: drift.Value(_showSchools),
         inheritTimerFromId: drift.Value(_selectedInheritFromId),
+        inheritTimerRangeEnabled: drift.Value(_inheritTimerRangeEnabled),
+        inheritTimerMin: drift.Value((int.tryParse(_inheritMinMinController.text) ?? 0) * 60 + (int.tryParse(_inheritMinSecController.text) ?? 0)),
+        inheritTimerMax: drift.Value((int.tryParse(_inheritMaxMinController.text) ?? 0) * 60 + (int.tryParse(_inheritMaxSecController.text) ?? 0)),
         sectionFontColor: drift.Value(_sectionFontColor),
         timerFontColor: drift.Value(_timerFontColor),
       ));
@@ -1796,6 +1812,43 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8))),
                   ),
+                  if (_selectedInheritFromId != null) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Switch(
+                          value: _inheritTimerRangeEnabled,
+                          onChanged: (val) => setState(() => _inheritTimerRangeEnabled = val),
+                          activeColor: const Color(0xFF3B82F6),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('启用时间范围限制 (Enable Timer Range)',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF4B5563))),
+                      ],
+                    ),
+                    if (_inheritTimerRangeEnabled) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTimeInputGroup(
+                              label: '最小时间 (Min)',
+                              minController: _inheritMinMinController,
+                              secController: _inheritMinSecController,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildTimeInputGroup(
+                              label: '最大时间 (Max)',
+                              minController: _inheritMaxMinController,
+                              secController: _inheritMaxSecController,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                   const SizedBox(height: 24),
 
                   if (_selectedPageType == 'A1' ||
@@ -2514,6 +2567,31 @@ class _PageManagerPageState extends State<PageManagerPage> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             suffixText: label.substring(0, 1) == '分' ? 'm' : 's',
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeInputGroup({
+    required String label,
+    required TextEditingController minController,
+    required TextEditingController secController,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF4B5563))),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(child: _buildTimeInput(minController, '分 (Min)')),
+            const SizedBox(width: 8),
+            Expanded(child: _buildTimeInput(secController, '秒 (Sec)')),
+          ],
         ),
       ],
     );
