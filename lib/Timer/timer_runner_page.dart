@@ -31,6 +31,7 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
   PageData? _activeExtraPage;
   // Session-wide timer state: timerId -> currentSeconds
   final Map<int, int> _sessionTimerSeconds = {};
+  final Set<int> _manuallyInteractedTimerIds = {};
   bool _isLoading = true;
   String? _imagesDirPath;
   String? _fontFamily;
@@ -357,6 +358,8 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   isActive: _activeExtraPage == null && index == _currentPageIndex,
                   allPages: _pages,
                   dingVolume: _dingVolume,
+                  manuallyInteractedTimerIds: _manuallyInteractedTimerIds,
+                  onTimerInteracted: (tid) => _manuallyInteractedTimerIds.add(tid),
                 );
               },
             ),
@@ -375,8 +378,10 @@ class _TimerRunnerPageState extends State<TimerRunnerPage> {
                   hotkeys: _hotkeySettings,
                   sessionTimerSeconds: _sessionTimerSeconds,
                   isActive: true, // Extra page is active if shown
-                  allPages: _pages,
-                  dingVolume: _dingVolume,
+                   allPages: _pages,
+                   dingVolume: _dingVolume,
+                   manuallyInteractedTimerIds: _manuallyInteractedTimerIds,
+                   onTimerInteracted: (tid) => _manuallyInteractedTimerIds.add(tid),
                 ),
               ),
             if (_volumeMessage != null)
@@ -570,6 +575,8 @@ class _TimerPageView extends StatefulWidget {
   final Map<int, int> sessionTimerSeconds;
   final bool isActive;
   final double dingVolume;
+  final Set<int> manuallyInteractedTimerIds;
+  final Function(int)? onTimerInteracted;
 
   const _TimerPageView({
     super.key,
@@ -586,6 +593,8 @@ class _TimerPageView extends StatefulWidget {
     this.fontFamily,
     this.flowTimerFont,
     this.hotkeys,
+    required this.manuallyInteractedTimerIds,
+    this.onTimerInteracted,
   });
 
   @override
@@ -614,8 +623,10 @@ class _TimerPageViewState extends State<_TimerPageView> {
   bool _isLoading = true;
   late async.StreamSubscription<String> _keySub;
 
-  final Map<int, List<DingValueData>> _dingValues = {};
+  final Map<int, List<dynamic>> _dingValues = {};
   final Map<int, String> _timerAudioFiles = {};
+  final Map<int, bool> _timerIsV2 = {};
+  final Map<int, String> _dingV2AudioNames = {}; // For V2: map dingValueV2Id to audioName
   final List<AudioPlayer> _dingPool = List.generate(3, (_) => AudioPlayer());
   int _nextPoolIndex = 0;
   final Map<String, int> _timerIdsByType = {};
@@ -663,6 +674,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
         .get();
 
     for (var t in timers) {
+      if (widget.manuallyInteractedTimerIds.contains(t.id)) continue;
       final parts = (t.startTime ?? '0:0').split(':');
       final m = int.tryParse(parts[0]) ?? 0;
       final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
@@ -722,36 +734,51 @@ class _TimerPageViewState extends State<_TimerPageView> {
     if (widget.pageData.pageTypeId == 'A1') {
       if (key == widget.hotkeys!.pageA1StartStop.key.toUpperCase()) {
         _toggleC();
+        final tid = _timerIdsByType['single'];
+        if (tid != null) widget.onTimerInteracted?.call(tid);
       } else if (key == widget.hotkeys!.pageA1Reset.key.toUpperCase()) {
         _timerC?.cancel();
         setState(() {
           _isRunning = false;
           _secondsC = _initSecC;
           final tid = _timerIdsByType['single'];
-          if (tid != null) widget.sessionTimerSeconds[tid] = _secondsC;
+          if (tid != null) {
+            widget.sessionTimerSeconds[tid] = _secondsC;
+            widget.onTimerInteracted?.call(tid);
+          }
         });
       }
     } else if (widget.pageData.pageTypeId == 'A2') {
       if (key == widget.hotkeys!.pageA2LeftStartStop.key.toUpperCase()) {
         _toggleL();
+        final tid = _timerIdsByType['doubleL'];
+        if (tid != null) widget.onTimerInteracted?.call(tid);
       } else if (key == widget.hotkeys!.pageA2LeftReset.key.toUpperCase()) {
         _timerL?.cancel();
         setState(() {
           _isRunningL = false;
           _secL = _initSecL;
           final tid = _timerIdsByType['doubleL'];
-          if (tid != null) widget.sessionTimerSeconds[tid] = _secL;
+          if (tid != null) {
+            widget.sessionTimerSeconds[tid] = _secL;
+            widget.onTimerInteracted?.call(tid);
+          }
         });
       } else if (key ==
           widget.hotkeys!.pageA2RightStartStop.key.toUpperCase()) {
         _toggleR();
+        final tid = _timerIdsByType['doubleR'];
+        if (tid != null) widget.onTimerInteracted?.call(tid);
       } else if (key == widget.hotkeys!.pageA2RightReset.key.toUpperCase()) {
         _timerR?.cancel();
         setState(() {
           _isRunningR = false;
           _secR = _initSecR;
           final tid = _timerIdsByType['doubleR'];
-          if (tid != null) widget.sessionTimerSeconds[tid] = _secR;
+          if (tid != null) {
+            widget.sessionTimerSeconds[tid] = _secR;
+            widget.onTimerInteracted?.call(tid);
+          }
         });
       } else if (key == widget.hotkeys!.pageA2Swap.key.toUpperCase()) {
         if (_isRunningL) {
@@ -779,7 +806,9 @@ class _TimerPageViewState extends State<_TimerPageView> {
     _timerC?.cancel();
     _timerL?.cancel();
     _timerR?.cancel();
-    for (var p in _dingPool) p.dispose();
+    for (var p in _dingPool) {
+      p.dispose();
+    }
     super.dispose();
   }
 
@@ -799,7 +828,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
       // current value — even if we already have a cached entry for this timer.
       // This fixes stale inheritance when navigating back to this page
       // after the parent timer has been running.
-      if (widget.pageData.inheritTimerFromId != null) {
+      if (widget.pageData.inheritTimerFromId != null && !widget.manuallyInteractedTimerIds.contains(t.id)) {
         final parentTimers = await (database.select(database.timer)
               ..where(
                   (pt) => pt.pageId.equals(widget.pageData.inheritTimerFromId!))
@@ -840,6 +869,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
       }
 
       if (t.timerTemplateId != null) {
+        _timerIsV2[t.id] = false;
         final dings = await (database.select(database.dingValue)
               ..where((dv) => dv.timerTemplateId.equals(t.timerTemplateId!)))
             .get();
@@ -856,6 +886,23 @@ class _TimerPageViewState extends State<_TimerPageView> {
 
           if (audio != null) {
             _timerAudioFiles[t.id] = audio.dingName;
+          }
+        }
+      } else if (t.timerTemplateV2Id != null) {
+        _timerIsV2[t.id] = true;
+        final dings = await (database.select(database.dingValueV2)
+              ..where((dv) => dv.timerTemplateV2Id.equals(t.timerTemplateV2Id!)))
+            .get();
+        _dingValues[t.id] = dings;
+
+        for (var dv in dings) {
+          if (dv.dingAudioId != null) {
+            final audio = await (database.select(database.dingAudio)
+                  ..where((da) => da.id.equals(dv.dingAudioId!)))
+                .getSingleOrNull();
+            if (audio != null) {
+              _dingV2AudioNames[dv.id] = audio.dingName;
+            }
           }
         }
       }
@@ -997,6 +1044,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
       setState(() => _isRunning = false);
     } else {
       if (_secondsC > 0) {
+        final tid = _timerIdsByType['single'];
+        if (tid != null) widget.onTimerInteracted?.call(tid);
         setState(() => _isRunning = true);
         _timerC = async.Timer.periodic(const Duration(seconds: 1), (timer) {
           if (_secondsC > 0) {
@@ -1021,21 +1070,28 @@ class _TimerPageViewState extends State<_TimerPageView> {
     final timerId = _timerIdsByType[type];
     if (timerId == null) return;
 
+    final isV2 = _timerIsV2[timerId] ?? false;
     final dings = _dingValues[timerId] ?? [];
     for (var d in dings) {
-      final parts = (d.dingTime ?? '0:0').split(':');
+      final String timeStr = isV2 ? (d as DingValueV2Data).dingTime ?? '0:0' : (d as DingValueData).dingTime ?? '0:0';
+      final parts = timeStr.split(':');
       final m = int.tryParse(parts[0]) ?? 0;
       final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
       final dingSec = m * 60 + s;
 
       if (dingSec == currentSec) {
-        _playSound(timerId, d.dingAmount ?? 1);
+        final int amount = isV2 ? (d as DingValueV2Data).dingAmount ?? 1 : (d as DingValueData).dingAmount ?? 1;
+        String? audioOverride;
+        if (isV2) {
+          audioOverride = _dingV2AudioNames[(d as DingValueV2Data).id];
+        }
+        _playSound(timerId, amount, audioOverride: audioOverride);
       }
     }
   }
 
-  Future<void> _playSound(int timerId, int amount) async {
-    final fileName = _timerAudioFiles[timerId];
+  Future<void> _playSound(int timerId, int amount, {String? audioOverride}) async {
+    final fileName = audioOverride ?? _timerAudioFiles[timerId];
     if (fileName == null || fileName.isEmpty) return;
 
     final supportDir = await getApplicationSupportDirectory();
@@ -1075,6 +1131,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
           _timerR?.cancel();
           _isRunningR = false;
         }
+        final tid = _timerIdsByType['doubleL'];
+        if (tid != null) widget.onTimerInteracted?.call(tid);
         setState(() {
           _isRunningL = true;
           _isRunningR = _isRunningR; // ensure UI update for right timer if it was stopped
@@ -1108,6 +1166,8 @@ class _TimerPageViewState extends State<_TimerPageView> {
           _timerL?.cancel();
           _isRunningL = false;
         }
+        final tid = _timerIdsByType['doubleR'];
+        if (tid != null) widget.onTimerInteracted?.call(tid);
         setState(() {
           _isRunningR = true;
           _isRunningL = _isRunningL; // ensure UI update for left timer if it was stopped
@@ -1147,6 +1207,99 @@ class _TimerPageViewState extends State<_TimerPageView> {
       }
     }
     return fallback;
+  }
+
+  void _showManualTimeEntry(String type) {
+    final currentVal =
+        type == 'single' ? _secondsC : (type == 'doubleL' ? _secL : _secR);
+    final mVal = currentVal ~/ 60;
+    final sVal = currentVal % 60;
+
+    final TextEditingController minController =
+        TextEditingController(text: mVal.toString());
+    final TextEditingController secController =
+        TextEditingController(text: sVal.toString().padLeft(2, '0'));
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('手动设置时间'),
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 80,
+              child: TextField(
+                controller: minController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: '分',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                ),
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.0),
+              child: Text(':',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            ),
+            SizedBox(
+              width: 80,
+              child: TextField(
+                controller: secController,
+                decoration: const InputDecoration(
+                  labelText: '秒',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                ),
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final m = int.tryParse(minController.text) ?? 0;
+              final s = int.tryParse(secController.text) ?? 0;
+              final total = m * 60 + s;
+
+              setState(() {
+                if (type == 'single') _secondsC = total;
+                if (type == 'doubleL') _secL = total;
+                if (type == 'doubleR') _secR = total;
+
+                final tid = _timerIdsByType[type];
+                if (tid != null) {
+                  widget.sessionTimerSeconds[tid] = total;
+                  widget.onTimerInteracted?.call(tid);
+                }
+              });
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF312E81),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1259,12 +1412,15 @@ class _TimerPageViewState extends State<_TimerPageView> {
                                           _isRunning = false;
                                           _secondsC = _initSecC;
                                           final tid = _timerIdsByType['single'];
-                                          if (tid != null)
+                                          if (tid != null) {
                                             widget.sessionTimerSeconds[tid] =
                                                 _secondsC;
+                                            widget.onTimerInteracted?.call(tid);
+                                          }
                                         });
                                       },
                                       isA2: false,
+                                      type: 'single',
                                     ),
                                   ),
                                 ),
@@ -1291,12 +1447,15 @@ class _TimerPageViewState extends State<_TimerPageView> {
                                           _secL = _initSecL;
                                           final tid =
                                               _timerIdsByType['doubleL'];
-                                          if (tid != null)
+                                          if (tid != null) {
                                             widget.sessionTimerSeconds[tid] =
                                                 _secL;
+                                            widget.onTimerInteracted?.call(tid);
+                                          }
                                         });
                                       },
                                       isA2: true,
+                                      type: 'doubleL',
                                     ),
                                   ),
                                 ),
@@ -1323,13 +1482,15 @@ class _TimerPageViewState extends State<_TimerPageView> {
                                           _secR = _initSecR;
                                           final tid =
                                               _timerIdsByType['doubleR'];
-                                          if (tid != null)
+                                          if (tid != null) {
                                             widget.sessionTimerSeconds[tid] =
                                                 _secR;
+                                            widget.onTimerInteracted?.call(tid);
+                                          }
                                         });
                                       },
                                       isA2: true,
-                                      isRight: true,
+                                      type: 'doubleR',
                                     ),
                                   ),
                                 ),
@@ -1440,7 +1601,7 @@ class _TimerPageViewState extends State<_TimerPageView> {
     required VoidCallback onToggle,
     required VoidCallback onReset,
     required bool isA2,
-    bool isRight = false,
+    required String type,
   }) {
     final double timerFontSize = isA2 ? 140 : 200;
     final double controlSize = timerFontSize * 0.2;
@@ -1463,6 +1624,16 @@ class _TimerPageViewState extends State<_TimerPageView> {
           iconSize: controlSize,
           onPressed: onReset,
           icon: const Icon(Icons.refresh_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.black12,
+            foregroundColor: Colors.black,
+          ),
+        ),
+        const SizedBox(width: 24),
+        IconButton.filled(
+          iconSize: controlSize,
+          onPressed: () => _showManualTimeEntry(type),
+          icon: const Icon(Icons.settings_rounded),
           style: IconButton.styleFrom(
             backgroundColor: Colors.black12,
             foregroundColor: Colors.black,

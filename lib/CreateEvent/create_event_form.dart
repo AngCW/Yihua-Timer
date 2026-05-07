@@ -777,7 +777,7 @@ class _FlowCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF6B46C1).withOpacity(0.8),
+              const Color(0xFF6B46C1).withValues(alpha: 0.8),
               const Color(0xFF6B46C1),
             ],
             begin: Alignment.topLeft,

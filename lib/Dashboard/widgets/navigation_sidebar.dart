@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../screens/changelog_page.dart';
+import '../../app_config.dart';
 
 class NavigationSidebar extends StatelessWidget {
   final int selectedIndex;
@@ -31,7 +32,7 @@ class NavigationSidebar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(4, 0),
           ),
@@ -133,13 +134,13 @@ class NavigationSidebar extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
+                                color: Colors.white.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: Colors.white24),
                               ),
-                              child: const Text(
-                                'v1.8.0',
-                                style: TextStyle(
+                              child: Text(
+                                'v${AppConfig.appVersion}',
+                                style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -207,7 +208,7 @@ class NavigationSidebar extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white.withOpacity(0.15) : Colors.transparent,
+            color: isSelected ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

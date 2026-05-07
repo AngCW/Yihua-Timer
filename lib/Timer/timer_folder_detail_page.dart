@@ -45,7 +45,7 @@ class _TimerFolderDetailPageState extends State<TimerFolderDetailPage> {
                 border: Border.all(color: Colors.grey.shade200, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -156,7 +156,7 @@ class _TimerFolderDetailPageState extends State<TimerFolderDetailPage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.amber.withOpacity(0.05),
+                    color: Colors.amber.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -226,12 +226,12 @@ class _TimerFolderDetailPageState extends State<TimerFolderDetailPage> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF2563EB).withOpacity(0.3),
+                color: const Color(0xFF2563EB).withValues(alpha: 0.3),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2563EB).withOpacity(0.05),
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

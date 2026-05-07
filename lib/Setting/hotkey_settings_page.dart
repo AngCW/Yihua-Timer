@@ -561,8 +561,8 @@ class _HotkeySettingsPageState extends State<HotkeySettingsPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isEditing
-                  ? const Color(0xFF6B46C1).withOpacity(0.1)
-                  : (hasConflict ? Colors.red.withOpacity(0.05) : Colors.grey.shade50),
+                  ? const Color(0xFF6B46C1).withValues(alpha: 0.1)
+                  : (hasConflict ? Colors.red.withValues(alpha: 0.05) : Colors.grey.shade50),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color:

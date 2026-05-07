@@ -99,7 +99,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 border: Border.all(color: Colors.grey.shade200, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -412,12 +412,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF6B46C1).withOpacity(0.3),
+                  color: const Color(0xFF6B46C1).withValues(alpha: 0.3),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6B46C1).withOpacity(0.05),
+                    color: const Color(0xFF6B46C1).withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -486,7 +486,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.amber.withOpacity(0.05),
+                      color: Colors.amber.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -706,24 +706,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   [(t) => drift.OrderingTerm(expression: t.flowPosition)]))
             .get();
 
-        final flowPages = await (database.select(database.page)
-              ..where((t) => t.flowId.equals(flow.id)))
-            .get();
-        for (final p in flowPages) {
-          await (database.delete(database.timer)
-                ..where((t) => t.pageId.equals(p.id)))
-              .go();
-          await (database.delete(database.images)
-                ..where((t) => t.pageId.equals(p.id)))
-              .go();
-          await (database.delete(database.page)
-                ..where((t) => t.id.equals(p.id)))
-              .go();
-        }
-
-        await (database.delete(database.flow)
-              ..where((t) => t.id.equals(flow.id)))
-            .go();
+        await FlowUtils.deleteFlow(flow.id);
 
         int pos = 1;
         for (final f in allFlows) {
@@ -812,10 +795,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withOpacity(0.05),
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFFF59E0B).withOpacity(0.2),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -879,10 +862,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF6B46C1).withOpacity(0.05),
+              color: const Color(0xFF6B46C1).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF6B46C1).withOpacity(0.2),
+                color: const Color(0xFF6B46C1).withValues(alpha: 0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -932,10 +915,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.05),
+              color: Colors.blue.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.blue.withOpacity(0.2),
+                color: Colors.blue.withValues(alpha: 0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -980,10 +963,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.05),
+              color: Colors.blue.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.blue.withOpacity(0.2),
+                color: Colors.blue.withValues(alpha: 0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -1027,7 +1010,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             border: Border.all(color: Colors.grey.shade200, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -1065,10 +1048,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF6B46C1).withOpacity(0.05),
+              color: const Color(0xFF6B46C1).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF6B46C1).withOpacity(0.2),
+                color: const Color(0xFF6B46C1).withValues(alpha: 0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -1119,7 +1102,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               border: Border.all(color: Colors.grey.shade100),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.01),
+                  color: Colors.black.withValues(alpha: 0.01),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

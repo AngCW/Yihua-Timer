@@ -1079,6 +1079,522 @@ class DingValueCompanion extends UpdateCompanion<DingValueData> {
   }
 }
 
+class TimerTemplateV2 extends Table
+    with TableInfo<TimerTemplateV2, TimerTemplateV2Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  TimerTemplateV2(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+  static const VerificationMeta _templateNameMeta =
+      const VerificationMeta('templateName');
+  late final GeneratedColumn<String> templateName = GeneratedColumn<String>(
+      'template_name', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  @override
+  List<GeneratedColumn> get $columns => [id, templateName];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'timer_template_v2';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<TimerTemplateV2Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('template_name')) {
+      context.handle(
+          _templateNameMeta,
+          templateName.isAcceptableOrUnknown(
+              data['template_name']!, _templateNameMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TimerTemplateV2Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TimerTemplateV2Data(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      templateName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_name']),
+    );
+  }
+
+  @override
+  TimerTemplateV2 createAlias(String alias) {
+    return TimerTemplateV2(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class TimerTemplateV2Data extends DataClass
+    implements Insertable<TimerTemplateV2Data> {
+  final int id;
+  final String? templateName;
+  const TimerTemplateV2Data({required this.id, this.templateName});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || templateName != null) {
+      map['template_name'] = Variable<String>(templateName);
+    }
+    return map;
+  }
+
+  TimerTemplateV2Companion toCompanion(bool nullToAbsent) {
+    return TimerTemplateV2Companion(
+      id: Value(id),
+      templateName: templateName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(templateName),
+    );
+  }
+
+  factory TimerTemplateV2Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TimerTemplateV2Data(
+      id: serializer.fromJson<int>(json['id']),
+      templateName: serializer.fromJson<String?>(json['template_name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'template_name': serializer.toJson<String?>(templateName),
+    };
+  }
+
+  TimerTemplateV2Data copyWith(
+          {int? id, Value<String?> templateName = const Value.absent()}) =>
+      TimerTemplateV2Data(
+        id: id ?? this.id,
+        templateName:
+            templateName.present ? templateName.value : this.templateName,
+      );
+  TimerTemplateV2Data copyWithCompanion(TimerTemplateV2Companion data) {
+    return TimerTemplateV2Data(
+      id: data.id.present ? data.id.value : this.id,
+      templateName: data.templateName.present
+          ? data.templateName.value
+          : this.templateName,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TimerTemplateV2Data(')
+          ..write('id: $id, ')
+          ..write('templateName: $templateName')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, templateName);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TimerTemplateV2Data &&
+          other.id == this.id &&
+          other.templateName == this.templateName);
+}
+
+class TimerTemplateV2Companion extends UpdateCompanion<TimerTemplateV2Data> {
+  final Value<int> id;
+  final Value<String?> templateName;
+  const TimerTemplateV2Companion({
+    this.id = const Value.absent(),
+    this.templateName = const Value.absent(),
+  });
+  TimerTemplateV2Companion.insert({
+    this.id = const Value.absent(),
+    this.templateName = const Value.absent(),
+  });
+  static Insertable<TimerTemplateV2Data> custom({
+    Expression<int>? id,
+    Expression<String>? templateName,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (templateName != null) 'template_name': templateName,
+    });
+  }
+
+  TimerTemplateV2Companion copyWith(
+      {Value<int>? id, Value<String?>? templateName}) {
+    return TimerTemplateV2Companion(
+      id: id ?? this.id,
+      templateName: templateName ?? this.templateName,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (templateName.present) {
+      map['template_name'] = Variable<String>(templateName.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TimerTemplateV2Companion(')
+          ..write('id: $id, ')
+          ..write('templateName: $templateName')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class DingValueV2 extends Table with TableInfo<DingValueV2, DingValueV2Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  DingValueV2(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+  static const VerificationMeta _dingTimeMeta =
+      const VerificationMeta('dingTime');
+  late final GeneratedColumn<String> dingTime = GeneratedColumn<String>(
+      'ding_time', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _dingAmountMeta =
+      const VerificationMeta('dingAmount');
+  late final GeneratedColumn<int> dingAmount = GeneratedColumn<int>(
+      'ding_amount', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const VerificationMeta _dingAudioIdMeta =
+      const VerificationMeta('dingAudioId');
+  late final GeneratedColumn<int> dingAudioId = GeneratedColumn<int>(
+      'ding_audio_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES ding_audio(id)');
+  static const VerificationMeta _timerTemplateV2IdMeta =
+      const VerificationMeta('timerTemplateV2Id');
+  late final GeneratedColumn<int> timerTemplateV2Id = GeneratedColumn<int>(
+      'timer_template_v2_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES timer_template_v2(id)');
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, dingTime, dingAmount, dingAudioId, timerTemplateV2Id];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ding_value_v2';
+  @override
+  VerificationContext validateIntegrity(Insertable<DingValueV2Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('ding_time')) {
+      context.handle(_dingTimeMeta,
+          dingTime.isAcceptableOrUnknown(data['ding_time']!, _dingTimeMeta));
+    }
+    if (data.containsKey('ding_amount')) {
+      context.handle(
+          _dingAmountMeta,
+          dingAmount.isAcceptableOrUnknown(
+              data['ding_amount']!, _dingAmountMeta));
+    }
+    if (data.containsKey('ding_audio_id')) {
+      context.handle(
+          _dingAudioIdMeta,
+          dingAudioId.isAcceptableOrUnknown(
+              data['ding_audio_id']!, _dingAudioIdMeta));
+    }
+    if (data.containsKey('timer_template_v2_id')) {
+      context.handle(
+          _timerTemplateV2IdMeta,
+          timerTemplateV2Id.isAcceptableOrUnknown(
+              data['timer_template_v2_id']!, _timerTemplateV2IdMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DingValueV2Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DingValueV2Data(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      dingTime: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}ding_time']),
+      dingAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ding_amount']),
+      dingAudioId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ding_audio_id']),
+      timerTemplateV2Id: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}timer_template_v2_id']),
+    );
+  }
+
+  @override
+  DingValueV2 createAlias(String alias) {
+    return DingValueV2(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class DingValueV2Data extends DataClass implements Insertable<DingValueV2Data> {
+  final int id;
+  final String? dingTime;
+  final int? dingAmount;
+  final int? dingAudioId;
+  final int? timerTemplateV2Id;
+  const DingValueV2Data(
+      {required this.id,
+      this.dingTime,
+      this.dingAmount,
+      this.dingAudioId,
+      this.timerTemplateV2Id});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || dingTime != null) {
+      map['ding_time'] = Variable<String>(dingTime);
+    }
+    if (!nullToAbsent || dingAmount != null) {
+      map['ding_amount'] = Variable<int>(dingAmount);
+    }
+    if (!nullToAbsent || dingAudioId != null) {
+      map['ding_audio_id'] = Variable<int>(dingAudioId);
+    }
+    if (!nullToAbsent || timerTemplateV2Id != null) {
+      map['timer_template_v2_id'] = Variable<int>(timerTemplateV2Id);
+    }
+    return map;
+  }
+
+  DingValueV2Companion toCompanion(bool nullToAbsent) {
+    return DingValueV2Companion(
+      id: Value(id),
+      dingTime: dingTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dingTime),
+      dingAmount: dingAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dingAmount),
+      dingAudioId: dingAudioId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dingAudioId),
+      timerTemplateV2Id: timerTemplateV2Id == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerTemplateV2Id),
+    );
+  }
+
+  factory DingValueV2Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DingValueV2Data(
+      id: serializer.fromJson<int>(json['id']),
+      dingTime: serializer.fromJson<String?>(json['ding_time']),
+      dingAmount: serializer.fromJson<int?>(json['ding_amount']),
+      dingAudioId: serializer.fromJson<int?>(json['ding_audio_id']),
+      timerTemplateV2Id:
+          serializer.fromJson<int?>(json['timer_template_v2_id']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'ding_time': serializer.toJson<String?>(dingTime),
+      'ding_amount': serializer.toJson<int?>(dingAmount),
+      'ding_audio_id': serializer.toJson<int?>(dingAudioId),
+      'timer_template_v2_id': serializer.toJson<int?>(timerTemplateV2Id),
+    };
+  }
+
+  DingValueV2Data copyWith(
+          {int? id,
+          Value<String?> dingTime = const Value.absent(),
+          Value<int?> dingAmount = const Value.absent(),
+          Value<int?> dingAudioId = const Value.absent(),
+          Value<int?> timerTemplateV2Id = const Value.absent()}) =>
+      DingValueV2Data(
+        id: id ?? this.id,
+        dingTime: dingTime.present ? dingTime.value : this.dingTime,
+        dingAmount: dingAmount.present ? dingAmount.value : this.dingAmount,
+        dingAudioId: dingAudioId.present ? dingAudioId.value : this.dingAudioId,
+        timerTemplateV2Id: timerTemplateV2Id.present
+            ? timerTemplateV2Id.value
+            : this.timerTemplateV2Id,
+      );
+  DingValueV2Data copyWithCompanion(DingValueV2Companion data) {
+    return DingValueV2Data(
+      id: data.id.present ? data.id.value : this.id,
+      dingTime: data.dingTime.present ? data.dingTime.value : this.dingTime,
+      dingAmount:
+          data.dingAmount.present ? data.dingAmount.value : this.dingAmount,
+      dingAudioId:
+          data.dingAudioId.present ? data.dingAudioId.value : this.dingAudioId,
+      timerTemplateV2Id: data.timerTemplateV2Id.present
+          ? data.timerTemplateV2Id.value
+          : this.timerTemplateV2Id,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DingValueV2Data(')
+          ..write('id: $id, ')
+          ..write('dingTime: $dingTime, ')
+          ..write('dingAmount: $dingAmount, ')
+          ..write('dingAudioId: $dingAudioId, ')
+          ..write('timerTemplateV2Id: $timerTemplateV2Id')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, dingTime, dingAmount, dingAudioId, timerTemplateV2Id);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DingValueV2Data &&
+          other.id == this.id &&
+          other.dingTime == this.dingTime &&
+          other.dingAmount == this.dingAmount &&
+          other.dingAudioId == this.dingAudioId &&
+          other.timerTemplateV2Id == this.timerTemplateV2Id);
+}
+
+class DingValueV2Companion extends UpdateCompanion<DingValueV2Data> {
+  final Value<int> id;
+  final Value<String?> dingTime;
+  final Value<int?> dingAmount;
+  final Value<int?> dingAudioId;
+  final Value<int?> timerTemplateV2Id;
+  const DingValueV2Companion({
+    this.id = const Value.absent(),
+    this.dingTime = const Value.absent(),
+    this.dingAmount = const Value.absent(),
+    this.dingAudioId = const Value.absent(),
+    this.timerTemplateV2Id = const Value.absent(),
+  });
+  DingValueV2Companion.insert({
+    this.id = const Value.absent(),
+    this.dingTime = const Value.absent(),
+    this.dingAmount = const Value.absent(),
+    this.dingAudioId = const Value.absent(),
+    this.timerTemplateV2Id = const Value.absent(),
+  });
+  static Insertable<DingValueV2Data> custom({
+    Expression<int>? id,
+    Expression<String>? dingTime,
+    Expression<int>? dingAmount,
+    Expression<int>? dingAudioId,
+    Expression<int>? timerTemplateV2Id,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (dingTime != null) 'ding_time': dingTime,
+      if (dingAmount != null) 'ding_amount': dingAmount,
+      if (dingAudioId != null) 'ding_audio_id': dingAudioId,
+      if (timerTemplateV2Id != null) 'timer_template_v2_id': timerTemplateV2Id,
+    });
+  }
+
+  DingValueV2Companion copyWith(
+      {Value<int>? id,
+      Value<String?>? dingTime,
+      Value<int?>? dingAmount,
+      Value<int?>? dingAudioId,
+      Value<int?>? timerTemplateV2Id}) {
+    return DingValueV2Companion(
+      id: id ?? this.id,
+      dingTime: dingTime ?? this.dingTime,
+      dingAmount: dingAmount ?? this.dingAmount,
+      dingAudioId: dingAudioId ?? this.dingAudioId,
+      timerTemplateV2Id: timerTemplateV2Id ?? this.timerTemplateV2Id,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (dingTime.present) {
+      map['ding_time'] = Variable<String>(dingTime.value);
+    }
+    if (dingAmount.present) {
+      map['ding_amount'] = Variable<int>(dingAmount.value);
+    }
+    if (dingAudioId.present) {
+      map['ding_audio_id'] = Variable<int>(dingAudioId.value);
+    }
+    if (timerTemplateV2Id.present) {
+      map['timer_template_v2_id'] = Variable<int>(timerTemplateV2Id.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DingValueV2Companion(')
+          ..write('id: $id, ')
+          ..write('dingTime: $dingTime, ')
+          ..write('dingAmount: $dingAmount, ')
+          ..write('dingAudioId: $dingAudioId, ')
+          ..write('timerTemplateV2Id: $timerTemplateV2Id')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class FlowFolder extends Table with TableInfo<FlowFolder, FlowFolderData> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -4470,6 +4986,13 @@ class Timer extends Table with TableInfo<Timer, TimerData> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'REFERENCES timer_template(id)');
+  static const VerificationMeta _timerTemplateV2IdMeta =
+      const VerificationMeta('timerTemplateV2Id');
+  late final GeneratedColumn<int> timerTemplateV2Id = GeneratedColumn<int>(
+      'timer_template_v2_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES timer_template_v2(id)');
   static const VerificationMeta _startTimeMeta =
       const VerificationMeta('startTime');
   late final GeneratedColumn<String> startTime = GeneratedColumn<String>(
@@ -4522,6 +5045,7 @@ class Timer extends Table with TableInfo<Timer, TimerData> {
   List<GeneratedColumn> get $columns => [
         id,
         timerTemplateId,
+        timerTemplateV2Id,
         startTime,
         timerType,
         pageId,
@@ -4548,6 +5072,12 @@ class Timer extends Table with TableInfo<Timer, TimerData> {
           _timerTemplateIdMeta,
           timerTemplateId.isAcceptableOrUnknown(
               data['timer_template_id']!, _timerTemplateIdMeta));
+    }
+    if (data.containsKey('timer_template_v2_id')) {
+      context.handle(
+          _timerTemplateV2IdMeta,
+          timerTemplateV2Id.isAcceptableOrUnknown(
+              data['timer_template_v2_id']!, _timerTemplateV2IdMeta));
     }
     if (data.containsKey('start_time')) {
       context.handle(_startTimeMeta,
@@ -4592,6 +5122,8 @@ class Timer extends Table with TableInfo<Timer, TimerData> {
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       timerTemplateId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}timer_template_id']),
+      timerTemplateV2Id: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}timer_template_v2_id']),
       startTime: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}start_time']),
       timerType: attachedDatabase.typeMapping
@@ -4621,6 +5153,7 @@ class Timer extends Table with TableInfo<Timer, TimerData> {
 class TimerData extends DataClass implements Insertable<TimerData> {
   final int id;
   final int? timerTemplateId;
+  final int? timerTemplateV2Id;
   final String? startTime;
   final String? timerType;
 
@@ -4633,6 +5166,7 @@ class TimerData extends DataClass implements Insertable<TimerData> {
   const TimerData(
       {required this.id,
       this.timerTemplateId,
+      this.timerTemplateV2Id,
       this.startTime,
       this.timerType,
       this.pageId,
@@ -4646,6 +5180,9 @@ class TimerData extends DataClass implements Insertable<TimerData> {
     map['id'] = Variable<int>(id);
     if (!nullToAbsent || timerTemplateId != null) {
       map['timer_template_id'] = Variable<int>(timerTemplateId);
+    }
+    if (!nullToAbsent || timerTemplateV2Id != null) {
+      map['timer_template_v2_id'] = Variable<int>(timerTemplateV2Id);
     }
     if (!nullToAbsent || startTime != null) {
       map['start_time'] = Variable<String>(startTime);
@@ -4677,6 +5214,9 @@ class TimerData extends DataClass implements Insertable<TimerData> {
       timerTemplateId: timerTemplateId == null && nullToAbsent
           ? const Value.absent()
           : Value(timerTemplateId),
+      timerTemplateV2Id: timerTemplateV2Id == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerTemplateV2Id),
       startTime: startTime == null && nullToAbsent
           ? const Value.absent()
           : Value(startTime),
@@ -4701,6 +5241,8 @@ class TimerData extends DataClass implements Insertable<TimerData> {
     return TimerData(
       id: serializer.fromJson<int>(json['id']),
       timerTemplateId: serializer.fromJson<int?>(json['timer_template_id']),
+      timerTemplateV2Id:
+          serializer.fromJson<int?>(json['timer_template_v2_id']),
       startTime: serializer.fromJson<String?>(json['start_time']),
       timerType: serializer.fromJson<String?>(json['timer_type']),
       pageId: serializer.fromJson<int?>(json['page_id']),
@@ -4716,6 +5258,7 @@ class TimerData extends DataClass implements Insertable<TimerData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'timer_template_id': serializer.toJson<int?>(timerTemplateId),
+      'timer_template_v2_id': serializer.toJson<int?>(timerTemplateV2Id),
       'start_time': serializer.toJson<String?>(startTime),
       'timer_type': serializer.toJson<String?>(timerType),
       'page_id': serializer.toJson<int?>(pageId),
@@ -4729,6 +5272,7 @@ class TimerData extends DataClass implements Insertable<TimerData> {
   TimerData copyWith(
           {int? id,
           Value<int?> timerTemplateId = const Value.absent(),
+          Value<int?> timerTemplateV2Id = const Value.absent(),
           Value<String?> startTime = const Value.absent(),
           Value<String?> timerType = const Value.absent(),
           Value<int?> pageId = const Value.absent(),
@@ -4741,6 +5285,9 @@ class TimerData extends DataClass implements Insertable<TimerData> {
         timerTemplateId: timerTemplateId.present
             ? timerTemplateId.value
             : this.timerTemplateId,
+        timerTemplateV2Id: timerTemplateV2Id.present
+            ? timerTemplateV2Id.value
+            : this.timerTemplateV2Id,
         startTime: startTime.present ? startTime.value : this.startTime,
         timerType: timerType.present ? timerType.value : this.timerType,
         pageId: pageId.present ? pageId.value : this.pageId,
@@ -4755,6 +5302,9 @@ class TimerData extends DataClass implements Insertable<TimerData> {
       timerTemplateId: data.timerTemplateId.present
           ? data.timerTemplateId.value
           : this.timerTemplateId,
+      timerTemplateV2Id: data.timerTemplateV2Id.present
+          ? data.timerTemplateV2Id.value
+          : this.timerTemplateV2Id,
       startTime: data.startTime.present ? data.startTime.value : this.startTime,
       timerType: data.timerType.present ? data.timerType.value : this.timerType,
       pageId: data.pageId.present ? data.pageId.value : this.pageId,
@@ -4771,6 +5321,7 @@ class TimerData extends DataClass implements Insertable<TimerData> {
     return (StringBuffer('TimerData(')
           ..write('id: $id, ')
           ..write('timerTemplateId: $timerTemplateId, ')
+          ..write('timerTemplateV2Id: $timerTemplateV2Id, ')
           ..write('startTime: $startTime, ')
           ..write('timerType: $timerType, ')
           ..write('pageId: $pageId, ')
@@ -4783,14 +5334,15 @@ class TimerData extends DataClass implements Insertable<TimerData> {
   }
 
   @override
-  int get hashCode => Object.hash(id, timerTemplateId, startTime, timerType,
-      pageId, xpos, ypos, scale, positionId);
+  int get hashCode => Object.hash(id, timerTemplateId, timerTemplateV2Id,
+      startTime, timerType, pageId, xpos, ypos, scale, positionId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TimerData &&
           other.id == this.id &&
           other.timerTemplateId == this.timerTemplateId &&
+          other.timerTemplateV2Id == this.timerTemplateV2Id &&
           other.startTime == this.startTime &&
           other.timerType == this.timerType &&
           other.pageId == this.pageId &&
@@ -4803,6 +5355,7 @@ class TimerData extends DataClass implements Insertable<TimerData> {
 class TimerCompanion extends UpdateCompanion<TimerData> {
   final Value<int> id;
   final Value<int?> timerTemplateId;
+  final Value<int?> timerTemplateV2Id;
   final Value<String?> startTime;
   final Value<String?> timerType;
   final Value<int?> pageId;
@@ -4813,6 +5366,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
   const TimerCompanion({
     this.id = const Value.absent(),
     this.timerTemplateId = const Value.absent(),
+    this.timerTemplateV2Id = const Value.absent(),
     this.startTime = const Value.absent(),
     this.timerType = const Value.absent(),
     this.pageId = const Value.absent(),
@@ -4824,6 +5378,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
   TimerCompanion.insert({
     this.id = const Value.absent(),
     this.timerTemplateId = const Value.absent(),
+    this.timerTemplateV2Id = const Value.absent(),
     this.startTime = const Value.absent(),
     this.timerType = const Value.absent(),
     this.pageId = const Value.absent(),
@@ -4835,6 +5390,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
   static Insertable<TimerData> custom({
     Expression<int>? id,
     Expression<int>? timerTemplateId,
+    Expression<int>? timerTemplateV2Id,
     Expression<String>? startTime,
     Expression<String>? timerType,
     Expression<int>? pageId,
@@ -4846,6 +5402,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (timerTemplateId != null) 'timer_template_id': timerTemplateId,
+      if (timerTemplateV2Id != null) 'timer_template_v2_id': timerTemplateV2Id,
       if (startTime != null) 'start_time': startTime,
       if (timerType != null) 'timer_type': timerType,
       if (pageId != null) 'page_id': pageId,
@@ -4859,6 +5416,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
   TimerCompanion copyWith(
       {Value<int>? id,
       Value<int?>? timerTemplateId,
+      Value<int?>? timerTemplateV2Id,
       Value<String?>? startTime,
       Value<String?>? timerType,
       Value<int?>? pageId,
@@ -4869,6 +5427,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
     return TimerCompanion(
       id: id ?? this.id,
       timerTemplateId: timerTemplateId ?? this.timerTemplateId,
+      timerTemplateV2Id: timerTemplateV2Id ?? this.timerTemplateV2Id,
       startTime: startTime ?? this.startTime,
       timerType: timerType ?? this.timerType,
       pageId: pageId ?? this.pageId,
@@ -4887,6 +5446,9 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
     }
     if (timerTemplateId.present) {
       map['timer_template_id'] = Variable<int>(timerTemplateId.value);
+    }
+    if (timerTemplateV2Id.present) {
+      map['timer_template_v2_id'] = Variable<int>(timerTemplateV2Id.value);
     }
     if (startTime.present) {
       map['start_time'] = Variable<String>(startTime.value);
@@ -4917,6 +5479,7 @@ class TimerCompanion extends UpdateCompanion<TimerData> {
     return (StringBuffer('TimerCompanion(')
           ..write('id: $id, ')
           ..write('timerTemplateId: $timerTemplateId, ')
+          ..write('timerTemplateV2Id: $timerTemplateV2Id, ')
           ..write('startTime: $startTime, ')
           ..write('timerType: $timerType, ')
           ..write('pageId: $pageId, ')
@@ -5202,6 +5765,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final DingAudio dingAudio = DingAudio(this);
   late final TimerTemplate timerTemplate = TimerTemplate(this);
   late final DingValue dingValue = DingValue(this);
+  late final TimerTemplateV2 timerTemplateV2 = TimerTemplateV2(this);
+  late final DingValueV2 dingValueV2 = DingValueV2(this);
   late final FlowFolder flowFolder = FlowFolder(this);
   late final Position position = Position(this);
   late final Images images = Images(this);
@@ -5220,6 +5785,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         dingAudio,
         timerTemplate,
         dingValue,
+        timerTemplateV2,
+        dingValueV2,
         flowFolder,
         position,
         images,
@@ -5526,6 +6093,21 @@ final class $DingAudioReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<DingValueV2, List<DingValueV2Data>>
+      _dingValueV2RefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.dingValueV2,
+              aliasName: $_aliasNameGenerator(
+                  db.dingAudio.id, db.dingValueV2.dingAudioId));
+
+  $DingValueV2ProcessedTableManager get dingValueV2Refs {
+    final manager = $DingValueV2TableManager($_db, $_db.dingValueV2)
+        .filter((f) => f.dingAudioId.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_dingValueV2RefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $DingAudioFilterComposer extends Composer<_$AppDatabase, DingAudio> {
@@ -5555,6 +6137,27 @@ class $DingAudioFilterComposer extends Composer<_$AppDatabase, DingAudio> {
             $TimerTemplateFilterComposer(
               $db: $db,
               $table: $db.timerTemplate,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> dingValueV2Refs(
+      Expression<bool> Function($DingValueV2FilterComposer f) f) {
+    final $DingValueV2FilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.dingValueV2,
+        getReferencedColumn: (t) => t.dingAudioId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingValueV2FilterComposer(
+              $db: $db,
+              $table: $db.dingValueV2,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -5613,6 +6216,27 @@ class $DingAudioAnnotationComposer extends Composer<_$AppDatabase, DingAudio> {
             ));
     return f(composer);
   }
+
+  Expression<T> dingValueV2Refs<T extends Object>(
+      Expression<T> Function($DingValueV2AnnotationComposer a) f) {
+    final $DingValueV2AnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.dingValueV2,
+        getReferencedColumn: (t) => t.dingAudioId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingValueV2AnnotationComposer(
+              $db: $db,
+              $table: $db.dingValueV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $DingAudioTableManager extends RootTableManager<
@@ -5626,7 +6250,7 @@ class $DingAudioTableManager extends RootTableManager<
     $DingAudioUpdateCompanionBuilder,
     (DingAudioData, $DingAudioReferences),
     DingAudioData,
-    PrefetchHooks Function({bool timerTemplateRefs})> {
+    PrefetchHooks Function({bool timerTemplateRefs, bool dingValueV2Refs})> {
   $DingAudioTableManager(_$AppDatabase db, DingAudio table)
       : super(TableManagerState(
           db: db,
@@ -5657,11 +6281,13 @@ class $DingAudioTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $DingAudioReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({timerTemplateRefs = false}) {
+          prefetchHooksCallback: (
+              {timerTemplateRefs = false, dingValueV2Refs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
-                if (timerTemplateRefs) db.timerTemplate
+                if (timerTemplateRefs) db.timerTemplate,
+                if (dingValueV2Refs) db.dingValueV2
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5674,6 +6300,17 @@ class $DingAudioTableManager extends RootTableManager<
                         managerFromTypedResult: (p0) =>
                             $DingAudioReferences(db, table, p0)
                                 .timerTemplateRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.dingAudioId == item.id),
+                        typedResults: items),
+                  if (dingValueV2Refs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $DingAudioReferences._dingValueV2RefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $DingAudioReferences(db, table, p0).dingValueV2Refs,
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.dingAudioId == item.id),
@@ -5696,7 +6333,7 @@ typedef $DingAudioProcessedTableManager = ProcessedTableManager<
     $DingAudioUpdateCompanionBuilder,
     (DingAudioData, $DingAudioReferences),
     DingAudioData,
-    PrefetchHooks Function({bool timerTemplateRefs})>;
+    PrefetchHooks Function({bool timerTemplateRefs, bool dingValueV2Refs})>;
 typedef $TimerTemplateCreateCompanionBuilder = TimerTemplateCompanion Function({
   Value<int> id,
   Value<String?> templateName,
@@ -6322,6 +6959,621 @@ typedef $DingValueProcessedTableManager = ProcessedTableManager<
     (DingValueData, $DingValueReferences),
     DingValueData,
     PrefetchHooks Function({bool timerTemplateId})>;
+typedef $TimerTemplateV2CreateCompanionBuilder = TimerTemplateV2Companion
+    Function({
+  Value<int> id,
+  Value<String?> templateName,
+});
+typedef $TimerTemplateV2UpdateCompanionBuilder = TimerTemplateV2Companion
+    Function({
+  Value<int> id,
+  Value<String?> templateName,
+});
+
+final class $TimerTemplateV2References extends BaseReferences<_$AppDatabase,
+    TimerTemplateV2, TimerTemplateV2Data> {
+  $TimerTemplateV2References(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<DingValueV2, List<DingValueV2Data>>
+      _dingValueV2RefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.dingValueV2,
+              aliasName: $_aliasNameGenerator(
+                  db.timerTemplateV2.id, db.dingValueV2.timerTemplateV2Id));
+
+  $DingValueV2ProcessedTableManager get dingValueV2Refs {
+    final manager = $DingValueV2TableManager($_db, $_db.dingValueV2)
+        .filter((f) => f.timerTemplateV2Id.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_dingValueV2RefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<Timer, List<TimerData>> _timerRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.timer,
+          aliasName: $_aliasNameGenerator(
+              db.timerTemplateV2.id, db.timer.timerTemplateV2Id));
+
+  $TimerProcessedTableManager get timerRefs {
+    final manager = $TimerTableManager($_db, $_db.timer)
+        .filter((f) => f.timerTemplateV2Id.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_timerRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $TimerTemplateV2FilterComposer
+    extends Composer<_$AppDatabase, TimerTemplateV2> {
+  $TimerTemplateV2FilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get templateName => $composableBuilder(
+      column: $table.templateName, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> dingValueV2Refs(
+      Expression<bool> Function($DingValueV2FilterComposer f) f) {
+    final $DingValueV2FilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.dingValueV2,
+        getReferencedColumn: (t) => t.timerTemplateV2Id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingValueV2FilterComposer(
+              $db: $db,
+              $table: $db.dingValueV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> timerRefs(
+      Expression<bool> Function($TimerFilterComposer f) f) {
+    final $TimerFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.timer,
+        getReferencedColumn: (t) => t.timerTemplateV2Id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerFilterComposer(
+              $db: $db,
+              $table: $db.timer,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $TimerTemplateV2OrderingComposer
+    extends Composer<_$AppDatabase, TimerTemplateV2> {
+  $TimerTemplateV2OrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get templateName => $composableBuilder(
+      column: $table.templateName,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $TimerTemplateV2AnnotationComposer
+    extends Composer<_$AppDatabase, TimerTemplateV2> {
+  $TimerTemplateV2AnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get templateName => $composableBuilder(
+      column: $table.templateName, builder: (column) => column);
+
+  Expression<T> dingValueV2Refs<T extends Object>(
+      Expression<T> Function($DingValueV2AnnotationComposer a) f) {
+    final $DingValueV2AnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.dingValueV2,
+        getReferencedColumn: (t) => t.timerTemplateV2Id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingValueV2AnnotationComposer(
+              $db: $db,
+              $table: $db.dingValueV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> timerRefs<T extends Object>(
+      Expression<T> Function($TimerAnnotationComposer a) f) {
+    final $TimerAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.timer,
+        getReferencedColumn: (t) => t.timerTemplateV2Id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerAnnotationComposer(
+              $db: $db,
+              $table: $db.timer,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $TimerTemplateV2TableManager extends RootTableManager<
+    _$AppDatabase,
+    TimerTemplateV2,
+    TimerTemplateV2Data,
+    $TimerTemplateV2FilterComposer,
+    $TimerTemplateV2OrderingComposer,
+    $TimerTemplateV2AnnotationComposer,
+    $TimerTemplateV2CreateCompanionBuilder,
+    $TimerTemplateV2UpdateCompanionBuilder,
+    (TimerTemplateV2Data, $TimerTemplateV2References),
+    TimerTemplateV2Data,
+    PrefetchHooks Function({bool dingValueV2Refs, bool timerRefs})> {
+  $TimerTemplateV2TableManager(_$AppDatabase db, TimerTemplateV2 table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $TimerTemplateV2FilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $TimerTemplateV2OrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $TimerTemplateV2AnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> templateName = const Value.absent(),
+          }) =>
+              TimerTemplateV2Companion(
+            id: id,
+            templateName: templateName,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> templateName = const Value.absent(),
+          }) =>
+              TimerTemplateV2Companion.insert(
+            id: id,
+            templateName: templateName,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $TimerTemplateV2References(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {dingValueV2Refs = false, timerRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (dingValueV2Refs) db.dingValueV2,
+                if (timerRefs) db.timer
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (dingValueV2Refs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $TimerTemplateV2References
+                            ._dingValueV2RefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $TimerTemplateV2References(db, table, p0)
+                                .dingValueV2Refs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.timerTemplateV2Id == item.id),
+                        typedResults: items),
+                  if (timerRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $TimerTemplateV2References._timerRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $TimerTemplateV2References(db, table, p0).timerRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.timerTemplateV2Id == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $TimerTemplateV2ProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    TimerTemplateV2,
+    TimerTemplateV2Data,
+    $TimerTemplateV2FilterComposer,
+    $TimerTemplateV2OrderingComposer,
+    $TimerTemplateV2AnnotationComposer,
+    $TimerTemplateV2CreateCompanionBuilder,
+    $TimerTemplateV2UpdateCompanionBuilder,
+    (TimerTemplateV2Data, $TimerTemplateV2References),
+    TimerTemplateV2Data,
+    PrefetchHooks Function({bool dingValueV2Refs, bool timerRefs})>;
+typedef $DingValueV2CreateCompanionBuilder = DingValueV2Companion Function({
+  Value<int> id,
+  Value<String?> dingTime,
+  Value<int?> dingAmount,
+  Value<int?> dingAudioId,
+  Value<int?> timerTemplateV2Id,
+});
+typedef $DingValueV2UpdateCompanionBuilder = DingValueV2Companion Function({
+  Value<int> id,
+  Value<String?> dingTime,
+  Value<int?> dingAmount,
+  Value<int?> dingAudioId,
+  Value<int?> timerTemplateV2Id,
+});
+
+final class $DingValueV2References
+    extends BaseReferences<_$AppDatabase, DingValueV2, DingValueV2Data> {
+  $DingValueV2References(super.$_db, super.$_table, super.$_typedResult);
+
+  static DingAudio _dingAudioIdTable(_$AppDatabase db) =>
+      db.dingAudio.createAlias(
+          $_aliasNameGenerator(db.dingValueV2.dingAudioId, db.dingAudio.id));
+
+  $DingAudioProcessedTableManager? get dingAudioId {
+    if ($_item.dingAudioId == null) return null;
+    final manager = $DingAudioTableManager($_db, $_db.dingAudio)
+        .filter((f) => f.id($_item.dingAudioId!));
+    final item = $_typedResult.readTableOrNull(_dingAudioIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static TimerTemplateV2 _timerTemplateV2IdTable(_$AppDatabase db) =>
+      db.timerTemplateV2.createAlias($_aliasNameGenerator(
+          db.dingValueV2.timerTemplateV2Id, db.timerTemplateV2.id));
+
+  $TimerTemplateV2ProcessedTableManager? get timerTemplateV2Id {
+    if ($_item.timerTemplateV2Id == null) return null;
+    final manager = $TimerTemplateV2TableManager($_db, $_db.timerTemplateV2)
+        .filter((f) => f.id($_item.timerTemplateV2Id!));
+    final item = $_typedResult.readTableOrNull(_timerTemplateV2IdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $DingValueV2FilterComposer extends Composer<_$AppDatabase, DingValueV2> {
+  $DingValueV2FilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get dingTime => $composableBuilder(
+      column: $table.dingTime, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get dingAmount => $composableBuilder(
+      column: $table.dingAmount, builder: (column) => ColumnFilters(column));
+
+  $DingAudioFilterComposer get dingAudioId {
+    final $DingAudioFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.dingAudioId,
+        referencedTable: $db.dingAudio,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingAudioFilterComposer(
+              $db: $db,
+              $table: $db.dingAudio,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $TimerTemplateV2FilterComposer get timerTemplateV2Id {
+    final $TimerTemplateV2FilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.timerTemplateV2Id,
+        referencedTable: $db.timerTemplateV2,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerTemplateV2FilterComposer(
+              $db: $db,
+              $table: $db.timerTemplateV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $DingValueV2OrderingComposer
+    extends Composer<_$AppDatabase, DingValueV2> {
+  $DingValueV2OrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get dingTime => $composableBuilder(
+      column: $table.dingTime, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get dingAmount => $composableBuilder(
+      column: $table.dingAmount, builder: (column) => ColumnOrderings(column));
+
+  $DingAudioOrderingComposer get dingAudioId {
+    final $DingAudioOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.dingAudioId,
+        referencedTable: $db.dingAudio,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingAudioOrderingComposer(
+              $db: $db,
+              $table: $db.dingAudio,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $TimerTemplateV2OrderingComposer get timerTemplateV2Id {
+    final $TimerTemplateV2OrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.timerTemplateV2Id,
+        referencedTable: $db.timerTemplateV2,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerTemplateV2OrderingComposer(
+              $db: $db,
+              $table: $db.timerTemplateV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $DingValueV2AnnotationComposer
+    extends Composer<_$AppDatabase, DingValueV2> {
+  $DingValueV2AnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get dingTime =>
+      $composableBuilder(column: $table.dingTime, builder: (column) => column);
+
+  GeneratedColumn<int> get dingAmount => $composableBuilder(
+      column: $table.dingAmount, builder: (column) => column);
+
+  $DingAudioAnnotationComposer get dingAudioId {
+    final $DingAudioAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.dingAudioId,
+        referencedTable: $db.dingAudio,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $DingAudioAnnotationComposer(
+              $db: $db,
+              $table: $db.dingAudio,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $TimerTemplateV2AnnotationComposer get timerTemplateV2Id {
+    final $TimerTemplateV2AnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.timerTemplateV2Id,
+        referencedTable: $db.timerTemplateV2,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerTemplateV2AnnotationComposer(
+              $db: $db,
+              $table: $db.timerTemplateV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $DingValueV2TableManager extends RootTableManager<
+    _$AppDatabase,
+    DingValueV2,
+    DingValueV2Data,
+    $DingValueV2FilterComposer,
+    $DingValueV2OrderingComposer,
+    $DingValueV2AnnotationComposer,
+    $DingValueV2CreateCompanionBuilder,
+    $DingValueV2UpdateCompanionBuilder,
+    (DingValueV2Data, $DingValueV2References),
+    DingValueV2Data,
+    PrefetchHooks Function({bool dingAudioId, bool timerTemplateV2Id})> {
+  $DingValueV2TableManager(_$AppDatabase db, DingValueV2 table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $DingValueV2FilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $DingValueV2OrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $DingValueV2AnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> dingTime = const Value.absent(),
+            Value<int?> dingAmount = const Value.absent(),
+            Value<int?> dingAudioId = const Value.absent(),
+            Value<int?> timerTemplateV2Id = const Value.absent(),
+          }) =>
+              DingValueV2Companion(
+            id: id,
+            dingTime: dingTime,
+            dingAmount: dingAmount,
+            dingAudioId: dingAudioId,
+            timerTemplateV2Id: timerTemplateV2Id,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> dingTime = const Value.absent(),
+            Value<int?> dingAmount = const Value.absent(),
+            Value<int?> dingAudioId = const Value.absent(),
+            Value<int?> timerTemplateV2Id = const Value.absent(),
+          }) =>
+              DingValueV2Companion.insert(
+            id: id,
+            dingTime: dingTime,
+            dingAmount: dingAmount,
+            dingAudioId: dingAudioId,
+            timerTemplateV2Id: timerTemplateV2Id,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $DingValueV2References(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: (
+              {dingAudioId = false, timerTemplateV2Id = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (dingAudioId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.dingAudioId,
+                    referencedTable:
+                        $DingValueV2References._dingAudioIdTable(db),
+                    referencedColumn:
+                        $DingValueV2References._dingAudioIdTable(db).id,
+                  ) as T;
+                }
+                if (timerTemplateV2Id) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.timerTemplateV2Id,
+                    referencedTable:
+                        $DingValueV2References._timerTemplateV2IdTable(db),
+                    referencedColumn:
+                        $DingValueV2References._timerTemplateV2IdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $DingValueV2ProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    DingValueV2,
+    DingValueV2Data,
+    $DingValueV2FilterComposer,
+    $DingValueV2OrderingComposer,
+    $DingValueV2AnnotationComposer,
+    $DingValueV2CreateCompanionBuilder,
+    $DingValueV2UpdateCompanionBuilder,
+    (DingValueV2Data, $DingValueV2References),
+    DingValueV2Data,
+    PrefetchHooks Function({bool dingAudioId, bool timerTemplateV2Id})>;
 typedef $FlowFolderCreateCompanionBuilder = FlowFolderCompanion Function({
   Value<int> id,
   required String folderName,
@@ -9142,6 +10394,7 @@ typedef $PageProcessedTableManager = ProcessedTableManager<
 typedef $TimerCreateCompanionBuilder = TimerCompanion Function({
   Value<int> id,
   Value<int?> timerTemplateId,
+  Value<int?> timerTemplateV2Id,
   Value<String?> startTime,
   Value<String?> timerType,
   Value<int?> pageId,
@@ -9153,6 +10406,7 @@ typedef $TimerCreateCompanionBuilder = TimerCompanion Function({
 typedef $TimerUpdateCompanionBuilder = TimerCompanion Function({
   Value<int> id,
   Value<int?> timerTemplateId,
+  Value<int?> timerTemplateV2Id,
   Value<String?> startTime,
   Value<String?> timerType,
   Value<int?> pageId,
@@ -9175,6 +10429,20 @@ final class $TimerReferences
     final manager = $TimerTemplateTableManager($_db, $_db.timerTemplate)
         .filter((f) => f.id($_item.timerTemplateId!));
     final item = $_typedResult.readTableOrNull(_timerTemplateIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static TimerTemplateV2 _timerTemplateV2IdTable(_$AppDatabase db) =>
+      db.timerTemplateV2.createAlias($_aliasNameGenerator(
+          db.timer.timerTemplateV2Id, db.timerTemplateV2.id));
+
+  $TimerTemplateV2ProcessedTableManager? get timerTemplateV2Id {
+    if ($_item.timerTemplateV2Id == null) return null;
+    final manager = $TimerTemplateV2TableManager($_db, $_db.timerTemplateV2)
+        .filter((f) => f.id($_item.timerTemplateV2Id!));
+    final item = $_typedResult.readTableOrNull(_timerTemplateV2IdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
@@ -9245,6 +10513,26 @@ class $TimerFilterComposer extends Composer<_$AppDatabase, Timer> {
             $TimerTemplateFilterComposer(
               $db: $db,
               $table: $db.timerTemplate,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $TimerTemplateV2FilterComposer get timerTemplateV2Id {
+    final $TimerTemplateV2FilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.timerTemplateV2Id,
+        referencedTable: $db.timerTemplateV2,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerTemplateV2FilterComposer(
+              $db: $db,
+              $table: $db.timerTemplateV2,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -9340,6 +10628,26 @@ class $TimerOrderingComposer extends Composer<_$AppDatabase, Timer> {
     return composer;
   }
 
+  $TimerTemplateV2OrderingComposer get timerTemplateV2Id {
+    final $TimerTemplateV2OrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.timerTemplateV2Id,
+        referencedTable: $db.timerTemplateV2,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerTemplateV2OrderingComposer(
+              $db: $db,
+              $table: $db.timerTemplateV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $PageOrderingComposer get pageId {
     final $PageOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -9427,6 +10735,26 @@ class $TimerAnnotationComposer extends Composer<_$AppDatabase, Timer> {
     return composer;
   }
 
+  $TimerTemplateV2AnnotationComposer get timerTemplateV2Id {
+    final $TimerTemplateV2AnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.timerTemplateV2Id,
+        referencedTable: $db.timerTemplateV2,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $TimerTemplateV2AnnotationComposer(
+              $db: $db,
+              $table: $db.timerTemplateV2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $PageAnnotationComposer get pageId {
     final $PageAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -9480,7 +10808,10 @@ class $TimerTableManager extends RootTableManager<
     (TimerData, $TimerReferences),
     TimerData,
     PrefetchHooks Function(
-        {bool timerTemplateId, bool pageId, bool positionId})> {
+        {bool timerTemplateId,
+        bool timerTemplateV2Id,
+        bool pageId,
+        bool positionId})> {
   $TimerTableManager(_$AppDatabase db, Timer table)
       : super(TableManagerState(
           db: db,
@@ -9494,6 +10825,7 @@ class $TimerTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int?> timerTemplateId = const Value.absent(),
+            Value<int?> timerTemplateV2Id = const Value.absent(),
             Value<String?> startTime = const Value.absent(),
             Value<String?> timerType = const Value.absent(),
             Value<int?> pageId = const Value.absent(),
@@ -9505,6 +10837,7 @@ class $TimerTableManager extends RootTableManager<
               TimerCompanion(
             id: id,
             timerTemplateId: timerTemplateId,
+            timerTemplateV2Id: timerTemplateV2Id,
             startTime: startTime,
             timerType: timerType,
             pageId: pageId,
@@ -9516,6 +10849,7 @@ class $TimerTableManager extends RootTableManager<
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int?> timerTemplateId = const Value.absent(),
+            Value<int?> timerTemplateV2Id = const Value.absent(),
             Value<String?> startTime = const Value.absent(),
             Value<String?> timerType = const Value.absent(),
             Value<int?> pageId = const Value.absent(),
@@ -9527,6 +10861,7 @@ class $TimerTableManager extends RootTableManager<
               TimerCompanion.insert(
             id: id,
             timerTemplateId: timerTemplateId,
+            timerTemplateV2Id: timerTemplateV2Id,
             startTime: startTime,
             timerType: timerType,
             pageId: pageId,
@@ -9539,7 +10874,10 @@ class $TimerTableManager extends RootTableManager<
               .map((e) => (e.readTable(table), $TimerReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: (
-              {timerTemplateId = false, pageId = false, positionId = false}) {
+              {timerTemplateId = false,
+              timerTemplateV2Id = false,
+              pageId = false,
+              positionId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -9563,6 +10901,16 @@ class $TimerTableManager extends RootTableManager<
                     referencedTable: $TimerReferences._timerTemplateIdTable(db),
                     referencedColumn:
                         $TimerReferences._timerTemplateIdTable(db).id,
+                  ) as T;
+                }
+                if (timerTemplateV2Id) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.timerTemplateV2Id,
+                    referencedTable:
+                        $TimerReferences._timerTemplateV2IdTable(db),
+                    referencedColumn:
+                        $TimerReferences._timerTemplateV2IdTable(db).id,
                   ) as T;
                 }
                 if (pageId) {
@@ -9604,7 +10952,10 @@ typedef $TimerProcessedTableManager = ProcessedTableManager<
     (TimerData, $TimerReferences),
     TimerData,
     PrefetchHooks Function(
-        {bool timerTemplateId, bool pageId, bool positionId})>;
+        {bool timerTemplateId,
+        bool timerTemplateV2Id,
+        bool pageId,
+        bool positionId})>;
 typedef $HotkeyProfileCreateCompanionBuilder = HotkeyProfileCompanion Function({
   Value<int> id,
   required String profileName,
@@ -9766,6 +11117,10 @@ class $AppDatabaseManager {
       $TimerTemplateTableManager(_db, _db.timerTemplate);
   $DingValueTableManager get dingValue =>
       $DingValueTableManager(_db, _db.dingValue);
+  $TimerTemplateV2TableManager get timerTemplateV2 =>
+      $TimerTemplateV2TableManager(_db, _db.timerTemplateV2);
+  $DingValueV2TableManager get dingValueV2 =>
+      $DingValueV2TableManager(_db, _db.dingValueV2);
   $FlowFolderTableManager get flowFolder =>
       $FlowFolderTableManager(_db, _db.flowFolder);
   $PositionTableManager get position =>

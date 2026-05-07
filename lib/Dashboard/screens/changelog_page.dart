@@ -20,6 +20,40 @@ class ChangelogEntry {
 
 final List<ChangelogEntry> _changelogData = [
   ChangelogEntry(
+    version: 'v1.8.2',
+    date: '2026-05-07',
+    changes: [
+      '修复了赛事导入和导出的错误',
+      '修复了复制赛程时未能正确复制继承计时器范围限制的问题',
+      '修复了赛程无法被删除的问题',
+      '修复了复制赛程文件夹时未能正确复制文件夹内子赛程的问题',
+      '统合了设置页面中“添加计时器模板”的 UI，使其与页面编辑器保持一致',
+      '新增实验性计时器模板 V2，支持为不同的提示时间设置不同的铃声',
+    ],
+    changesEn: [
+      'Fixed import and export errors',
+      'Fixed issue where copy pasting flows do not copy the inherited timer ranges',
+      'Fixed issue where flows cannot be deleted',
+      'Fixed issue with copy pasting flow folders do not copy the flows inside the folder',
+      'Fixed timer template UI in settings page to be consistent with the UI in page editor',
+      'Added experimental timer template V2, where different ding times can be paired with different ding audios',
+    ],
+  ),
+  ChangelogEntry(
+    version: 'v1.8.1',
+    date: '2026-05-03',
+    changes: [
+      '修复了开启继承计时器范围限制时，若在当前页面运行计时器会导致导航切换时数值重置的问题',
+      '新增在计时器运行界面手动修改计时器数值的功能（通过计时器旁边的设置按钮）',
+      '优化了全屏切换功能，防止在切换动画过程中多次点击可能导致的稳定性问题',
+    ],
+    changesEn: [
+      'Fixed issue where the ranges for a page with an inherited timer will reset the timer value even when the timer runs on the page itself',
+      'Added function for user to manually change timer values during the usage of the actual timers',
+      'Made small changes to fullscreen toggle to prevent spamming during transitions',
+    ],
+  ),
+  ChangelogEntry(
     version: 'v1.8.0',
     date: '2026-04-30',
     changes: [

@@ -39,6 +39,7 @@ class EventTransfer {
     final Set<int> templateIds = {};
     final Set<int> bgmIds = {};
     final Set<int> dingAudioIds = {};
+    final Set<int> templateV2Ids = {};
 
     for (var flow in flows) {
       final pages = await (db.select(db.page)
@@ -58,6 +59,7 @@ class EventTransfer {
           timersJson.add(timer.toJson());
           if (timer.positionId != null) positionIds.add(timer.positionId!);
           if (timer.timerTemplateId != null) templateIds.add(timer.timerTemplateId!);
+          if (timer.timerTemplateV2Id != null) templateV2Ids.add(timer.timerTemplateV2Id!);
         }
 
         final pImages = await (db.select(db.images)
@@ -118,6 +120,24 @@ class EventTransfer {
       exportData['ding_value'] = [];
     }
 
+    if (templateV2Ids.isNotEmpty) {
+      final templatesV2 = await (db.select(db.timerTemplateV2)
+            ..where((t) => t.id.isIn(templateV2Ids.toList())))
+          .get();
+      exportData['timer_template_v2'] = templatesV2.map((t) => t.toJson()).toList();
+
+      final dingValuesV2 = await (db.select(db.dingValueV2)
+            ..where((t) => t.timerTemplateV2Id.isIn(templateV2Ids.toList())))
+          .get();
+      exportData['ding_value_v2'] = dingValuesV2.map((dv) => dv.toJson()).toList();
+      for (var dv in dingValuesV2) {
+        if (dv.dingAudioId != null) dingAudioIds.add(dv.dingAudioId!);
+      }
+    } else {
+      exportData['timer_template_v2'] = [];
+      exportData['ding_value_v2'] = [];
+    }
+
     if (bgmIds.isNotEmpty) {
       final bgms = await (db.select(db.bgm)
             ..where((t) => t.id.isIn(bgmIds.toList())))
@@ -160,6 +180,18 @@ class EventTransfer {
         if (await f.exists()) {
           final bytes = await f.readAsBytes();
           archive.addFile(ArchiveFile('YiHuaTimer/images/$oldId/$imgName', bytes.length, bytes));
+        }
+      }
+    }
+
+    // Flow Assets (Backgrounds, Frontpages, Fonts)
+    final flowAssetDir = Directory(p.join(dataDir, 'images', '${event.id}'));
+    if (await flowAssetDir.exists()) {
+      await for (var entity in flowAssetDir.list(recursive: true)) {
+        if (entity is File) {
+          final relPath = p.relative(entity.path, from: p.join(dataDir, 'images'));
+          final bytes = await entity.readAsBytes();
+          archive.addFile(ArchiveFile('YiHuaTimer/images/$relPath', bytes.length, bytes));
         }
       }
     }
@@ -290,6 +322,7 @@ class EventTransfer {
       final Map<int, int> pageIdMap = {};
       final Map<int, int> dingAudioIdMap = {};
       final Map<int, int> templateIdMap = {};
+      final Map<int, int> templateV2IdMap = {};
       final Map<int, int> bgmIdMap = {};
       final Map<int, int> imageIdMap = {};
 
@@ -308,7 +341,7 @@ class EventTransfer {
       for (var bgmJson in importData['bgm'] ?? []) {
         final oldId = (bgmJson['id'] as num).toInt();
         final name = bgmJson['bgm_name']?.toString() ?? 'Unknown BGM';
-        final existing = await (database.select(database.bgm)..where((t) => t.bgmName.equals(name))).getSingleOrNull();
+        final existing = await (database.select(database.bgm)..where((t) => t.bgmName.equals(name))).get().then((l) => l.isEmpty ? null : l.first);
         if (existing == null) {
           final newId = await database.into(database.bgm).insert(BgmCompanion.insert(bgmName: name));
           bgmIdMap[oldId] = newId;
@@ -321,7 +354,7 @@ class EventTransfer {
       for (var daJson in importData['ding_audio'] ?? []) {
         final oldId = (daJson['id'] as num).toInt();
         final name = daJson['ding_name']?.toString() ?? 'Unknown Ding';
-        final existing = await (database.select(database.dingAudio)..where((t) => t.dingName.equals(name))).getSingleOrNull();
+        final existing = await (database.select(database.dingAudio)..where((t) => t.dingName.equals(name))).get().then((l) => l.isEmpty ? null : l.first);
         if (existing == null) {
           final newId = await database.into(database.dingAudio).insert(DingAudioCompanion.insert(dingName: name));
           dingAudioIdMap[oldId] = newId;
@@ -378,6 +411,58 @@ class EventTransfer {
         }
       }
 
+      // Templates V2
+      for (var tplJson in importData['timer_template_v2'] ?? []) {
+        final oldId = (tplJson['id'] as num).toInt();
+        final templateName = tplJson['template_name']?.toString();
+
+        final importedDvs = (importData['ding_value_v2'] as List? ?? [])
+            .where((dv) => (dv['timer_template_v2_id'] as num).toInt() == oldId)
+            .toList();
+
+        int? existingTplId;
+        final potentialTemplates = await (database.select(database.timerTemplateV2)
+              ..where((t) => t.templateName.equals(templateName ?? '')))
+            .get();
+
+        for (var pot in potentialTemplates) {
+          final potDvs = await (database.select(database.dingValueV2)..where((t) => t.timerTemplateV2Id.equals(pot.id))).get();
+          if (potDvs.length == importedDvs.length) {
+            bool allMatch = true;
+            for (var impDv in importedDvs) {
+              final newAudioId = impDv['ding_audio_id'] != null ? dingAudioIdMap[(impDv['ding_audio_id'] as num).toInt()] : null;
+              if (!potDvs.any((pd) => 
+                pd.dingTime == impDv['ding_time']?.toString() && 
+                pd.dingAmount == (impDv['ding_amount'] as num?)?.toInt() &&
+                pd.dingAudioId == newAudioId
+              )) {
+                allMatch = false; break;
+              }
+            }
+            if (allMatch) { existingTplId = pot.id; break; }
+          }
+        }
+
+        if (existingTplId != null) {
+          templateV2IdMap[oldId] = existingTplId;
+        } else {
+          final newId = await database.into(database.timerTemplateV2).insert(TimerTemplateV2Companion.insert(
+                templateName: drift.Value(templateName),
+              ));
+          templateV2IdMap[oldId] = newId;
+          for (var dvJson in importedDvs) {
+            final oldAudioId = dvJson['ding_audio_id'];
+            final newAudioId = oldAudioId != null ? dingAudioIdMap[(oldAudioId as num).toInt()] : null;
+            await database.into(database.dingValueV2).insert(DingValueV2Companion.insert(
+                  dingTime: drift.Value(dvJson['ding_time']?.toString()),
+                  dingAmount: drift.Value((dvJson['ding_amount'] as num?)?.toInt() ?? 1),
+                  dingAudioId: drift.Value(newAudioId),
+                  timerTemplateV2Id: drift.Value(newId),
+                ));
+          }
+        }
+      }
+
       // Event
       final newEventId = await database.into(database.event).insert(EventCompanion.insert(
             eventName: eventData['event_name']?.toString() ?? '导入的赛事',
@@ -398,12 +483,24 @@ class EventTransfer {
       for (var imgJson in importData['images'] ?? []) {
         final oldId = (imgJson['id'] as num).toInt();
         final oldPosId = imgJson['position_id'];
+        final imgName = imgJson['image_name']?.toString();
+
         final newId = await database.into(database.images).insert(ImagesCompanion.insert(
-              imageName: drift.Value(imgJson['image_name']?.toString()),
+              imageName: drift.Value(imgName),
               imageType: drift.Value(imgJson['image_type']?.toString()),
               positionId: drift.Value(oldPosId != null ? positionIdMap[(oldPosId as num).toInt()] : null),
             ));
         imageIdMap[oldId] = newId;
+
+        // Copy image file if exists
+        if (imgName != null) {
+          final srcImgFile = File(p.join(assetSourceDir.path, 'images', '$oldId', imgName));
+          if (await srcImgFile.exists()) {
+            final destImgDir = Directory(p.join(currentDataDir, 'images', '$newId'));
+            if (!await destImgDir.exists()) await destImgDir.create(recursive: true);
+            await srcImgFile.copy(p.join(destImgDir.path, imgName));
+          }
+        }
       }
 
       // Schools
@@ -493,15 +590,17 @@ class EventTransfer {
         pageIdMap[oldId] = newId;
 
         // Timers for this page
-        for (var tJson in (importData['timer'] as List? ?? []).where((t) => (t['page_id'] as num).toInt() == oldId)) {
-          final oldPosId = tJson['position_id'];
-          final oldTplId = tJson['timer_template_id'];
+        for (var timerJson in (importData['timer'] as List? ?? []).where((t) => (t['page_id'] as num).toInt() == oldId)) {
+          final oldPosId = timerJson['position_id'];
+          final oldTplId = timerJson['timer_template_id'];
+          final oldTplV2Id = timerJson['timer_template_v2_id'];
           await database.into(database.timer).insert(TimerCompanion.insert(
                 pageId: drift.Value(newId),
-                startTime: drift.Value(tJson['start_time']?.toString()),
-                timerType: drift.Value(tJson['timer_type']?.toString()),
+                startTime: drift.Value(timerJson['start_time']?.toString()),
+                timerType: drift.Value(timerJson['timer_type']?.toString()),
                 positionId: drift.Value(oldPosId != null ? positionIdMap[(oldPosId as num).toInt()] : null),
                 timerTemplateId: drift.Value(oldTplId != null ? templateIdMap[(oldTplId as num).toInt()] : null),
+                timerTemplateV2Id: drift.Value(oldTplV2Id != null ? templateV2IdMap[(oldTplV2Id as num).toInt()] : null),
               ));
         }
 

@@ -18,7 +18,7 @@ class _TimerPageState extends State<TimerPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -37,8 +37,8 @@ class _TimerPageState extends State<TimerPage> {
               ),
             );
           },
-          hoverColor: Colors.blue.withOpacity(0.05),
-          splashColor: Colors.blue.withOpacity(0.1),
+          hoverColor: Colors.blue.withValues(alpha: 0.05),
+          splashColor: Colors.blue.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(

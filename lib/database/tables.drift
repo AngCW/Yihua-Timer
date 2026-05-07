@@ -26,6 +26,19 @@ CREATE TABLE ding_value (
     timer_template_id INTEGER REFERENCES timer_template(id)
 );
 
+CREATE TABLE timer_template_v2 (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    template_name VARCHAR
+) AS TimerTemplateV2Data;
+
+CREATE TABLE ding_value_v2 (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ding_time TEXT,
+    ding_amount INTEGER,
+    ding_audio_id INTEGER REFERENCES ding_audio(id),
+    timer_template_v2_id INTEGER REFERENCES timer_template_v2(id)
+) AS DingValueV2Data;
+
 CREATE TABLE flow_folder (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     folder_name VARCHAR NOT NULL,
@@ -70,6 +83,7 @@ CREATE TABLE images (
 CREATE TABLE timer (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     timer_template_id INTEGER REFERENCES timer_template(id),
+    timer_template_v2_id INTEGER REFERENCES timer_template_v2(id),
     start_time TEXT,
     timer_type VARCHAR, -- single, doubleL, doubleR
     page_id INTEGER REFERENCES page(id),
@@ -78,6 +92,7 @@ CREATE TABLE timer (
     scale DOUBLE DEFAULT 1.0,
     position_id INTEGER REFERENCES position(id)
 );
+
 
 CREATE TABLE bgm (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

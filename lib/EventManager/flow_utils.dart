@@ -5,242 +5,310 @@ import '../main.dart'; // For database global
 class FlowUtils {
   static Future<FlowData> duplicateFlow(FlowData flow, int eventId,
       {int? folderId, int? position}) async {
-    final flows = await (database.select(database.flow)
-          ..where((t) => t.eventId.equals(eventId))
-          ..where((t) => folderId != null
-              ? t.folderId.equals(folderId)
-              : t.folderId.isNull()))
-        .get();
+    return await database.transaction(() async {
+      final flows = await (database.select(database.flow)
+            ..where((t) => t.eventId.equals(eventId))
+            ..where((t) => folderId != null
+                ? t.folderId.equals(folderId)
+                : t.folderId.isNull()))
+          .get();
 
-    final newPosition = position ?? (flows.length + 1);
+      final newPosition = position ?? (flows.length + 1);
 
-    final newFlow = await database.into(database.flow).insertReturning(
-          FlowCompanion.insert(
-            flowName: drift.Value('${flow.flowName} (副本)'),
-            eventId: drift.Value(eventId),
-            flowPosition: drift.Value(newPosition),
-            folderId: drift.Value(folderId),
-            fontName: drift.Value(flow.fontName),
-            sectionFontName: drift.Value(flow.sectionFontName),
-            timerFontName: drift.Value(flow.timerFontName),
-            frontpageName: drift.Value(flow.frontpageName),
-            backgroundName: drift.Value(flow.backgroundName),
-            sectionFontColor: drift.Value(flow.sectionFontColor),
-            timerFontColor: drift.Value(flow.timerFontColor),
-            schoolAId: drift.Value(flow.schoolAId),
-            schoolBId: drift.Value(flow.schoolBId),
-            positionConfig: drift.Value(flow.positionConfig),
-          ),
-        );
-
-    final pages = await (database.select(database.page)
-          ..where((t) => t.flowId.equals(flow.id)))
-        .get();
-
-    final Map<int, int> pageIdMap = {};
-    final List<PageData> newPages = [];
-
-    for (final page in pages) {
-      // Deep copy positions if they exist
-      int? newSecPosId;
-      if (page.sectionPositionId != null) {
-        final oldPos = await (database.select(database.position)
-              ..where((t) => t.id.equals(page.sectionPositionId!)))
-            .getSingleOrNull();
-        if (oldPos != null) {
-          newSecPosId = await database.into(database.position).insert(
-                PositionCompanion.insert(
-                  xpos: drift.Value(oldPos.xpos),
-                  ypos: drift.Value(oldPos.ypos),
-                  size: drift.Value(oldPos.size),
-                ),
-              );
-        }
-      }
-
-      int? newSaPosId;
-      if (page.schoolAPositionId != null) {
-        final oldPos = await (database.select(database.position)
-              ..where((t) => t.id.equals(page.schoolAPositionId!)))
-            .getSingleOrNull();
-        if (oldPos != null) {
-          newSaPosId = await database.into(database.position).insert(
-                PositionCompanion.insert(
-                  xpos: drift.Value(oldPos.xpos),
-                  ypos: drift.Value(oldPos.ypos),
-                  size: drift.Value(oldPos.size),
-                ),
-              );
-        }
-      }
-
-      int? newSbPosId;
-      if (page.schoolBPositionId != null) {
-        final oldPos = await (database.select(database.position)
-              ..where((t) => t.id.equals(page.schoolBPositionId!)))
-            .getSingleOrNull();
-        if (oldPos != null) {
-          newSbPosId = await database.into(database.position).insert(
-                PositionCompanion.insert(
-                  xpos: drift.Value(oldPos.xpos),
-                  ypos: drift.Value(oldPos.ypos),
-                  size: drift.Value(oldPos.size),
-                ),
-              );
-        }
-      }
-
-      final newPage = await database.into(database.page).insertReturning(
-            PageCompanion.insert(
-              pageName: drift.Value(page.pageName),
-              flowId: drift.Value(newFlow.id),
-              pagePosition: drift.Value(page.pagePosition),
-              pageTypeId: drift.Value(page.pageTypeId),
-              sectionName: drift.Value(page.sectionName),
-              bgmId: drift.Value(page.bgmId),
-              hotkeyValue: drift.Value(page.hotkeyValue),
-              sectionXpos: drift.Value(page.sectionXpos),
-              sectionYpos: drift.Value(page.sectionYpos),
-              sectionScale: drift.Value(page.sectionScale),
-              sectionFontName: drift.Value(page.sectionFontName),
-              timerFontName: drift.Value(page.timerFontName),
-              useFrontpage: drift.Value(page.useFrontpage),
-              isDefaultPage: drift.Value(page.isDefaultPage),
-              showSchools: drift.Value(page.showSchools),
-              sectionPositionId: drift.Value(newSecPosId),
-              schoolAPositionId: drift.Value(newSaPosId),
-              schoolBPositionId: drift.Value(newSbPosId),
-              sectionFontColor: drift.Value(page.sectionFontColor),
-              timerFontColor: drift.Value(page.timerFontColor),
-              inheritTimerFromId: const drift.Value.absent(), // Will update in second pass
+      final newFlow = await database.into(database.flow).insertReturning(
+            FlowCompanion.insert(
+              flowName: drift.Value('${flow.flowName} (副本)'),
+              eventId: drift.Value(eventId),
+              flowPosition: drift.Value(newPosition),
+              folderId: drift.Value(folderId),
+              fontName: drift.Value(flow.fontName),
+              sectionFontName: drift.Value(flow.sectionFontName),
+              timerFontName: drift.Value(flow.timerFontName),
+              frontpageName: drift.Value(flow.frontpageName),
+              backgroundName: drift.Value(flow.backgroundName),
+              sectionFontColor: drift.Value(flow.sectionFontColor),
+              timerFontColor: drift.Value(flow.timerFontColor),
+              schoolAId: drift.Value(flow.schoolAId),
+              schoolBId: drift.Value(flow.schoolBId),
+              positionConfig: drift.Value(flow.positionConfig),
             ),
           );
 
-      pageIdMap[page.id] = newPage.id;
-      newPages.add(newPage);
+      final pages = await (database.select(database.page)
+            ..where((t) => t.flowId.equals(flow.id)))
+          .get();
 
-      // Copy timers
+      final Map<int, int> pageIdMap = {};
+      final List<PageData> newPages = [];
+
+      for (final page in pages) {
+        // Deep copy positions if they exist
+        int? newSecPosId;
+        if (page.sectionPositionId != null) {
+          final oldPos = await (database.select(database.position)
+                ..where((t) => t.id.equals(page.sectionPositionId!)))
+              .getSingleOrNull();
+          if (oldPos != null) {
+            newSecPosId = await database.into(database.position).insert(
+                  PositionCompanion.insert(
+                    xpos: drift.Value(oldPos.xpos),
+                    ypos: drift.Value(oldPos.ypos),
+                    size: drift.Value(oldPos.size),
+                  ),
+                );
+          }
+        }
+
+        int? newSaPosId;
+        if (page.schoolAPositionId != null) {
+          final oldPos = await (database.select(database.position)
+                ..where((t) => t.id.equals(page.schoolAPositionId!)))
+              .getSingleOrNull();
+          if (oldPos != null) {
+            newSaPosId = await database.into(database.position).insert(
+                  PositionCompanion.insert(
+                    xpos: drift.Value(oldPos.xpos),
+                    ypos: drift.Value(oldPos.ypos),
+                    size: drift.Value(oldPos.size),
+                  ),
+                );
+          }
+        }
+
+        int? newSbPosId;
+        if (page.schoolBPositionId != null) {
+          final oldPos = await (database.select(database.position)
+                ..where((t) => t.id.equals(page.schoolBPositionId!)))
+              .getSingleOrNull();
+          if (oldPos != null) {
+            newSbPosId = await database.into(database.position).insert(
+                  PositionCompanion.insert(
+                    xpos: drift.Value(oldPos.xpos),
+                    ypos: drift.Value(oldPos.ypos),
+                    size: drift.Value(oldPos.size),
+                  ),
+                );
+          }
+        }
+
+        final newPage = await database.into(database.page).insertReturning(
+              PageCompanion.insert(
+                pageName: drift.Value(page.pageName),
+                flowId: drift.Value(newFlow.id),
+                pagePosition: drift.Value(page.pagePosition),
+                pageTypeId: drift.Value(page.pageTypeId),
+                sectionName: drift.Value(page.sectionName),
+                bgmId: drift.Value(page.bgmId),
+                hotkeyValue: drift.Value(page.hotkeyValue),
+                sectionXpos: drift.Value(page.sectionXpos),
+                sectionYpos: drift.Value(page.sectionYpos),
+                sectionScale: drift.Value(page.sectionScale),
+                sectionFontName: drift.Value(page.sectionFontName),
+                timerFontName: drift.Value(page.timerFontName),
+                useFrontpage: drift.Value(page.useFrontpage),
+                isDefaultPage: drift.Value(page.isDefaultPage),
+                showSchools: drift.Value(page.showSchools),
+                sectionPositionId: drift.Value(newSecPosId),
+                schoolAPositionId: drift.Value(newSaPosId),
+                schoolBPositionId: drift.Value(newSbPosId),
+                sectionFontColor: drift.Value(page.sectionFontColor),
+                timerFontColor: drift.Value(page.timerFontColor),
+                inheritTimerFromId: const drift.Value.absent(), // Will update in second pass
+                inheritTimerRangeEnabled: drift.Value(page.inheritTimerRangeEnabled),
+                inheritTimerMin: drift.Value(page.inheritTimerMin),
+                inheritTimerMax: drift.Value(page.inheritTimerMax),
+              ),
+            );
+
+        pageIdMap[page.id] = newPage.id;
+        newPages.add(newPage);
+
+        // Copy timers
+        final timers = await (database.select(database.timer)
+              ..where((t) => t.pageId.equals(page.id)))
+            .get();
+        for (final timer in timers) {
+          int? newTimerPosId;
+          if (timer.positionId != null) {
+            final oldPos = await (database.select(database.position)
+                  ..where((t) => t.id.equals(timer.positionId!)))
+                .getSingleOrNull();
+            if (oldPos != null) {
+              newTimerPosId = await database.into(database.position).insert(
+                    PositionCompanion.insert(
+                      xpos: drift.Value(oldPos.xpos),
+                      ypos: drift.Value(oldPos.ypos),
+                      size: drift.Value(oldPos.size),
+                    ),
+                  );
+            }
+          }
+
+          await database.into(database.timer).insert(
+                TimerCompanion.insert(
+                  pageId: drift.Value(newPage.id),
+                  timerTemplateId: drift.Value(timer.timerTemplateId),
+                  timerTemplateV2Id: drift.Value(timer.timerTemplateV2Id),
+                  startTime: drift.Value(timer.startTime),
+                  timerType: drift.Value(timer.timerType),
+                  xpos: drift.Value(timer.xpos),
+                  ypos: drift.Value(timer.ypos),
+                  scale: drift.Value(timer.scale),
+                  positionId: drift.Value(newTimerPosId),
+                ),
+              );
+        }
+
+        // Copy images
+        final images = await (database.select(database.images)
+              ..where((t) => t.pageId.equals(page.id)))
+            .get();
+        for (final img in images) {
+          int? newImgPosId;
+          if (img.positionId != null) {
+            final oldPos = await (database.select(database.position)
+                  ..where((t) => t.id.equals(img.positionId!)))
+                .getSingleOrNull();
+            if (oldPos != null) {
+              newImgPosId = await database.into(database.position).insert(
+                    PositionCompanion.insert(
+                      xpos: drift.Value(oldPos.xpos),
+                      ypos: drift.Value(oldPos.ypos),
+                      size: drift.Value(oldPos.size),
+                    ),
+                  );
+            }
+          }
+
+          await database.into(database.images).insert(
+                ImagesCompanion.insert(
+                  imageName: drift.Value(img.imageName),
+                  imageType: drift.Value(img.imageType),
+                  pageId: drift.Value(newPage.id),
+                  positionId: drift.Value(newImgPosId),
+                ),
+              );
+        }
+      }
+
+      // Pass 2: Re-link inheritance within the new flow
+      for (int i = 0; i < pages.length; i++) {
+        final oldPage = pages[i];
+        if (oldPage.inheritTimerFromId != null) {
+          final oldInheritId = oldPage.inheritTimerFromId!;
+          final newInheritId = pageIdMap[oldInheritId];
+          if (newInheritId != null) {
+            await (database.update(database.page)
+                  ..where((t) => t.id.equals(newPages[i].id)))
+                .write(PageCompanion(
+              inheritTimerFromId: drift.Value(newInheritId),
+            ));
+          }
+        }
+      }
+      return newFlow;
+    });
+  }
+
+  static Future<void> deleteFlow(int flowId) async {
+    final flowPages = await (database.select(database.page)
+          ..where((t) => t.flowId.equals(flowId)))
+        .get();
+
+    final Set<int> positionIds = {};
+
+    for (final p in flowPages) {
+      if (p.sectionPositionId != null) positionIds.add(p.sectionPositionId!);
+      if (p.schoolAPositionId != null) positionIds.add(p.schoolAPositionId!);
+      if (p.schoolBPositionId != null) positionIds.add(p.schoolBPositionId!);
+
+      // Timers
       final timers = await (database.select(database.timer)
-            ..where((t) => t.pageId.equals(page.id)))
+            ..where((t) => t.pageId.equals(p.id)))
           .get();
       for (final timer in timers) {
-        int? newTimerPosId;
-        if (timer.positionId != null) {
-          final oldPos = await (database.select(database.position)
-                ..where((t) => t.id.equals(timer.positionId!)))
-              .getSingleOrNull();
-          if (oldPos != null) {
-            newTimerPosId = await database.into(database.position).insert(
-                  PositionCompanion.insert(
-                    xpos: drift.Value(oldPos.xpos),
-                    ypos: drift.Value(oldPos.ypos),
-                    size: drift.Value(oldPos.size),
-                  ),
-                );
-          }
-        }
-
-        await database.into(database.timer).insert(
-              TimerCompanion.insert(
-                pageId: drift.Value(newPage.id),
-                timerTemplateId: drift.Value(timer.timerTemplateId),
-                startTime: drift.Value(timer.startTime),
-                timerType: drift.Value(timer.timerType),
-                xpos: drift.Value(timer.xpos),
-                ypos: drift.Value(timer.ypos),
-                scale: drift.Value(timer.scale),
-                positionId: drift.Value(newTimerPosId),
-              ),
-            );
+        if (timer.positionId != null) positionIds.add(timer.positionId!);
       }
 
-      // Copy images
+      // Images
       final images = await (database.select(database.images)
-            ..where((t) => t.pageId.equals(page.id)))
+            ..where((t) => t.pageId.equals(p.id)))
           .get();
       for (final img in images) {
-        int? newImgPosId;
-        if (img.positionId != null) {
-          final oldPos = await (database.select(database.position)
-                ..where((t) => t.id.equals(img.positionId!)))
-              .getSingleOrNull();
-          if (oldPos != null) {
-            newImgPosId = await database.into(database.position).insert(
-                  PositionCompanion.insert(
-                    xpos: drift.Value(oldPos.xpos),
-                    ypos: drift.Value(oldPos.ypos),
-                    size: drift.Value(oldPos.size),
-                  ),
-                );
-          }
-        }
-
-        await database.into(database.images).insert(
-              ImagesCompanion.insert(
-                imageName: drift.Value(img.imageName),
-                imageType: drift.Value(img.imageType),
-                pageId: drift.Value(newPage.id),
-                positionId: drift.Value(newImgPosId),
-              ),
-            );
+        if (img.positionId != null) positionIds.add(img.positionId!);
       }
+
+      // Delete associated records for each page
+      await (database.delete(database.timer)
+            ..where((t) => t.pageId.equals(p.id)))
+          .go();
+      await (database.delete(database.images)
+            ..where((t) => t.pageId.equals(p.id)))
+          .go();
+
+      // Null out inheritance to avoid FK issues during deletion
+      await (database.update(database.page)
+            ..where((t) => t.id.equals(p.id)))
+          .write(const PageCompanion(inheritTimerFromId: drift.Value(null)));
     }
 
-    // Pass 2: Re-link inheritance within the new flow
-    for (int i = 0; i < pages.length; i++) {
-      final oldPage = pages[i];
-      if (oldPage.inheritTimerFromId != null) {
-        final oldInheritId = oldPage.inheritTimerFromId!;
-        final newInheritId = pageIdMap[oldInheritId];
-        if (newInheritId != null) {
-          await (database.update(database.page)
-                ..where((t) => t.id.equals(newPages[i].id)))
-              .write(PageCompanion(
-            inheritTimerFromId: drift.Value(newInheritId),
-          ));
-        }
-      }
+    // Delete pages
+    await (database.delete(database.page)
+          ..where((t) => t.flowId.equals(flowId)))
+        .go();
+
+    // Delete the flow itself
+    await (database.delete(database.flow)
+          ..where((t) => t.id.equals(flowId)))
+        .go();
+
+    // Delete leaked position records
+    if (positionIds.isNotEmpty) {
+      await (database.delete(database.position)
+            ..where((t) => t.id.isIn(positionIds.toList())))
+          .go();
     }
-    return newFlow;
   }
 
   static Future<FlowFolderData> duplicateFolder(
       FlowFolderData folder, int eventId,
       {int? parentFolderId}) async {
-    final folders = await (database.select(database.flowFolder)
-          ..where((t) => t.eventId.equals(eventId))
-          ..where((t) => parentFolderId != null
-              ? t.parentFolderId.equals(parentFolderId)
-              : t.parentFolderId.isNull()))
-        .get();
+    return await database.transaction(() async {
+      final folders = await (database.select(database.flowFolder)
+            ..where((t) => t.eventId.equals(eventId))
+            ..where((t) => parentFolderId != null
+                ? t.parentFolderId.equals(parentFolderId)
+                : t.parentFolderId.isNull()))
+          .get();
 
-    final newFolder = await database.into(database.flowFolder).insertReturning(
-          FlowFolderCompanion.insert(
-            folderName: '${folder.folderName} (副本)',
-            eventId: eventId,
-            folderPosition: folders.length + 1,
-            parentFolderId: drift.Value(parentFolderId),
-          ),
-        );
+      final newFolder = await database.into(database.flowFolder).insertReturning(
+            FlowFolderCompanion.insert(
+              folderName: '${folder.folderName} (副本)',
+              eventId: eventId,
+              folderPosition: folders.length + 1,
+              parentFolderId: drift.Value(parentFolderId),
+            ),
+          );
 
-    // Duplicate flows in this folder
-    final flows = await (database.select(database.flow)
-          ..where((t) => t.folderId.equals(folder.id)))
-        .get();
-    for (final flow in flows) {
-      await duplicateFlow(flow, eventId,
-          folderId: newFolder.id, position: flow.flowPosition);
-    }
+      // Duplicate flows in this folder
+      final flows = await (database.select(database.flow)
+            ..where((t) => t.folderId.equals(folder.id)))
+          .get();
+      for (final flow in flows) {
+        await duplicateFlow(flow, eventId,
+            folderId: newFolder.id, position: flow.flowPosition);
+      }
 
-    // Recursively duplicate subfolders
-    final subfolders = await (database.select(database.flowFolder)
-          ..where((t) => t.parentFolderId.equals(folder.id)))
-        .get();
-    for (final sub in subfolders) {
-      await duplicateFolder(sub, eventId, parentFolderId: newFolder.id);
-    }
+      // Recursively duplicate subfolders
+      final subfolders = await (database.select(database.flowFolder)
+            ..where((t) => t.parentFolderId.equals(folder.id)))
+          .get();
+      for (final sub in subfolders) {
+        await duplicateFolder(sub, eventId, parentFolderId: newFolder.id);
+      }
 
-    return newFolder;
+      return newFolder;
+    });
   }
 
   static Future<void> deleteFolderRecursive(int folderId) async {
@@ -257,25 +325,7 @@ class FlowUtils {
           ..where((t) => t.folderId.equals(folderId)))
         .get();
     for (final flow in folderFlows) {
-      final flowPages = await (database.select(database.page)
-            ..where((t) => t.flowId.equals(flow.id)))
-          .get();
-      for (final p in flowPages) {
-        // Delete associated records for each page
-        await (database.delete(database.timer)
-              ..where((t) => t.pageId.equals(p.id)))
-            .go();
-        await (database.delete(database.images)
-              ..where((t) => t.pageId.equals(p.id)))
-            .go();
-        await (database.delete(database.page)
-              ..where((t) => t.id.equals(p.id)))
-            .go();
-      }
-      // Delete the flow itself
-      await (database.delete(database.flow)
-            ..where((t) => t.id.equals(flow.id)))
-          .go();
+      await deleteFlow(flow.id);
     }
 
     // 3. Finally delete the folder itself

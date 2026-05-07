@@ -35,27 +35,51 @@ class _PageManagerPageState extends State<PageManagerPage> {
   final _sectionNameController = TextEditingController();
   final _hotkeyController = TextEditingController();
 
+  int? _selectedBgmId;
+  int? _singleTemplateId;
+  int? _singleTemplateV2Id;
+  int? _leftTemplateId;
+  int? _leftTemplateV2Id;
+  int? _rightTemplateId;
+  int? _rightTemplateV2Id;
+  int? _selectedInheritFromId;
+  bool _inheritTimerRangeEnabled = false;
+  final _inheritMinMinController = TextEditingController(text: '0');
+  final _inheritMinSecController = TextEditingController(text: '0');
+  final _inheritMaxMinController = TextEditingController(text: '0');
+  final _inheritMaxSecController = TextEditingController(text: '0');
+
+  bool _useV2ForSingle = false;
+  bool _useV2ForLeft = false;
+  bool _useV2ForRight = false;
+
+  bool _useFrontpage = false;
+
+  // Position Data
+  PositionData? _sectionPos;
+  PositionData? _t1Pos;
+  PositionData? _tLPos;
+  PositionData? _tRPos;
+  PositionData? _saPos;
+  PositionData? _sbPos;
+
   List<BgmData> _bgmList = [];
   List<TimerTemplateData> _templateList = [];
+  List<TimerTemplateV2Data> _templateV2List = [];
   List<DingAudioData> _dingAudioList = [];
-  int? _selectedBgmId;
   String? _selectedPageType;
   bool _showSchools = true;
-  int? _selectedInheritFromId;
-  List<PageData> _allPagesInFlow = [];
   String? _sectionFontColor;
   String? _timerFontColor;
+  List<PageData> _allPagesInFlow = [];
 
   // Single Timer (A1)
-  int? _singleTemplateId;
   final _singleMinController = TextEditingController(text: '0');
   final _singleSecController = TextEditingController(text: '0');
 
   // Double Timer (A2)
-  int? _leftTemplateId;
   final _leftMinController = TextEditingController(text: '0');
   final _leftSecController = TextEditingController(text: '0');
-  int? _rightTemplateId;
   final _rightMinController = TextEditingController(text: '0');
   final _rightSecController = TextEditingController(text: '0');
 
@@ -141,25 +165,64 @@ class _PageManagerPageState extends State<PageManagerPage> {
     _sbScaleCtrl.text = _sbScale.toStringAsFixed(2);
   }
 
-  bool _useFrontpage = false;
-
-  bool _inheritTimerRangeEnabled = false;
-  final _inheritMinMinController = TextEditingController(text: '0');
-  final _inheritMinSecController = TextEditingController(text: '0');
-  final _inheritMaxMinController = TextEditingController(text: '0');
-  final _inheritMaxSecController = TextEditingController(text: '0');
-
-  // Position Data
-  PositionData? _sectionPos;
-  PositionData? _t1Pos;
-  PositionData? _tLPos;
-  PositionData? _tRPos;
-  PositionData? _saPos;
-  PositionData? _sbPos;
-
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   async.StreamSubscription? _flowSub;
+  async.StreamSubscription? _bgmSub;
+  async.StreamSubscription? _templateSub;
+  async.StreamSubscription? _templateV2Sub;
+
+  @override
+  void dispose() {
+    _flowSub?.cancel();
+    _bgmSub?.cancel();
+    _templateSub?.cancel();
+    _templateV2Sub?.cancel();
+    _previewTimer?.cancel();
+    _previewTimerLeft?.cancel();
+    _previewTimerRight?.cancel();
+    _audioPlayer.dispose();
+    _pageNameController.dispose();
+    _sectionNameController.dispose();
+    _hotkeyController.dispose();
+    _singleMinController.dispose();
+    _singleSecController.dispose();
+    _leftMinController.dispose();
+    _leftSecController.dispose();
+    _rightMinController.dispose();
+    _rightSecController.dispose();
+    _sectionXCtrl.dispose();
+    _sectionYCtrl.dispose();
+    _sectionScaleCtrl.dispose();
+    _t1XCtrl.dispose();
+    _t1YCtrl.dispose();
+    _t1ScaleCtrl.dispose();
+    _tlXCtrl.dispose();
+    _tlYCtrl.dispose();
+    _tlScaleCtrl.dispose();
+    _trXCtrl.dispose();
+    _trYCtrl.dispose();
+    _trScaleCtrl.dispose();
+    _saxCtrl.dispose();
+    _sayCtrl.dispose();
+    _saScaleCtrl.dispose();
+    _sbxCtrl.dispose();
+    _sbyCtrl.dispose();
+    _sbScaleCtrl.dispose();
+    super.dispose();
+  }
+
+  void _setupAssetStreams() {
+    _bgmSub = database.select(database.bgm).watch().listen((data) {
+      if (mounted) setState(() => _bgmList = data);
+    });
+    _templateSub = database.select(database.timerTemplate).watch().listen((data) {
+      if (mounted) setState(() => _templateList = data);
+    });
+    _templateV2Sub = database.select(database.timerTemplateV2).watch().listen((data) {
+      if (mounted) setState(() => _templateV2List = data);
+    });
+  }
 
   @override
   void initState() {
@@ -178,6 +241,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
     _loadData();
     _loadTimerData();
+    _setupAssetStreams();
 
     // Watch flow for asset updates
     _flowSub = (database.select(database.flow)
@@ -389,7 +453,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           setState(() {
             _previewSeconds--;
           });
-          _checkPreviewDings(_singleTemplateId, _previewSeconds);
+          _checkPreviewDings(_useV2ForSingle ? _singleTemplateV2Id : _singleTemplateId, _previewSeconds, isV2: _useV2ForSingle);
         } else {
           timer.cancel();
           setState(() {
@@ -403,31 +467,55 @@ class _PageManagerPageState extends State<PageManagerPage> {
     });
   }
 
-  Future<void> _checkPreviewDings(int? templateId, int currentSeconds) async {
+  Future<void> _checkPreviewDings(int? templateId, int currentSeconds, {bool isV2 = false}) async {
     if (templateId == null) return;
 
-    final dings = await (database.select(database.dingValue)
-          ..where((t) => t.timerTemplateId.equals(templateId)))
-        .get();
+    if (isV2) {
+      final dings = await (database.select(database.dingValueV2)
+            ..where((t) => t.timerTemplateV2Id.equals(templateId)))
+          .get();
 
-    final template = await (database.select(database.timerTemplate)
-          ..where((t) => t.id.equals(templateId)))
-        .getSingleOrNull();
+      for (var d in dings) {
+        final parts = (d.dingTime ?? '0:0').split(':');
+        final m = int.tryParse(parts[0]) ?? 0;
+        final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+        final dingSec = m * 60 + s;
 
-    if (template?.dingAudioId != null) {
-      final audio = await (database.select(database.dingAudio)
-            ..where((t) => t.id.equals(template!.dingAudioId!)))
+        if (dingSec == currentSeconds) {
+          if (d.dingAudioId != null) {
+            final audio = await (database.select(database.dingAudio)
+                  ..where((t) => t.id.equals(d.dingAudioId!)))
+                .getSingleOrNull();
+            if (audio != null) {
+              _playPreviewSound(audio.dingName, d.dingAmount ?? 1);
+            }
+          }
+        }
+      }
+    } else {
+      final dings = await (database.select(database.dingValue)
+            ..where((t) => t.timerTemplateId.equals(templateId)))
+          .get();
+
+      final template = await (database.select(database.timerTemplate)
+            ..where((t) => t.id.equals(templateId)))
           .getSingleOrNull();
 
-      if (audio != null) {
-        for (var d in dings) {
-          final parts = (d.dingTime ?? '0:0').split(':');
-          final m = int.tryParse(parts[0]) ?? 0;
-          final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
-          final dingSec = m * 60 + s;
+      if (template?.dingAudioId != null) {
+        final audio = await (database.select(database.dingAudio)
+              ..where((t) => t.id.equals(template!.dingAudioId!)))
+            .getSingleOrNull();
 
-          if (dingSec == currentSeconds) {
-            _playPreviewSound(audio.dingName, d.dingAmount ?? 1);
+        if (audio != null) {
+          for (var d in dings) {
+            final parts = (d.dingTime ?? '0:0').split(':');
+            final m = int.tryParse(parts[0]) ?? 0;
+            final s = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+            final dingSec = m * 60 + s;
+
+            if (dingSec == currentSeconds) {
+              _playPreviewSound(audio.dingName, d.dingAmount ?? 1);
+            }
           }
         }
       }
@@ -470,7 +558,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           setState(() {
             _previewSecLeft--;
           });
-          _checkPreviewDings(_leftTemplateId, _previewSecLeft);
+          _checkPreviewDings(_useV2ForLeft ? _leftTemplateV2Id : _leftTemplateId, _previewSecLeft, isV2: _useV2ForLeft);
         } else {
           timer.cancel();
           setState(() {
@@ -494,7 +582,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
           setState(() {
             _previewSecRight--;
           });
-          _checkPreviewDings(_rightTemplateId, _previewSecRight);
+          _checkPreviewDings(_useV2ForRight ? _rightTemplateV2Id : _rightTemplateId, _previewSecRight, isV2: _useV2ForRight);
         } else {
           timer.cancel();
           setState(() {
@@ -517,6 +605,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
   Future<void> _loadData() async {
     final bgms = await database.select(database.bgm).get();
     final templates = await database.select(database.timerTemplate).get();
+    final templatesV2 = await database.select(database.timerTemplateV2).get();
     final dingAudios = await database.select(database.dingAudio).get();
     final allPages = await (database.select(database.page)
           ..where((t) => t.flowId.equals(widget.flow.id))
@@ -526,6 +615,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
       setState(() {
         _bgmList = bgms;
         _templateList = templates;
+        _templateV2List = templatesV2;
         _dingAudioList = dingAudios;
         _allPagesInFlow = allPages;
         _selectedInheritFromId = _currentPage.inheritTimerFromId;
@@ -691,6 +781,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
         for (final timer in timers) {
           if (timer.timerType == 'single') {
             _singleTemplateId = timer.timerTemplateId;
+            _singleTemplateV2Id = timer.timerTemplateV2Id;
+            _useV2ForSingle = _singleTemplateV2Id != null;
             final parts = (timer.startTime ?? '0:0').split(':');
             _singleMinController.text = parts[0];
             _singleSecController.text = parts.length > 1 ? parts[1] : '0';
@@ -708,6 +800,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
             }
           } else if (timer.timerType == 'doubleL') {
             _leftTemplateId = timer.timerTemplateId;
+            _leftTemplateV2Id = timer.timerTemplateV2Id;
+            _useV2ForLeft = _leftTemplateV2Id != null;
             final parts = (timer.startTime ?? '0:0').split(':');
             _leftMinController.text = parts[0];
             _leftSecController.text = parts.length > 1 ? parts[1] : '0';
@@ -724,6 +818,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
             }
           } else if (timer.timerType == 'doubleR') {
             _rightTemplateId = timer.timerTemplateId;
+            _rightTemplateV2Id = timer.timerTemplateV2Id;
+            _useV2ForRight = _rightTemplateV2Id != null;
             final parts = (timer.startTime ?? '0:0').split(':');
             _rightMinController.text = parts[0];
             _rightSecController.text = parts.length > 1 ? parts[1] : '0';
@@ -761,33 +857,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
     }
   }
 
-  Future<void> _loadTimerPosition(int id, String type) async {
-    final pos = await (database.select(database.position)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
-    if (pos != null && mounted) {
-      setState(() {
-        if (type == 'single') {
-          _t1Pos = pos;
-          _t1X = pos.xpos ?? 0;
-          _t1Y = pos.ypos ?? 0;
-          _t1Scale = pos.size ?? 1.0;
-        } else if (type == 'doubleL') {
-          _tLPos = pos;
-          _tlX = pos.xpos ?? 0;
-          _tlY = pos.ypos ?? 0;
-          _tlScale = pos.size ?? 1.0;
-        } else if (type == 'doubleR') {
-          _tRPos = pos;
-          _trX = pos.xpos ?? 0;
-          _trY = pos.ypos ?? 0;
-          _trScale = pos.size ?? 1.0;
-        }
-      });
-      _syncPositionControllers();
-    }
-  }
-
   Future<void> _createTemplate() async {
     final nameController = TextEditingController();
     int? selectedDingAudioId;
@@ -797,7 +866,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('新建计时器模板'),
+          title: const Text('新建计时器模板 (V1)'),
           content: SizedBox(
             width: 500,
             child: SingleChildScrollView(
@@ -811,8 +880,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     hint: '例如: 立论环节计时',
                   ),
                   const SizedBox(height: 16),
-
-                  // Ding Audio Selection
                   const Text('提示音 (Ding Audio)',
                       style:
                           TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
@@ -855,10 +922,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Ding Values Box
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -942,9 +1006,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
               onPressed: () async {
                 final name = nameController.text.trim();
                 if (name.isEmpty) return;
-
                 try {
-                  // 1. Save Template
                   final templateId =
                       await database.into(database.timerTemplate).insert(
                             TimerTemplateCompanion.insert(
@@ -952,8 +1014,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
                               dingAudioId: drift.Value(selectedDingAudioId),
                             ),
                           );
-
-                  // 2. Save Ding Values
                   for (final draft in dingDrafts) {
                     final time =
                         '${draft.minController.text}:${draft.secController.text}';
@@ -967,7 +1027,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
                           ),
                         );
                   }
-
                   await _loadData();
                   if (context.mounted) Navigator.pop(context);
                 } catch (e) {
@@ -983,6 +1042,214 @@ class _PageManagerPageState extends State<PageManagerPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _createTemplateV2() async {
+    final nameController = TextEditingController();
+    List<_DingValueV2Draft> dingDrafts = [_DingValueV2Draft()];
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('新建计时器模板 (V2)'),
+          content: SizedBox(
+            width: 600,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTextField(
+                    controller: nameController,
+                    label: '模板名称',
+                    hint: '例如: V2 高级计时模板',
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('提示时间设置 (V2)',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            TextButton.icon(
+                              onPressed: () => setDialogState(
+                                  () => dingDrafts.add(_DingValueV2Draft())),
+                              icon: const Icon(Icons.add, size: 18),
+                              label: const Text('添加提示'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ...dingDrafts.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final draft = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                        child: _buildTimeField(
+                                            draft.minController, '分')),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                        child: _buildTimeField(
+                                            draft.secController, '秒')),
+                                    const SizedBox(width: 8),
+                                    SizedBox(
+                                      width: 80,
+                                      child: TextFormField(
+                                        controller: draft.amountController,
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly
+                                        ],
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          labelText: '次数',
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () => setDialogState(
+                                          () => dingDrafts.removeAt(index)),
+                                      icon: const Icon(
+                                          Icons.remove_circle_outline,
+                                          color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.music_note,
+                                        size: 20, color: Colors.indigo),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: DropdownButtonFormField<int>(
+                                        value: draft.dingAudioId,
+                                        isExpanded: true,
+                                        menuMaxHeight: 400,
+                                        style: const TextStyle(
+                                            fontSize: 14, color: Colors.black),
+                                        decoration: InputDecoration(
+                                          hintText: '为此时间选择铃声',
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 12),
+                                        ),
+                                        items: [
+                                          const DropdownMenuItem<int>(
+                                              value: null, child: Text('无提示音')),
+                                          ..._dingAudioList.map((d) =>
+                                              DropdownMenuItem<int>(
+                                                value: d.id,
+                                                child: Text(d.dingName,
+                                                    overflow:
+                                                        TextOverflow.ellipsis),
+                                              )),
+                                        ],
+                                        onChanged: (val) => setDialogState(
+                                            () => draft.dingAudioId = val),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: 24),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('取消')),
+            FilledButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) return;
+
+                try {
+                  final id = await database
+                      .into(database.timerTemplateV2)
+                      .insert(
+                        TimerTemplateV2Companion.insert(
+                          templateName: drift.Value(name),
+                        ),
+                      );
+                  for (var d in dingDrafts) {
+                    await database.into(database.dingValueV2).insert(
+                          DingValueV2Companion.insert(
+                            dingTime: drift.Value(
+                                '${d.minController.text}:${d.secController.text}'),
+                            dingAmount: drift.Value(
+                                int.tryParse(d.amountController.text) ?? 1),
+                            dingAudioId: drift.Value(d.dingAudioId),
+                            timerTemplateV2Id: drift.Value(id),
+                          ),
+                        );
+                  }
+
+                  await _loadData();
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+                  }
+                }
+              },
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B46C1)),
+              child: const Text('保存模板'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeField(TextEditingController controller, String label) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      decoration: InputDecoration(
+        isDense: true,
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
@@ -1015,26 +1282,57 @@ class _PageManagerPageState extends State<PageManagerPage> {
     }
   }
 
+  Future<void> _loadTimerPosition(int id, String type) async {
+    final pos = await (database.select(database.position)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (pos != null && mounted) {
+      setState(() {
+        if (type == 'single') {
+          _t1Pos = pos;
+          _t1X = pos.xpos ?? 0;
+          _t1Y = pos.ypos ?? 0;
+          _t1Scale = pos.size ?? 1.0;
+        } else if (type == 'doubleL') {
+          _tLPos = pos;
+          _tlX = pos.xpos ?? 0;
+          _tlY = pos.ypos ?? 0;
+          _tlScale = pos.size ?? 1.0;
+        } else if (type == 'doubleR') {
+          _tRPos = pos;
+          _trX = pos.xpos ?? 0;
+          _trY = pos.ypos ?? 0;
+          _trScale = pos.size ?? 1.0;
+        }
+      });
+      _syncPositionControllers();
+    }
+  }
+
   Future<void> _saveTimer(String type) async {
     int? templateId;
+    int? templateV2Id;
     String min = '0';
     String sec = '0';
 
     if (type == 'single') {
-      templateId = _singleTemplateId;
+      templateId = _useV2ForSingle ? null : _singleTemplateId;
+      templateV2Id = _useV2ForSingle ? _singleTemplateV2Id : null;
       min = _singleMinController.text;
       sec = _singleSecController.text;
     } else if (type == 'doubleL') {
-      templateId = _leftTemplateId;
+      templateId = _useV2ForLeft ? null : _leftTemplateId;
+      templateV2Id = _useV2ForLeft ? _leftTemplateV2Id : null;
       min = _leftMinController.text;
       sec = _leftSecController.text;
     } else if (type == 'doubleR') {
-      templateId = _rightTemplateId;
+      templateId = _useV2ForRight ? null : _rightTemplateId;
+      templateV2Id = _useV2ForRight ? _rightTemplateV2Id : null;
       min = _rightMinController.text;
       sec = _rightSecController.text;
     }
 
-    if (templateId == null) {
+    if (templateId == null && templateV2Id == null) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('请选择模板')));
       return;
@@ -1099,6 +1397,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
               ..where((t) => t.id.equals(existing.id)))
             .write(TimerCompanion(
           timerTemplateId: drift.Value(templateId),
+          timerTemplateV2Id: drift.Value(templateV2Id),
           startTime: drift.Value(startTime),
           xpos: drift.Value(x),
           ypos: drift.Value(y),
@@ -1108,6 +1407,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
       } else {
         await database.into(database.timer).insert(TimerCompanion.insert(
               timerTemplateId: drift.Value(templateId),
+              timerTemplateV2Id: drift.Value(templateV2Id),
               startTime: drift.Value(startTime),
               timerType: drift.Value(type),
               pageId: drift.Value(_currentPage.id),
@@ -1289,43 +1589,6 @@ class _PageManagerPageState extends State<PageManagerPage> {
             .showSnackBar(SnackBar(content: Text('保存失败: $e')));
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _flowSub?.cancel();
-    _previewTimer?.cancel();
-    _previewTimerLeft?.cancel();
-    _previewTimerRight?.cancel();
-    _audioPlayer.dispose();
-    _pageNameController.dispose();
-    _sectionNameController.dispose();
-    _hotkeyController.dispose();
-    _singleMinController.dispose();
-    _singleSecController.dispose();
-    _leftMinController.dispose();
-    _leftSecController.dispose();
-    _rightMinController.dispose();
-    _rightSecController.dispose();
-    _sectionXCtrl.dispose();
-    _sectionYCtrl.dispose();
-    _sectionScaleCtrl.dispose();
-    _t1XCtrl.dispose();
-    _t1YCtrl.dispose();
-    _t1ScaleCtrl.dispose();
-    _tlXCtrl.dispose();
-    _tlYCtrl.dispose();
-    _tlScaleCtrl.dispose();
-    _trXCtrl.dispose();
-    _trYCtrl.dispose();
-    _trScaleCtrl.dispose();
-    _saxCtrl.dispose();
-    _sayCtrl.dispose();
-    _saScaleCtrl.dispose();
-    _sbxCtrl.dispose();
-    _sbyCtrl.dispose();
-    _sbScaleCtrl.dispose();
-    super.dispose();
   }
 
   Future<void> _askApplyPositionToAllPages() async {
@@ -1638,7 +1901,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
               border: Border(right: BorderSide(color: Colors.grey.shade200)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 10,
                   offset: const Offset(4, 0),
                 )
@@ -1704,7 +1967,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     subtitle: const Text('在本页开启/关闭学校名称与Logo',
                         style: TextStyle(fontSize: 12)),
                     value: _showSchools,
-                    activeColor: const Color(0xFF6B46C1),
+                    activeThumbColor: const Color(0xFF6B46C1),
+                    activeTrackColor: const Color(0xFF6B46C1).withValues(alpha: 0.5),
                     contentPadding: EdgeInsets.zero,
                     onChanged: (val) => setState(() => _showSchools = val),
                   ),
@@ -1717,7 +1981,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                     subtitle: const Text('开启后使用赛程主预览图',
                         style: TextStyle(fontSize: 12)),
                     value: _useFrontpage,
-                    activeColor: const Color(0xFF6B46C1),
+                    activeThumbColor: const Color(0xFF6B46C1),
+                    activeTrackColor: const Color(0xFF6B46C1).withValues(alpha: 0.5),
                     contentPadding: EdgeInsets.zero,
                     onChanged: (val) {
                       setState(() => _useFrontpage = val);
@@ -1768,7 +2033,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                             _loadTimerData();
                           }
                         },
-                        selectedColor: const Color(0xFF6B46C1).withOpacity(0.1),
+                        selectedColor: const Color(0xFF6B46C1).withValues(alpha: 0.1),
                         labelStyle: TextStyle(
                             color: isSelected
                                 ? const Color(0xFF6B46C1)
@@ -1819,7 +2084,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         Switch(
                           value: _inheritTimerRangeEnabled,
                           onChanged: (val) => setState(() => _inheritTimerRangeEnabled = val),
-                          activeColor: const Color(0xFF3B82F6),
+                          activeThumbColor: const Color(0xFF3B82F6),
+                          activeTrackColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
                         ),
                         const SizedBox(width: 8),
                         const Text('启用时间范围限制 (Enable Timer Range)',
@@ -2024,8 +2290,8 @@ class _PageManagerPageState extends State<PageManagerPage> {
                         padding: const EdgeInsets.all(48.0),
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            final double designWidth = 1920.0;
-                            final double designHeight = 1080.0;
+                            const double designWidth = 1920.0;
+                            const double designHeight = 1080.0;
 
                             final double frameTargetWidth = _simulationSize.width;
                             final double frameTargetHeight = _simulationSize.height;
@@ -2100,7 +2366,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                       color: Colors.black,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Colors.black.withValues(alpha: 0.2),
                                           blurRadius: 30,
                                           offset: const Offset(0, 15),
                                         )
@@ -2183,8 +2449,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                                             Shadow(
                                                                 color: Colors
                                                                     .white
-                                                                    .withOpacity(
-                                                                        0.5),
+                                                                    .withValues(alpha: 0.5),
                                                                 blurRadius: 15,
                                                                 offset:
                                                                     const Offset(
@@ -2326,7 +2591,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
                                     borderRadius: BorderRadius.circular(30),
                                     boxShadow: [
                                       BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
+                                          color: Colors.black.withValues(alpha: 0.05),
                                           blurRadius: 10)
                                     ],
                                   ),
@@ -2385,7 +2650,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
               fontFeatures: const [ui.FontFeature.tabularFigures()],
               shadows: [
                 Shadow(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 10))
               ],
@@ -2425,19 +2690,23 @@ class _PageManagerPageState extends State<PageManagerPage> {
 
   Widget _buildTimerBox(String title, String type) {
     int? currentTemplateId;
+    int? currentTemplateV2Id;
     TextEditingController minCtrl;
     TextEditingController secCtrl;
 
     if (type == 'single') {
       currentTemplateId = _singleTemplateId;
+      currentTemplateV2Id = _singleTemplateV2Id;
       minCtrl = _singleMinController;
       secCtrl = _singleSecController;
     } else if (type == 'doubleL') {
       currentTemplateId = _leftTemplateId;
+      currentTemplateV2Id = _leftTemplateV2Id;
       minCtrl = _leftMinController;
       secCtrl = _leftSecController;
     } else {
       currentTemplateId = _rightTemplateId;
+      currentTemplateV2Id = _rightTemplateV2Id;
       minCtrl = _rightMinController;
       secCtrl = _rightSecController;
     }
@@ -2459,49 +2728,112 @@ class _PageManagerPageState extends State<PageManagerPage> {
                   color: Color(0xFF1F2937))),
           const SizedBox(height: 20),
 
-          // Template Select
-          const Text('计时器模板',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF4B5563))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('计时器模板',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF4B5563))),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('使用 V2', style: TextStyle(fontSize: 12)),
+                  Switch(
+                    value: type == 'single' ? _useV2ForSingle : (type == 'doubleL' ? _useV2ForLeft : _useV2ForRight),
+                    onChanged: (val) {
+                      setState(() {
+                        if (type == 'single') _useV2ForSingle = val;
+                        if (type == 'doubleL') _useV2ForLeft = val;
+                        if (type == 'doubleR') _useV2ForRight = val;
+                      });
+                    },
+                    activeThumbColor: const Color(0xFF059669),
+                    activeTrackColor: const Color(0xFF059669).withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: DropdownButtonFormField<int>(
-                  value: currentTemplateId,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  items: _templateList
-                      .map((t) => DropdownMenuItem<int>(
-                            value: t.id,
-                            child: Text(t.templateName ?? '未命名模板',
-                                overflow: TextOverflow.ellipsis),
-                          ))
-                      .toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      if (type == 'single') {
-                        _singleTemplateId = val;
-                      } else if (type == 'doubleL') {
-                        _leftTemplateId = val;
-                      } else {
-                        _rightTemplateId = val;
-                      }
-                    });
-                  },
-                ),
+                child: (type == 'single' ? _useV2ForSingle : (type == 'doubleL' ? _useV2ForLeft : _useV2ForRight))
+                  ? DropdownButtonFormField<int>(
+                      value: currentTemplateV2Id,
+                      isExpanded: true,
+                      menuMaxHeight: 400,
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFECFDF5),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      items: _templateV2List
+                          .map((t) => DropdownMenuItem<int>(
+                                value: t.id,
+                                child: Text('[V2] ${t.templateName ?? '未命名'}',
+                                    overflow: TextOverflow.ellipsis),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          if (type == 'single') {
+                            _singleTemplateV2Id = val;
+                          } else if (type == 'doubleL') {
+                            _leftTemplateV2Id = val;
+                          } else {
+                            _rightTemplateV2Id = val;
+                          }
+                        });
+                      },
+                    )
+                  : DropdownButtonFormField<int>(
+                      value: currentTemplateId,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      items: _templateList
+                          .map((t) => DropdownMenuItem<int>(
+                                value: t.id,
+                                child: Text(t.templateName ?? '未命名模板',
+                                    overflow: TextOverflow.ellipsis),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          if (type == 'single') {
+                            _singleTemplateId = val;
+                          } else if (type == 'doubleL') {
+                            _leftTemplateId = val;
+                          } else {
+                            _rightTemplateId = val;
+                          }
+                        });
+                      },
+                    ),
               ),
               const SizedBox(width: 8),
               IconButton.filled(
-                onPressed: _createTemplate,
+                onPressed: () {
+                  final useV2 = (type == 'single'
+                      ? _useV2ForSingle
+                      : (type == 'doubleL' ? _useV2ForLeft : _useV2ForRight));
+                  if (useV2) {
+                    _createTemplateV2();
+                  } else {
+                    _createTemplate();
+                  }
+                },
                 icon: const Icon(Icons.add_rounded),
                 style: IconButton.styleFrom(
                     backgroundColor: const Color(0xFF6B46C1)),
@@ -2824,7 +3156,7 @@ class _PageManagerPageState extends State<PageManagerPage> {
         fontFamily: _schoolFontFamily,
         shadows: [
           Shadow(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -2989,4 +3321,17 @@ class _DingValueDraft {
   final TextEditingController secController = TextEditingController(text: '0');
   final TextEditingController amountController =
       TextEditingController(text: '1');
+}
+
+class _DingValueV2Draft {
+  final TextEditingController minController;
+  final TextEditingController secController;
+  final TextEditingController amountController;
+  int? dingAudioId;
+
+  _DingValueV2Draft(
+      {String min = '0', String sec = '0', String amount = '1', this.dingAudioId})
+      : minController = TextEditingController(text: min),
+        secController = TextEditingController(text: sec),
+        amountController = TextEditingController(text: amount);
 }

@@ -83,6 +83,9 @@ class PageUtils {
             sectionFontColor: drift.Value(page.sectionFontColor),
             timerFontColor: drift.Value(page.timerFontColor),
             inheritTimerFromId: drift.Value(page.inheritTimerFromId),
+            inheritTimerRangeEnabled: drift.Value(page.inheritTimerRangeEnabled),
+            inheritTimerMin: drift.Value(page.inheritTimerMin),
+            inheritTimerMax: drift.Value(page.inheritTimerMax),
           ),
         );
 

@@ -630,7 +630,14 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
     
     String message = '确定要删除 "${bgm.bgmName}" 吗？';
     if (usages.isNotEmpty) {
-      message += '\n\n此 BGM 正在被 ${usages.length} 个页面使用。删除后这些页面将没有背景音乐。';
+      final flowIds = usages.map((u) => u.flowId).whereType<int>().toSet();
+      final flows = await (database.select(database.flow)..where((f) => f.id.isIn(flowIds))).get();
+      final eventIds = flows.map((f) => f.eventId).whereType<int>().toSet();
+      final events = await (database.select(database.event)..where((e) => e.id.isIn(eventIds))).get();
+      
+      message += '\n\n此 BGM 正在以下赛事中使用:\n' + 
+                 events.map((e) => '• ${e.eventName}').join('\n') +
+                 '\n\n删除后，相关页面的背景音乐将变为空。';
     }
 
     showDialog(
@@ -726,14 +733,30 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
   }
 
   Future<void> _confirmDeleteDing(DingAudioData ding, VoidCallback onSuccess) async {
-    // Check usage in timer_template
-    final usages = await (database.select(database.timerTemplate)..where((t) => t.dingAudioId.equals(ding.id))).get();
+    // Check usage in timer_template (V1)
+    final usagesV1 = await (database.select(database.timerTemplate)..where((t) => t.dingAudioId.equals(ding.id))).get();
+    // Check usage in ding_value_v2 (V2)
+    final usagesV2 = await (database.select(database.dingValueV2)..where((t) => t.dingAudioId.equals(ding.id))).get();
     
     if (!mounted) return;
     
     String message = '确定要删除 "${ding.dingName}" 吗？';
-    if (usages.isNotEmpty) {
-      message += '\n\n此提示音正在被 ${usages.length} 个计时器模板使用。删除后这些模板将没有提示音。';
+    if (usagesV1.isNotEmpty || usagesV2.isNotEmpty) {
+      List<String> affectedTemplates = [];
+      
+      if (usagesV1.isNotEmpty) {
+        affectedTemplates.addAll(usagesV1.map((t) => '• [V1] ${t.templateName}'));
+      }
+      
+      if (usagesV2.isNotEmpty) {
+        final v2TemplateIds = usagesV2.map((u) => u.timerTemplateV2Id).whereType<int>().toSet();
+        final v2Templates = await (database.select(database.timerTemplateV2)..where((t) => t.id.isIn(v2TemplateIds))).get();
+        affectedTemplates.addAll(v2Templates.map((t) => '• [V2] ${t.templateName}'));
+      }
+
+      message += '\n\n此提示音正在以下模板中使用:\n' + 
+                 affectedTemplates.join('\n') +
+                 '\n\n删除后，相关模板的提示音设置将变为空。';
     }
 
     showDialog(
@@ -766,9 +789,13 @@ class _VolumeSettingsPageState extends State<VolumeSettingsPage> {
         await file.delete();
       }
 
-      // Nullify references in timer_template table
+      // Nullify references in timer_template table (V1)
       await (database.update(database.timerTemplate)..where((t) => t.dingAudioId.equals(ding.id)))
           .write(TimerTemplateCompanion(dingAudioId: const drift.Value(null)));
+
+      // Nullify references in ding_value_v2 table (V2)
+      await (database.update(database.dingValueV2)..where((t) => t.dingAudioId.equals(ding.id)))
+          .write(DingValueV2Companion(dingAudioId: const drift.Value(null)));
 
       await (database.delete(database.dingAudio)..where((t) => t.id.equals(ding.id))).go();
       

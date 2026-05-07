@@ -517,7 +517,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                 color: const Color(0xFFFDF4FF),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFF6B46C1).withOpacity(0.3), width: 2),
+                    color: const Color(0xFF6B46C1).withValues(alpha: 0.3), width: 2),
               ),
               child: _currentFlow == null
                   ? const Center(child: Text('请先创建赛程'))
@@ -813,7 +813,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
               boxShadow: [
                 if (currentFile != null)
                   BoxShadow(
-                    color: const Color(0xFF6B46C1).withOpacity(0.1),
+                    color: const Color(0xFF6B46C1).withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -980,7 +980,7 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.25),
+                        color: Colors.black.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Icon(
@@ -1166,10 +1166,10 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6B46C1).withOpacity(0.05),
+                  color: const Color(0xFF6B46C1).withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFF6B46C1).withOpacity(0.2),
+                    color: const Color(0xFF6B46C1).withValues(alpha: 0.2),
                     width: 2,
                     style: BorderStyle.solid,
                   ),
@@ -1224,10 +1224,10 @@ class _FlowManagerPageState extends State<FlowManagerPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.05),
+              color: Colors.blue.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.blue.withOpacity(0.2),
+                color: Colors.blue.withValues(alpha: 0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),

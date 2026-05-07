@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   // ─────────────────────────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration {
@@ -95,6 +95,11 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(page, page.inheritTimerRangeEnabled);
           await m.addColumn(page, page.inheritTimerMin);
           await m.addColumn(page, page.inheritTimerMax);
+        }
+        if (from < 18) {
+          await m.createTable(timerTemplateV2);
+          await m.createTable(dingValueV2);
+          await m.addColumn(timer, timer.timerTemplateV2Id);
         }
         // ── add new `if (from < N)` blocks above this line ───────────────
       },

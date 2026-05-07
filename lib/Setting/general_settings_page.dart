@@ -27,6 +27,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   bool _isSharing = false;
   List<PreviousVersionInfo> _previousVersions = [];
   bool _isMigrating = false;
+  bool _isWindowTransitioning = false;
 
   @override
   void initState() {
@@ -55,9 +56,21 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
   }
 
   Future<void> _saveSettings(String mode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('window_mode', mode);
-    await _applyWindowMode(mode);
+    if (_isWindowTransitioning) return;
+    setState(() {
+      _windowMode = mode; // Optimistically update UI
+      _isWindowTransitioning = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('window_mode', mode);
+      await _applyWindowMode(mode);
+    } finally {
+      if (mounted) {
+        setState(() => _isWindowTransitioning = false);
+      }
+    }
   }
 
   Future<void> _applyWindowMode(String mode) async {
@@ -210,7 +223,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF4F46E5).withOpacity(0.1),
+          color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -497,12 +510,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
             ),
             subtitle: const Text('开启后应用将以无边框全屏模式运行。'),
             value: _windowMode == 'borderless',
-            activeColor: const Color(0xFF4F46E5),
-            onChanged: (bool value) {
+            activeThumbColor: const Color(0xFF4F46E5),
+            onChanged: _isWindowTransitioning ? null : (bool value) {
               final newMode = value ? 'borderless' : 'windowed_1920';
-              setState(() {
-                _windowMode = newMode;
-              });
               _saveSettings(newMode);
             },
           ),
@@ -587,7 +597,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.2),
+          color: const Color(0xFF10B981).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -646,7 +656,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(

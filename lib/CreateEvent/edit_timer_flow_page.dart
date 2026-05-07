@@ -422,11 +422,11 @@ class _EditTimerFlowPageState extends State<EditTimerFlowPage> {
           gradient: LinearGradient(
             colors: isExtra
                 ? [
-                    const Color(0xFF3B82F6).withOpacity(0.8),
+                    const Color(0xFF3B82F6).withValues(alpha: 0.8),
                     const Color(0xFF3B82F6),
                   ]
                 : [
-                    const Color(0xFFF59E0B).withOpacity(0.8),
+                    const Color(0xFFF59E0B).withValues(alpha: 0.8),
                     const Color(0xFFF59E0B),
                   ],
             begin: Alignment.topLeft,
